@@ -31,7 +31,7 @@ public:
 	bool removeFromPlayerList(std::string name);
 	bool setupPlayerUI();
 
-	bool handleMouseClick(sf::Vector2i mousePosXY);
+	bool handleMouseClick(sf::Vector2f mousePosXY);
 	bool pollEvents();
 	bool update();
 	bool render();

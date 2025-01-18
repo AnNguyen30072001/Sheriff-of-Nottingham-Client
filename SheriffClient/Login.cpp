@@ -138,7 +138,8 @@ bool Login::pollEvents()
 		case sf::Event::MouseButtonPressed:
 			m_mousePressedPos = INVALID;
 			if (m_ev.mouseButton.button == sf::Mouse::Left) {
-				sf::Vector2i mousePosXY = sf::Mouse::getPosition(*m_window);
+				sf::Vector2i mousePosXYLocal = sf::Mouse::getPosition(*m_window);
+				sf::Vector2f mousePosXY = m_window->mapPixelToCoords(mousePosXYLocal);
 				if (m_loginButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
 					m_mousePressedPos = LOGIN_BUTTON;
 				}

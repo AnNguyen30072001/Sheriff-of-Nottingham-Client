@@ -82,7 +82,7 @@ bool Lobby::setupPlayerUI()
 	return true;
 }
 
-bool Lobby::handleMouseClick(sf::Vector2i mousePosXY)
+bool Lobby::handleMouseClick(sf::Vector2f mousePosXY)
 {
 	for (auto& player : m_playerList) {
 		if (player->isUserPlayer()) {
@@ -106,9 +106,11 @@ bool Lobby::pollEvents()
 		case sf::Event::Closed:
 			m_window->close();
 			break;
+
 		case sf::Event::MouseButtonPressed:
 			if (m_ev.mouseButton.button == sf::Mouse::Left) {
-				sf::Vector2i mousePosXY = sf::Mouse::getPosition(*m_window);
+				sf::Vector2i mousePosXYLocal = sf::Mouse::getPosition(*m_window);
+				sf::Vector2f mousePosXY = m_window->mapPixelToCoords(mousePosXYLocal);
 				handleMouseClick(mousePosXY);
 			}
 			break;
