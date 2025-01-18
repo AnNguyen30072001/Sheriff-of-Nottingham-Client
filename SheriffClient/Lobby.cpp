@@ -4,6 +4,12 @@
 bool Lobby::initVariable()
 {
 	m_window = nullptr;
+	if (!m_backgroundTexture.loadFromFile("Images/Background.png")) {
+		std::cerr << "Error loading background texture!";
+		return false;
+	}
+	m_backgroundTexture.setSmooth(true);
+
 	return true;
 }
 
@@ -13,6 +19,11 @@ bool Lobby::initWindow()
 	m_videoMode.height = 1080;
 	m_window = new sf::RenderWindow(m_videoMode, "Sheriff of Nottingham", sf::Style::Default);
 	m_window->setVerticalSyncEnabled(true);
+
+	m_background.setPosition(sf::Vector2f(0.f, 0.f));
+	m_background.setFillColor(sf::Color::White);
+	m_background.setSize(sf::Vector2f(1920.f, 1080.f));
+	m_background.setTexture(&m_backgroundTexture);
 
 	return true;
 }
@@ -121,6 +132,7 @@ bool Lobby::render()
 {
 	m_window->clear();
 
+	m_window->draw(m_background);
 	for (const auto& player : m_playerList) {
 		m_window->draw(player->getAvatar());	
 		m_window->draw(player->getReadyButton());

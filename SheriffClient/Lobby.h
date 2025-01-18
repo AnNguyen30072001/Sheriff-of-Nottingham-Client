@@ -11,6 +11,8 @@ private:
 	sf::RenderWindow* m_window;
 	sf::VideoMode m_videoMode;
 	sf::Event m_ev;
+	sf::RectangleShape m_background;
+	sf::Texture m_backgroundTexture;
 
 	std::vector<Player*> m_playerList;
 

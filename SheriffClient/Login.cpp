@@ -4,7 +4,7 @@ bool Login::initVariables()
 {
 	m_window = nullptr;
 	m_mousePressedPos = INVALID;
-	m_availableColor = {
+	/*m_availableColor = {
 		sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow, sf::Color::Magenta, sf::Color::Cyan
 	};
 	m_colorMap[sf::Color::Red] = "Red";
@@ -12,7 +12,7 @@ bool Login::initVariables()
 	m_colorMap[sf::Color::Blue] = "Blue";
 	m_colorMap[sf::Color::Yellow] = "Yellow";
 	m_colorMap[sf::Color::Magenta] = "Magenta";
-	m_colorMap[sf::Color::Cyan] = "Cyan";
+	m_colorMap[sf::Color::Cyan] = "Cyan";*/
 
 	return true;
 }
@@ -31,30 +31,44 @@ bool Login::initWindow()
 		return false;
 	}
 
+	// Background
+	if (!m_backgroundTexture.loadFromFile("Images/LoginBackground.png")) {
+		std::cerr << "Error loading background texture!";
+		return false;
+	}
+	m_background.setPosition(sf::Vector2f(0.f, 0.f));
+	m_background.setFillColor(sf::Color::White);
+	m_background.setSize(sf::Vector2f(1920.f, 1080.f));
+	m_background.setTexture(&m_backgroundTexture);
+
 	// m_title Text
-	m_title = sf::Text("Welcome to Nottingham!", m_font, 48);
+	/*m_title = sf::Text("Welcome to Nottingham!", m_font, 48);
 	m_title.setFillColor(sf::Color::White);
-	m_title.setPosition((1920 - m_title.getLocalBounds().width) / 2, 250);
+	m_title.setPosition((1920 - m_title.getLocalBounds().width) / 2, 250);*/
 
 	// Username Label
 	m_usernameLabel = sf::Text("Username:", m_font, 24);
 	m_usernameLabel.setFillColor(sf::Color::White);
-	m_usernameLabel.setPosition(700, 410);
+	m_usernameLabel.setOutlineColor(sf::Color::Black);
+	m_usernameLabel.setOutlineThickness(1.f);
+	m_usernameLabel.setPosition(700, 560);
 
 	// IP Label
 	m_IPLabel = sf::Text("IP Address:", m_font, 24);
 	m_IPLabel.setFillColor(sf::Color::White);
-	m_IPLabel.setPosition(700, 510);
+	m_IPLabel.setOutlineColor(sf::Color::Black);
+	m_IPLabel.setOutlineThickness(1.f);
+	m_IPLabel.setPosition(700, 660);
 
 	// Username Input Box
 	m_usernameBox = sf::RectangleShape(sf::Vector2f(400, 50));
 	m_usernameBox.setFillColor(sf::Color(200, 200, 200));
-	m_usernameBox.setPosition(850, 400);
+	m_usernameBox.setPosition(850, 550);
 
 	// IP Input Box
 	m_IPBox = sf::RectangleShape(sf::Vector2f(400, 50));
 	m_IPBox.setFillColor(sf::Color(200, 200, 200));
-	m_IPBox.setPosition(850, 500);
+	m_IPBox.setPosition(850, 650);
 
 	// Box outline
 	m_BoxOutline = sf::RectangleShape(sf::Vector2f(400, 50));
@@ -73,24 +87,24 @@ bool Login::initWindow()
 		m_loginButton.getPosition().y + (m_loginButton.getSize().y - m_loginButtonText.getLocalBounds().height) / 2 - 5
 	);
 
-	// Create color boxes
-	float colorBoxSize = 50; // Size of each color box
-	float spacing = 10; // Spacing between boxes
+	//// Create color boxes
+	//float colorBoxSize = 50; // Size of each color box
+	//float spacing = 10; // Spacing between boxes
 
-	for (size_t i = 0; i < m_availableColor.size(); i++) {
-		sf::RectangleShape colorBox(sf::Vector2f(colorBoxSize, colorBoxSize));
-		colorBox.setFillColor(m_availableColor[i]);
-		colorBox.setPosition(850 + i * (colorBoxSize + spacing), 600);
-		m_colorOptions.push_back(colorBox);
-	}
+	//for (size_t i = 0; i < m_availableColor.size(); i++) {
+	//	sf::RectangleShape colorBox(sf::Vector2f(colorBoxSize, colorBoxSize));
+	//	colorBox.setFillColor(m_availableColor[i]);
+	//	colorBox.setPosition(850 + i * (colorBoxSize + spacing), 600);
+	//	m_colorOptions.push_back(colorBox);
+	//}
 
-	// Initialize selected color highlight
-	m_selectedColorOutline = sf::RectangleShape(sf::Vector2f(colorBoxSize, colorBoxSize));
-	m_selectedColorOutline.setFillColor(sf::Color::Transparent);
-	m_selectedColorOutline.setOutlineColor(sf::Color::White);
-	m_selectedColorOutline.setOutlineThickness(2);
-	m_selectedColorOutline.setPosition(m_colorOptions[0].getPosition());
-	m_selectedColor = m_availableColor[0]; // Default selected color
+	//// Initialize selected color highlight
+	//m_selectedColorOutline = sf::RectangleShape(sf::Vector2f(colorBoxSize, colorBoxSize));
+	//m_selectedColorOutline.setFillColor(sf::Color::Transparent);
+	//m_selectedColorOutline.setOutlineColor(sf::Color::White);
+	//m_selectedColorOutline.setOutlineThickness(2);
+	//m_selectedColorOutline.setPosition(m_colorOptions[0].getPosition());
+	//m_selectedColor = m_availableColor[0]; // Default selected color
 
 	return true;
 }
@@ -206,7 +220,8 @@ bool Login::render()
 	m_window->clear();
 
 	// Draw login screen
-	m_window->draw(m_title);
+	m_window->draw(m_background);
+	//m_window->draw(m_title);
 	m_window->draw(m_usernameBox);
 	m_window->draw(m_usernameLabel);
 

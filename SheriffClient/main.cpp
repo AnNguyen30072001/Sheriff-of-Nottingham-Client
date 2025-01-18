@@ -12,16 +12,16 @@
 
 int main() 
 {
-	//Login login;
+	Login login;
 
-	//while (login.running()) {
-	//	// Update
-	//	login.update();
+	while (login.running()) {
+		// Update
+		login.update();
 
-	//	// Render
-	//	login.render();
+		// Render
+		login.render();
 
-	//}
+	}
 
 	Lobby lobby;
 	lobby.addToPlayerList("An", sf::Color::Red, true);

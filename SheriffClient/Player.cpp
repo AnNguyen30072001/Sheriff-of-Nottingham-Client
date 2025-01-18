@@ -51,6 +51,8 @@ bool Player::initUserPlayer(std::string name, sf::Color playerColor)
 
 	m_readyButton.setSize(sf::Vector2f(120.f, 50.f));
 	m_readyButton.setFillColor(sf::Color(128, 128, 128)); // Gray by default
+	m_readyButton.setOutlineColor(sf::Color::Black);
+	m_readyButton.setOutlineThickness(1.f);
 
 	m_readyText.setFont(m_font);
 	m_readyText.setCharacterSize(18);
@@ -61,10 +63,10 @@ bool Player::initUserPlayer(std::string name, sf::Color playerColor)
 
 
 	// Positioning
-	m_avatar.setPosition(850.f, 800.f);
-	m_nameText.setPosition(855.f, 765.f);
-	m_readyButton.setPosition(1020.f, 810.f);
-	m_readyText.setPosition(1053.f, 824.f);
+	m_avatar.setPosition(890.f, 800.f);
+	m_nameText.setPosition(900.f, 765.f);
+	m_readyButton.setPosition(1060.f, 810.f);
+	m_readyText.setPosition(1095.f, 824.f);
 
 	return true;
 }
@@ -85,6 +87,8 @@ bool Player::initPlayer(float posX, float posY)
 
 	m_readyButton.setSize(sf::Vector2f(60.f, 30.f));
 	m_readyButton.setFillColor(sf::Color(128, 128, 128)); // Gray by default
+	m_readyButton.setOutlineColor(sf::Color::Black);
+	m_readyButton.setOutlineThickness(1.f);
 
 	m_readyText.setFont(m_font);
 	m_readyText.setCharacterSize(15);

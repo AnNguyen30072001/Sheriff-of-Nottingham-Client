@@ -30,6 +30,8 @@ private:
 	sf::RenderWindow* m_window;
 	sf::Event m_ev;
 	sf::VideoMode m_videoMode;
+	sf::RectangleShape m_background;
+	sf::Texture m_backgroundTexture;
 
 	sf::Font m_font;
 	sf::Text m_title;
@@ -47,8 +49,8 @@ private:
 	std::vector<sf::RectangleShape> m_colorOptions; // Predefined color options
 	sf::RectangleShape m_selectedColorOutline;     // Highlight for selected color
 	sf::Color m_selectedColor;
-	std::vector<sf::Color> m_availableColor;
-	std::unordered_map<sf::Color, std::string, ColorHash, ColorEqual> m_colorMap;
+	/*std::vector<sf::Color> m_availableColor;
+	std::unordered_map<sf::Color, std::string, ColorHash, ColorEqual> m_colorMap;*/
 
 	MousePressedPosition m_mousePressedPos;
 
