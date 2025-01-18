@@ -2,71 +2,75 @@
 
 bool Login::initVariables()
 {
-	this->m_window = nullptr;
-	this->m_mousePressedPos = INVALID;
-	this->m_availableColor = {
+	m_window = nullptr;
+	m_mousePressedPos = INVALID;
+	m_availableColor = {
 		sf::Color::Red, sf::Color::Green, sf::Color::Blue, sf::Color::Yellow, sf::Color::Magenta, sf::Color::Cyan
 	};
-	this->m_colorMap[sf::Color::Red] = "Red";
-	this->m_colorMap[sf::Color::Green] = "Green";
-	this->m_colorMap[sf::Color::Blue] = "Blue";
-	this->m_colorMap[sf::Color::Yellow] = "Yellow";
-	this->m_colorMap[sf::Color::Magenta] = "Magenta";
-	this->m_colorMap[sf::Color::Cyan] = "Cyan";
+	m_colorMap[sf::Color::Red] = "Red";
+	m_colorMap[sf::Color::Green] = "Green";
+	m_colorMap[sf::Color::Blue] = "Blue";
+	m_colorMap[sf::Color::Yellow] = "Yellow";
+	m_colorMap[sf::Color::Magenta] = "Magenta";
+	m_colorMap[sf::Color::Cyan] = "Cyan";
 
 	return true;
 }
 
 bool Login::initWindow()
 {
-	this->m_videoMode.width = 1920;
-	this->m_videoMode.height = 1080;
-	this->m_window = new sf::RenderWindow(this->m_videoMode, "Sheriff of Nottingham", sf::Style::Default);
-	this->m_window->setVerticalSyncEnabled(true);
+	m_videoMode.width = 1920;
+	m_videoMode.height = 1080;
+	m_window = new sf::RenderWindow(m_videoMode, "Sheriff of Nottingham", sf::Style::Default);
+	m_window->setVerticalSyncEnabled(true);
 
 	// Create UI for login screen
 	// Font
-	if (!this->m_font.loadFromFile("arial-font/arial.ttf")) {
+	if (!m_font.loadFromFile("arial-font/arial.ttf")) {
 		std::cerr << "Error loading font!\n";
 		return false;
 	}
 
 	// m_title Text
-	this->m_title = sf::Text("Welcome to Nottingham!", this->m_font, 48);
-	this->m_title.setFillColor(sf::Color::White);
-	this->m_title.setPosition((1920 - m_title.getLocalBounds().width) / 2, 250);
+	m_title = sf::Text("Welcome to Nottingham!", m_font, 48);
+	m_title.setFillColor(sf::Color::White);
+	m_title.setPosition((1920 - m_title.getLocalBounds().width) / 2, 250);
 
 	// Username Label
-	this->m_usernameLabel = sf::Text("Username:", m_font, 24);
-	this->m_usernameLabel.setFillColor(sf::Color::White);
-	this->m_usernameLabel.setPosition(700, 410);
+	m_usernameLabel = sf::Text("Username:", m_font, 24);
+	m_usernameLabel.setFillColor(sf::Color::White);
+	m_usernameLabel.setPosition(700, 410);
 
 	// IP Label
-	this->m_IPLabel = sf::Text("IP Address:", m_font, 24);
-	this->m_IPLabel.setFillColor(sf::Color::White);
-	this->m_IPLabel.setPosition(700, 510);
+	m_IPLabel = sf::Text("IP Address:", m_font, 24);
+	m_IPLabel.setFillColor(sf::Color::White);
+	m_IPLabel.setPosition(700, 510);
 
 	// Username Input Box
-	this->m_usernameBox = sf::RectangleShape(sf::Vector2f(400, 50));
-	this->m_usernameBox.setFillColor(sf::Color(200, 200, 200));
-	this->m_usernameBox.setPosition(850, 400);
+	m_usernameBox = sf::RectangleShape(sf::Vector2f(400, 50));
+	m_usernameBox.setFillColor(sf::Color(200, 200, 200));
+	m_usernameBox.setPosition(850, 400);
 
 	// IP Input Box
-	this->m_IPBox = sf::RectangleShape(sf::Vector2f(400, 50));
-	this->m_IPBox.setFillColor(sf::Color(200, 200, 200));
-	this->m_IPBox.setPosition(850, 500);
+	m_IPBox = sf::RectangleShape(sf::Vector2f(400, 50));
+	m_IPBox.setFillColor(sf::Color(200, 200, 200));
+	m_IPBox.setPosition(850, 500);
+
+	// Box outline
+	m_BoxOutline = sf::RectangleShape(sf::Vector2f(400, 50));
+	m_BoxOutline.setFillColor(sf::Color::White);
 
 	// Login Button
-	this->m_loginButton = sf::RectangleShape(sf::Vector2f(200, 50));
-	this->m_loginButton.setFillColor(sf::Color::Blue);
-	this->m_loginButton.setPosition((1920 - 200) / 2, 750);
+	m_loginButton = sf::RectangleShape(sf::Vector2f(200, 50));
+	m_loginButton.setFillColor(sf::Color::Blue);
+	m_loginButton.setPosition((1920 - 200) / 2, 750);
 
 	// Login Button Text
-	this->m_loginButtonText = sf::Text("Login", m_font, 24);
-	this->m_loginButtonText.setFillColor(sf::Color::White);
-	this->m_loginButtonText.setPosition(
-		this->m_loginButton.getPosition().x + (this->m_loginButton.getSize().x - this->m_loginButtonText.getLocalBounds().width) / 2,
-		this->m_loginButton.getPosition().y + (this->m_loginButton.getSize().y - this->m_loginButtonText.getLocalBounds().height) / 2 - 5
+	m_loginButtonText = sf::Text("Login", m_font, 24);
+	m_loginButtonText.setFillColor(sf::Color::White);
+	m_loginButtonText.setPosition(
+		m_loginButton.getPosition().x + (m_loginButton.getSize().x - m_loginButtonText.getLocalBounds().width) / 2,
+		m_loginButton.getPosition().y + (m_loginButton.getSize().y - m_loginButtonText.getLocalBounds().height) / 2 - 5
 	);
 
 	// Create color boxes
@@ -93,71 +97,73 @@ bool Login::initWindow()
 
 Login::Login()
 {
-	this->initVariables();
-	this->initWindow();
+	initVariables();
+	initWindow();
 }
 
 Login::~Login()
 {
-	delete this->m_window;
+	delete m_window;
 }
 
 const bool Login::running() const
 {
-	return this->m_window->isOpen();
+	return m_window->isOpen();
 }
 
 bool Login::pollEvents()
 {
-	while (this->m_window->pollEvent(this->m_ev)) {
-		switch (this->m_ev.type) {
+	while (m_window->pollEvent(m_ev)) {
+		switch (m_ev.type) {
 		// Case close window
 		case sf::Event::Closed:
-			this->m_window->close();
+			m_window->close();
 			break;
 
 		// Case left click
 		case sf::Event::MouseButtonPressed:
-			this->m_mousePressedPos = INVALID;
-			if (this->m_ev.mouseButton.button == sf::Mouse::Left) {
-				sf::Vector2i mousePosXY = sf::Mouse::getPosition(*this->m_window);
-				if (this->m_loginButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
-					this->m_mousePressedPos = LOGIN_BUTTON;
+			m_mousePressedPos = INVALID;
+			if (m_ev.mouseButton.button == sf::Mouse::Left) {
+				sf::Vector2i mousePosXY = sf::Mouse::getPosition(*m_window);
+				if (m_loginButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
+					m_mousePressedPos = LOGIN_BUTTON;
 				}
-				else if (this->m_usernameBox.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
-					this->m_mousePressedPos = USERNAME_BOX;
+				else if (m_usernameBox.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
+					m_mousePressedPos = USERNAME_BOX;
+					m_BoxOutline.setPosition(m_usernameBox.getPosition());
 				}
-				else if (this->m_IPBox.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
-					this->m_mousePressedPos = IP_BOX;
+				else if (m_IPBox.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
+					m_mousePressedPos = IP_BOX;
+					m_BoxOutline.setPosition(m_IPBox.getPosition());
 				}
 				else {
-					for (size_t i = 0; i < m_colorOptions.size(); i++) {
-						if (m_colorOptions[i].getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
-							// Store selected color and outline
-							m_selectedColor = m_colorOptions[i].getFillColor();
-							m_selectedColorOutline.setPosition(m_colorOptions[i].getPosition());
-						}
-					}
+					//for (size_t i = 0; i < m_colorOptions.size(); i++) {
+					//	if (m_colorOptions[i].getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
+					//		// Store selected color and outline
+					//		m_selectedColor = m_colorOptions[i].getFillColor();
+					//		m_selectedColorOutline.setPosition(m_colorOptions[i].getPosition());
+					//	}
+					//}
 				}
 			}
 			break;
 		
 		// Case enter login info
 		case sf::Event::TextEntered:
-			if (this->m_mousePressedPos == USERNAME_BOX) {
-				if (this->m_ev.text.unicode == '\b' && !m_usernameText.empty()) { // Backspace
+			if (m_mousePressedPos == USERNAME_BOX) {
+				if (m_ev.text.unicode == '\b' && !m_usernameText.empty()) { // Backspace
 					m_usernameText.pop_back();
 				}
-				else if (this->m_ev.text.unicode >= 32 && this->m_ev.text.unicode <= 126) { // Printable characters
-					m_usernameText += static_cast<char>(this->m_ev.text.unicode);
+				else if (m_ev.text.unicode >= 32 && m_ev.text.unicode <= 126) { // Printable characters
+					m_usernameText += static_cast<char>(m_ev.text.unicode);
 				}
 			}
-			else if (this->m_mousePressedPos == IP_BOX) {
-				if (this->m_ev.text.unicode == '\b' && !m_IPText.empty()) { // Backspace
+			else if (m_mousePressedPos == IP_BOX) {
+				if (m_ev.text.unicode == '\b' && !m_IPText.empty()) { // Backspace
 					m_IPText.pop_back();
 				}
-				else if (this->m_ev.text.unicode >= 32 && this->m_ev.text.unicode <= 126) { // Printable characters
-					m_IPText += static_cast<char>(this->m_ev.text.unicode);
+				else if (m_ev.text.unicode >= 32 && m_ev.text.unicode <= 126) { // Printable characters
+					m_IPText += static_cast<char>(m_ev.text.unicode);
 				}
 			}
 			break;
@@ -172,24 +178,24 @@ bool Login::pollEvents()
 
 bool Login::update()
 {
-	this->pollEvents();
+	pollEvents();
 
 	// Username text display
-	this->m_usernameDisplay = sf::Text(this->m_usernameText, m_font, 24);
-	this->m_usernameDisplay.setFillColor(sf::Color::Black);
-	this->m_usernameDisplay.setPosition(m_usernameBox.getPosition().x + 10, m_usernameBox.getPosition().y + 10);
+	m_usernameDisplay = sf::Text(m_usernameText, m_font, 24);
+	m_usernameDisplay.setFillColor(sf::Color::Black);
+	m_usernameDisplay.setPosition(m_usernameBox.getPosition().x + 10, m_usernameBox.getPosition().y + 10);
 
 	// IP Address display
-	this->m_IPDisplay = sf::Text(m_IPText, m_font, 24);
-	this->m_IPDisplay.setFillColor(sf::Color::Black);
-	this->m_IPDisplay.setPosition(m_IPBox.getPosition().x + 10, m_IPBox.getPosition().y + 10);
+	m_IPDisplay = sf::Text(m_IPText, m_font, 24);
+	m_IPDisplay.setFillColor(sf::Color::Black);
+	m_IPDisplay.setPosition(m_IPBox.getPosition().x + 10, m_IPBox.getPosition().y + 10);
 
-	if (this->m_mousePressedPos == LOGIN_BUTTON) {
+	if (m_mousePressedPos == LOGIN_BUTTON) {
 		m_mousePressedPos = INVALID;
 		// Send infomation to server
 		std::cout << "Login infomation sending to server...\n";
-		std::cout << "Username: " << this->m_usernameText << "\nIP Address: " << this->m_IPText << "\n";
-		std::cout << "Selected color: " << m_colorMap[m_selectedColor] << "\n";
+		std::cout << "Username: " << m_usernameText << "\nIP Address: " << m_IPText << "\n";
+		//std::cout << "Selected color: " << m_colorMap[m_selectedColor] << "\n";
 	}
 	return true;
 }
@@ -197,31 +203,35 @@ bool Login::update()
 bool Login::render()
 {
 	// Clear screen to black screen
-	this->m_window->clear();
+	m_window->clear();
 
 	// Draw login screen
-	this->m_window->draw(m_title);
-	this->m_window->draw(m_usernameBox);
-	this->m_window->draw(m_usernameLabel);
+	m_window->draw(m_title);
+	m_window->draw(m_usernameBox);
+	m_window->draw(m_usernameLabel);
 
-	this->m_window->draw(m_IPBox);
-	this->m_window->draw(m_IPLabel);
+	m_window->draw(m_IPBox);
+	m_window->draw(m_IPLabel);
 
-	this->m_window->draw(m_usernameDisplay);
-	this->m_window->draw(m_IPDisplay);
-
-	for (const auto& colorBox : m_colorOptions) {
-		this->m_window->draw(colorBox);
+	/*for (const auto& colorBox : m_colorOptions) {
+		m_window->draw(colorBox);
 	}
-	this->m_window->draw(m_selectedColorOutline);
+	m_window->draw(m_selectedColorOutline);*/
 
-	this->m_window->draw(m_loginButton);
-	this->m_window->draw(m_loginButtonText);
+	if (m_mousePressedPos == USERNAME_BOX || m_mousePressedPos == IP_BOX) {
+		m_window->draw(m_BoxOutline);
+	}
+
+	m_window->draw(m_usernameDisplay);
+	m_window->draw(m_IPDisplay);
+
+	m_window->draw(m_loginButton);
+	m_window->draw(m_loginButtonText);
 
 	
 
 	// Display
-	this->m_window->display();
+	m_window->display();
 	
 	return true;
 }

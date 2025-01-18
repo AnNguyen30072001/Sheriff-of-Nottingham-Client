@@ -37,6 +37,7 @@ private:
 	sf::Text m_IPLabel;
 	sf::RectangleShape m_usernameBox;
 	sf::RectangleShape m_IPBox;
+	sf::RectangleShape m_BoxOutline;
 	sf::Text m_usernameDisplay;
 	sf::Text m_IPDisplay;
 	sf::RectangleShape m_loginButton;

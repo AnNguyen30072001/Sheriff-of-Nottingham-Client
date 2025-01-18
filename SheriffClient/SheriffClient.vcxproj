@@ -134,6 +134,7 @@
     <ClCompile Include="Login.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Network.cpp" />
+    <ClCompile Include="Player.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ColorMap.h" />
@@ -141,6 +142,7 @@
     <ClInclude Include="Lobby.h" />
     <ClInclude Include="Login.h" />
     <ClInclude Include="Network.h" />
+    <ClInclude Include="Player.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
