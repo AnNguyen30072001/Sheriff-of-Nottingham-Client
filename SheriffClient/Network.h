@@ -48,7 +48,7 @@ public:
 	void disconnect();
 
 	bool sendMessage(const std::string& message);
-	std::string receiveMessage();
+	bool receiveMessage(std::string& outMessage);
 
 	void startListening();
 	void stopListening();
