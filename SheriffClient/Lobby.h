@@ -3,9 +3,10 @@
 
 #include <SFML/Graphics.hpp>
 #include "Player.h"
+#include "Network.h"
 
 #pragma once
-class Lobby
+class Lobby : public Observer
 {
 private:
 	sf::RenderWindow* m_window;
@@ -35,6 +36,8 @@ public:
 	bool pollEvents();
 	bool update();
 	bool render();
+
+	void onMessageReceived(const std::string& msg);
 };
 
 #endif // !LOBBY__

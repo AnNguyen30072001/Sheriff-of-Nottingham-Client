@@ -4,9 +4,10 @@
 #include <iostream>
 #include <unordered_map>
 #include "ColorMap.h"
+#include "Network.h"
 #include <SFML/Graphics.hpp>
 
-class Login
+class Login : public Observer
 {
 public:
 	enum MousePressedPosition {
@@ -25,6 +26,9 @@ public:
 	bool pollEvents();
 	bool update();
 	bool render();
+
+	void onMessageReceived(const std::string& msg);
+	void sendMessageToServer(const std::string& message);
 
 private:
 	sf::RenderWindow* m_window;

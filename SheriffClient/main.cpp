@@ -13,49 +13,46 @@
 
 int main() 
 {
-	Network network("127.0.0.1", 8080);
+	Network& network = Network::getInstance("127.0.0.1", 8080);
 
 	if (!network.connect()) {
 		std::cerr << "Failed to connect to the server." << std::endl;
 		return -1;
 	}
+	network.startListening();
+	network.startProcessingMessageQueue();
 
 	std::cout << "Connected to the server." << std::endl;
-	network.startListening();
 
 	Login login;
+	network.addObserver(&login);
 
 	while (login.running()) {
 		// Update
 		login.update();
-
-		// Periodically check for messages
-		std::string message;
-		while (network.receiveMessage(message)) {
-			std::cout << "Server: " << message << std::endl;
-			// Process the message (update UI, game state, etc.)	
-		}
 
 		// Render
 		login.render();
 
 	}
 
-	//Lobby lobby;
-	//lobby.addToPlayerList("An", sf::Color::Red, true);
-	//lobby.addToPlayerList("Hoang", sf::Color::Blue, false);
-	//lobby.addToPlayerList("Tuan", sf::Color::Cyan, false);
-	//lobby.addToPlayerList("Minh", sf::Color::Magenta, false);
-	//lobby.addToPlayerList("Tu", sf::Color::White, false);
-	//lobby.addToPlayerList("Thanh", sf::Color::Yellow, false);
+	Lobby lobby;
+	network.addObserver(&lobby);
 
-	////lobby.removeFromPlayerList("Tuan");
+	lobby.addToPlayerList("An", sf::Color::Red, true);
+	lobby.addToPlayerList("Hoang", sf::Color::Blue, false);
+	lobby.addToPlayerList("Tuan", sf::Color::Cyan, false);
+	lobby.addToPlayerList("Minh", sf::Color::Magenta, false);
+	lobby.addToPlayerList("Tu", sf::Color::White, false);
+	lobby.addToPlayerList("Thanh", sf::Color::Yellow, false);
 
-	//while (lobby.running()) {
-	//	lobby.update();
+	//lobby.removeFromPlayerList("Tuan");
 
-	//	lobby.render();
-	//}
+	while (lobby.running()) {
+		lobby.update();
+
+		lobby.render();
+	}
 
 	// End application
 	return 0;

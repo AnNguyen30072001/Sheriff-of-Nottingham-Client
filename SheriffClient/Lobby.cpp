@@ -87,11 +87,14 @@ bool Lobby::handleMouseClick(sf::Vector2f mousePosXY)
 	for (auto& player : m_playerList) {
 		if (player->isUserPlayer()) {
 			if (player->getReadyButton().getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
-				// Need to send status of user to Server 
 				bool current_status = player->isPlayerReady();
 				player->setPlayerReady(!current_status);
 				player->setReadyButtonAppearance(player->isPlayerReady() ?
 					sf::Color::Green : sf::Color(128, 128, 128));
+
+				// Need to send status of user to Server 
+				std::string message = player->getPlayerName() + ": " + (player->isPlayerReady() ? "Ready" : "Not Ready");
+				Network::sendMessage(message);
 			}
 		}
 	}
@@ -145,4 +148,9 @@ bool Lobby::render()
 	m_window->display();
 
 	return true;
+}
+
+void Lobby::onMessageReceived(const std::string & msg)
+{
+	std::cout << "Lobby receive from Server: " << msg << std::endl;
 }

@@ -210,6 +210,8 @@ bool Login::update()
 		// Send infomation to server
 		std::cout << "Login infomation sending to server...\n";
 		std::cout << "Username: " << m_usernameText << "\nIP Address: " << m_IPText << "\n";
+		std::string message = "Username:" + m_usernameText + ".IP:" + m_IPText;
+		sendMessageToServer(message);
 		//std::cout << "Selected color: " << m_colorMap[m_selectedColor] << "\n";
 	}
 	return true;
@@ -250,4 +252,14 @@ bool Login::render()
 	m_window->display();
 	
 	return true;
+}
+
+void Login::onMessageReceived(const std::string & msg)
+{
+	std::cout << "Login received from Server: " << msg << std::endl;
+}
+
+void Login::sendMessageToServer(const std::string & message)
+{
+	Network::sendMessage(message);
 }

@@ -47,7 +47,7 @@ bool Player::initUserPlayer(std::string name, sf::Color playerColor)
 	m_nameText.setFillColor(sf::Color::White);
 	m_nameText.setOutlineColor(sf::Color::Black);
 	m_nameText.setOutlineThickness(2.f);
-	m_nameText.setString(name + " (You)");
+	m_nameText.setString(name);
 
 	m_readyButton.setSize(sf::Vector2f(120.f, 50.f));
 	m_readyButton.setFillColor(sf::Color(128, 128, 128)); // Gray by default
