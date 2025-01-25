@@ -28,6 +28,7 @@ public:
 	const bool running() const;
 	
 	// Function
+	std::vector<Player*> getPlayerList() const;
 	bool addToPlayerList(std::string name, sf::Color playerColor, bool isUserPlayer);
 	bool removeFromPlayerList(std::string name);
 	bool setupPlayerUI();

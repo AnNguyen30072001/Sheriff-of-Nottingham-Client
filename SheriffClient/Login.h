@@ -23,6 +23,9 @@ public:
 	const bool running() const;
 
 	// Functions 
+	std::string getUsername() const;
+	//std::string getIP() const;
+
 	bool pollEvents();
 	bool update();
 	bool render();

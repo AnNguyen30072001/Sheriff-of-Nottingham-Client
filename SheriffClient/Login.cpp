@@ -1,4 +1,5 @@
 #include "login.h"
+#include "GameState.h"
 
 bool Login::initVariables()
 {
@@ -125,6 +126,11 @@ const bool Login::running() const
 	return m_window->isOpen();
 }
 
+std::string Login::getUsername() const
+{
+	return m_usernameText;
+}
+
 bool Login::pollEvents()
 {
 	while (m_window->pollEvent(m_ev)) {
@@ -212,6 +218,7 @@ bool Login::update()
 		std::cout << "Username: " << m_usernameText << "\nIP Address: " << m_IPText << "\n";
 		std::string message = "Username:" + m_usernameText + ".IP:" + m_IPText;
 		sendMessageToServer(message);
+		g_gameState = LOBBY_VIEW;
 		//std::cout << "Selected color: " << m_colorMap[m_selectedColor] << "\n";
 	}
 	return true;

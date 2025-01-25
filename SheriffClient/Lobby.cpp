@@ -1,5 +1,6 @@
 #include <iostream>
 #include "lobby.h"
+#include "GameState.h"
 
 bool Lobby::initVariable()
 {
@@ -37,14 +38,16 @@ Lobby::Lobby()
 Lobby::~Lobby()
 {
 	delete this->m_window;
-	for (int i = 0; i < m_playerList.size(); i++) {
-		delete m_playerList[i];
-	}
 }
 
 const bool Lobby::running() const
 {
 	return m_window->isOpen();
+}
+
+std::vector<Player*> Lobby::getPlayerList() const
+{
+	return m_playerList;
 }
 
 bool Lobby::addToPlayerList(std::string name, sf::Color playerColor, bool isUserPlayer)
@@ -95,6 +98,7 @@ bool Lobby::handleMouseClick(sf::Vector2f mousePosXY)
 				// Need to send status of user to Server 
 				std::string message = player->getPlayerName() + ": " + (player->isPlayerReady() ? "Ready" : "Not Ready");
 				Network::sendMessage(message);
+				g_gameState = GAME_VIEW;
 			}
 		}
 	}

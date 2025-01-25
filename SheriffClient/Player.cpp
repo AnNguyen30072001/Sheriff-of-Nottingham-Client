@@ -7,6 +7,8 @@ Player::Player(std::string name, sf::Color playerColor, bool isUserPlayer)
 	setPlayerColor(playerColor);
 	m_isUserPlayer = isUserPlayer;
 	m_isReady = false;
+	m_isSheriff = false;
+	m_isInTurn = false;
 
 	initFontAndTexture();
 	if (isUserPlayer) {
@@ -26,6 +28,14 @@ bool Player::initFontAndTexture()
 		return false;
 	}
 	if (!m_avatarTexture.loadFromFile("Images/PlayerAvatar.png")) {
+		std::cerr << "Error loading texture!\n";
+		return false;
+	}
+	if (!m_sheriffBadgeTexture.loadFromFile("Images/SheriffBadge.png")) {
+		std::cerr << "Error loading texture!\n";
+		return false;
+	}
+	if (!m_infoTabIconTexture.loadFromFile("Images/InfoTab.png")) {
 		std::cerr << "Error loading texture!\n";
 		return false;
 	}
@@ -61,12 +71,31 @@ bool Player::initUserPlayer(std::string name, sf::Color playerColor)
 	m_readyText.setOutlineThickness(2.f);
 	m_readyText.setString("Ready");
 
+	m_infoTabIcon.setSize(sf::Vector2f(100, 100));
+	m_infoTabIcon.setFillColor(sf::Color::White);
+	m_infoTabIcon.setTexture(&m_infoTabIconTexture);
+
+	m_sheriffBadge.setSize(sf::Vector2f(80, 80));
+	m_sheriffBadge.setFillColor(sf::Color::White);
+	m_sheriffBadge.setTexture(&m_sheriffBadgeTexture);
+
+	m_turnIndicator.setFont(m_font);
+	m_turnIndicator.setCharacterSize(24);
+	m_turnIndicator.setFillColor(sf::Color::Green);
+	m_turnIndicator.setOutlineColor(sf::Color::Black);
+	m_turnIndicator.setOutlineThickness(2.f);
+	m_turnIndicator.setString("In Turn");
 
 	// Positioning
-	m_avatar.setPosition(890.f, 800.f);
-	m_nameText.setPosition(900.f, 765.f);
-	m_readyButton.setPosition(1060.f, 810.f);
-	m_readyText.setPosition(1095.f, 824.f);
+	m_avatar.setPosition(890.f, 870.f);
+	m_nameText.setPosition(900.f, 835.f);
+
+	m_readyButton.setPosition(1060.f, 880.f);
+	m_readyText.setPosition(1095.f, 894.f);
+
+	m_infoTabIcon.setPosition(740.f, 890.f);
+	m_sheriffBadge.setPosition(1080.f, 900.f);
+	m_turnIndicator.setPosition(922.f, 1025.f);
 
 	return true;
 }
@@ -97,16 +126,34 @@ bool Player::initPlayer(float posX, float posY)
 	m_readyText.setOutlineThickness(2.f);
 	m_readyText.setString("Ready");
 
-	m_isReady = false;
+	m_infoTabIcon.setSize(sf::Vector2f(75, 75));
+	m_infoTabIcon.setFillColor(sf::Color::White);
+	m_infoTabIcon.setTexture(&m_infoTabIconTexture);
+
+	m_sheriffBadge.setSize(sf::Vector2f(60, 60));
+	m_sheriffBadge.setFillColor(sf::Color::White);
+	m_sheriffBadge.setTexture(&m_sheriffBadgeTexture);
+
+	m_turnIndicator.setFont(m_font);
+	m_turnIndicator.setCharacterSize(24);
+	m_turnIndicator.setFillColor(sf::Color::Green);
+	m_turnIndicator.setOutlineColor(sf::Color::Black);
+	m_turnIndicator.setOutlineThickness(2.f);
+	m_turnIndicator.setString("In Turn");
 
 	// Positioning
 	m_avatar.setPosition(posX, posY);
 	m_nameText.setPosition(posX + 5, posY - 30.f);
+
 	m_readyButton.setPosition(posX + 25.f, posY + 120.f);
 	m_readyText.setPosition(
 		m_readyButton.getPosition().x + 10.f,
 		m_readyButton.getPosition().y + 6.f
 	);
+
+	m_infoTabIcon.setPosition(posX - 110.f, posY + 12.f);
+	m_sheriffBadge.setPosition(posX + 135.f, posY + 20.f);
+	m_turnIndicator.setPosition(posX + 12.f, posY + 115.f);
 
 	return true;
 }
@@ -143,6 +190,21 @@ sf::Text Player::getNameText() const
 	return m_nameText;
 }
 
+sf::RectangleShape Player::getInfoTabIcon() const
+{
+	return m_infoTabIcon;
+}
+
+sf::RectangleShape Player::getSheriffBadge() const
+{
+	return m_sheriffBadge;
+}
+
+sf::Text Player::getTurnIndicator() const
+{
+	return m_turnIndicator;
+}
+
 bool Player::setReadyButtonAppearance(sf::Color color)
 {
 	m_readyButton.setFillColor(color);
@@ -159,7 +221,7 @@ sf::Text Player::getReadyText() const
 	return m_readyText;
 }
 
-bool Player::setPlayerReady(bool status)
+bool Player::setPlayerReady(const bool status)
 {
 	m_isReady = status;
 	return true;
@@ -173,4 +235,28 @@ bool Player::isPlayerReady()
 bool Player::isUserPlayer()
 {
 	return m_isUserPlayer;
+}
+
+bool Player::setSheriffStatus(const bool status)
+{
+	m_isSheriff = status;
+
+	return true;
+}
+
+bool Player::isSheriff()
+{
+	return m_isSheriff;
+}
+
+bool Player::setTurn(const bool status)
+{
+	m_isInTurn = status;
+
+	return true;
+}
+
+bool Player::isInTurn()
+{
+	return m_isInTurn;
 }
