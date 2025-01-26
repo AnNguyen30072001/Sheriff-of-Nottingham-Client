@@ -7,6 +7,7 @@
 #include <SFML/Network.hpp>
 
 #include "GameState.h"
+#include "Deck.h"
 #include "Game.h"
 #include "Lobby.h"
 #include "Login.h"
@@ -16,14 +17,14 @@ gameState g_gameState;
 
 int main() 
 {
-	Network& network = Network::getInstance("127.0.0.1", 8080);
+	//Network& network = Network::getInstance("127.0.0.1", 8080);
 
-	if (!network.connect()) {
+	if (!Network::getInstance().connect()) {
 		std::cerr << "Failed to connect to the server." << std::endl;
 		return -1;
 	}
-	network.startListening();
-	network.startProcessingMessageQueue();
+	Network::getInstance().startListening();
+	Network::getInstance().startProcessingMessageQueue();
 
 	std::cout << "Connected to the server." << std::endl;
 	g_gameState = LOGIN_VIEW;
@@ -38,10 +39,10 @@ int main()
 		case LOGIN_VIEW:
 			if (!login) {
 				delete game;
-				network.removeObserver(game);
+				Network::getInstance().removeObserver(game);
 
 				login = new Login();
-				network.addObserver(login);
+				Network::getInstance().addObserver(login);
 			}
 			login->update();
 			login->render();
@@ -52,9 +53,11 @@ int main()
 			if (!lobby) {
 				std::string username = login->getUsername();
 				delete login;
-				network.removeObserver(login);
+				Network::getInstance().removeObserver(login);
 				lobby = new Lobby();
-				network.addObserver(lobby);
+				Network::getInstance().addObserver(lobby);
+
+				// For testing only
 				lobby->addToPlayerList(username, sf::Color::Red, true);
 				lobby->addToPlayerList("Hoang", sf::Color::Blue, false);
 				lobby->addToPlayerList("Tuan", sf::Color::Cyan, false);
@@ -70,10 +73,19 @@ int main()
 		case GAME_VIEW:
 			if (!game) {
 				std::vector<Player*> playerList = lobby->getPlayerList();
+				playerList[0]->setTurn(true);
 				delete lobby;
-				network.removeObserver(lobby);
+				Network::getInstance().removeObserver(lobby);
 				game = new Game(playerList);
-				network.addObserver(game);
+				Network::getInstance().addObserver(game);
+
+				// For testing only
+				game->addToUserHand(Card::APPLE);
+				game->addToUserHand(Card::CROSSBOW);
+				game->addToUserHand(Card::CHICKEN);
+				game->addToUserHand(Card::BREAD);
+				game->addToUserHand(Card::APPLE);
+				game->addToUserHand(Card::APPLE);
 			}
 			game->update();
 			game->render();

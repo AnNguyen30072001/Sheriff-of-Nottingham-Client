@@ -3,6 +3,8 @@
 
 #include <SFML/Graphics.hpp>
 #include "Player.h"
+#include "Card.h"
+#include "Deck.h"
 #include "Network.h"
 
 #pragma once
@@ -12,14 +14,22 @@ private:
 	sf::RenderWindow* m_window;
 	sf::VideoMode m_videoMode;
 	sf::Event m_ev;
+	sf::Font m_font;
 
 	sf::RectangleShape m_background;
 	sf::Texture m_backgroundTexture;
-	sf::RectangleShape m_mainDeck;
-	sf::Texture m_mainDeckTexture;
+	
+	sf::RectangleShape m_ButtonLeft;
+	sf::RectangleShape m_ButtonRight;
+	sf::Text m_ButtonLeftText;
+	sf::Text m_ButtonRightText;
 
+	std::vector<Card*> m_userHand;
+	//std::vector<Card*> m_selectedCards;
 	std::vector<Player*> m_playerList;
+	Deck* deck;
 
+	bool m_anyCardSelected;
 
 	void initVariables(std::vector<Player*> playerList);
 	void initWindow();
@@ -32,15 +42,18 @@ public:
 	const bool running() const;
 
 	// Function
+	bool addToUserHand(Card::CardType card);
+	bool removeFromUserHand(Card::CardType card);
+
 	bool handleMouseClick(sf::Vector2f mousePosXY);
 	bool pollEvents();
 	bool update();
 	bool render();
 
 	bool setupPlayerUI();
+	bool updateUserHandUI();
 
-
-	void onMessageReceived(const std::string& msg);
+	void onMessageReceived(const nlohmann::json& jsonMessage);
 };
 
 #endif // !GAME__

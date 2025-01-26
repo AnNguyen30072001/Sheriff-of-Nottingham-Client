@@ -154,7 +154,7 @@ bool Lobby::render()
 	return true;
 }
 
-void Lobby::onMessageReceived(const std::string & msg)
+void Lobby::onMessageReceived(const nlohmann::json& jsonMessage)
 {
-	std::cout << "Lobby receive from Server: " << msg << std::endl;
+	std::cout << "Lobby receive from Server: " << jsonMessage << std::endl;
 }

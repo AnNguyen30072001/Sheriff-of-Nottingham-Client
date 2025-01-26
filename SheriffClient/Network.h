@@ -11,11 +11,13 @@
 #include <optional>
 
 #include <SFML/Network.hpp>
+#include "json.hpp"
+using json = nlohmann::json;
 
 // Observer Interface
 class Observer {
 public:
-	virtual void onMessageReceived(const std::string& msg) = 0;
+	virtual void onMessageReceived(const nlohmann::json& jsonMessage) = 0;
 	virtual ~Observer() = default;
 };
 

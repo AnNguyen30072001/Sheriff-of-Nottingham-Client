@@ -30,7 +30,7 @@ public:
 	bool update();
 	bool render();
 
-	void onMessageReceived(const std::string& msg);
+	void onMessageReceived(const nlohmann::json& jsonMessage);
 	void sendMessageToServer(const std::string& message);
 
 private:
@@ -41,23 +41,20 @@ private:
 	sf::Texture m_backgroundTexture;
 
 	sf::Font m_font;
-	sf::Text m_title;
 	sf::Text m_usernameLabel;
-	sf::Text m_IPLabel;
+	//sf::Text m_IPLabel;
 	sf::RectangleShape m_usernameBox;
-	sf::RectangleShape m_IPBox;
+	//sf::RectangleShape m_IPBox;
 	sf::RectangleShape m_BoxOutline;
 	sf::Text m_usernameDisplay;
-	sf::Text m_IPDisplay;
+	//sf::Text m_IPDisplay;
 	sf::RectangleShape m_loginButton;
 	sf::Text m_loginButtonText;
 	std::string m_usernameText;
-	std::string m_IPText;
-	std::vector<sf::RectangleShape> m_colorOptions; // Predefined color options
-	sf::RectangleShape m_selectedColorOutline;     // Highlight for selected color
-	sf::Color m_selectedColor;
-	/*std::vector<sf::Color> m_availableColor;
-	std::unordered_map<sf::Color, std::string, ColorHash, ColorEqual> m_colorMap;*/
+	//std::string m_IPText;
+	//std::vector<sf::RectangleShape> m_colorOptions; // Predefined color options
+	//sf::RectangleShape m_selectedColorOutline;     // Highlight for selected color
+	//sf::Color m_selectedColor;
 
 	MousePressedPosition m_mousePressedPos;
 

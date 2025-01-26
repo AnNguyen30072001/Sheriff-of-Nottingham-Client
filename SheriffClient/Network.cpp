@@ -65,9 +65,7 @@ bool Network::send(const std::string & message)
 {
 	if (!m_connected) return false;
 
-	sf::Packet packet;
-	packet << message;
-	return (m_socket.send(packet) == sf::Socket::Done);
+	return (m_socket.send(message.c_str(), message.size()) == sf::Socket::Done);
 }
 
 void Network::startListening()
@@ -115,10 +113,16 @@ void Network::listenToServer()
 
 void Network::notifyObservers(const std::string & message)
 {
-	for (Observer* observer : m_observers) {
-		if (observer) {
-			observer->onMessageReceived(message);
+	try {
+		json parsedJson = json::parse(message);
+		for (Observer* observer : m_observers) {
+			if (observer) {
+				observer->onMessageReceived(parsedJson);
+			}
 		}
+	}
+	catch (const json::exception& e) {
+		std::cerr << "Failed to parse received message: " << e.what() << "\n";
 	}
 }
 

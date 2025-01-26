@@ -38,7 +38,7 @@ public:
 	bool update();
 	bool render();
 
-	void onMessageReceived(const std::string& msg);
+	void onMessageReceived(const nlohmann::json& jsonMessage);
 };
 
 #endif // !LOBBY__
