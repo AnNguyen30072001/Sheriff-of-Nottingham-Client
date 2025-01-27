@@ -48,6 +48,8 @@ public:
 		return getInstance().send(msg);
 	}
 
+	bool respondMessage(const nlohmann::json& jsonMessage);
+
 	bool send(const std::string& message);
 
 	void startListening();

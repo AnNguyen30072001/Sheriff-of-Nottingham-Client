@@ -21,6 +21,11 @@ private:
 	bool initWindow();
 
 public:
+	enum insertPos {
+		TAIL,
+		FRONT
+	};
+
 	Lobby();
 	~Lobby();
 
@@ -29,7 +34,7 @@ public:
 	
 	// Function
 	std::vector<Player*> getPlayerList() const;
-	bool addToPlayerList(std::string name, sf::Color playerColor, bool isUserPlayer);
+	bool addToPlayerList(std::string name, sf::Color playerColor, bool isUserPlayer, Lobby::insertPos insertPos = TAIL);
 	bool removeFromPlayerList(std::string name);
 	bool setupPlayerUI();
 

@@ -16,6 +16,8 @@ bool Login::initWindow()
 	m_window = new sf::RenderWindow(m_videoMode, "Sheriff of Nottingham", sf::Style::Default);
 	m_window->setVerticalSyncEnabled(true);
 
+	m_popup = new Popup(m_window);
+
 	// Create UI for login screen
 	// Font
 	if (!m_font.loadFromFile("arial-font/arial.ttf")) {
@@ -160,7 +162,10 @@ bool Login::pollEvents()
 
 bool Login::update()
 {
-	pollEvents();
+	m_popup->pollEvents();
+	if (!m_popup->isVisible()) {
+		pollEvents();
+	}
 
 	// Username text display
 	m_usernameDisplay = sf::Text(m_usernameText, m_font, 24);
@@ -174,21 +179,37 @@ bool Login::update()
 
 	if (m_mousePressedPos == LOGIN_BUTTON) {
 		m_mousePressedPos = INVALID;
+
 		if (m_usernameText != "") {
-			// Log
-			std::cout << "Login infomation sending to server...\n";
-			std::cout << "Username: " << m_usernameText << "\n";
+			// Attempt connection to server
+			if (!Network::getInstance().connect()) {
+				// Show Popup saying connection failed
+				m_popup->setMessage("Failed to connect to the server.\nYou have Cambodian Wifi or what?");
+				m_popup->show();
 
-			// Prepare JSON package
-			json message;
-			message["MessageType"] = "PLAYER_UNREADY";
-			message["PlayerName"] = m_usernameText;
-			// Encode to string type
-			std::string messageString = message.dump();
-			// Send to server
-			sendMessageToServer(messageString);
+				std::cerr << "Failed to connect to the server." << std::endl;
+			}
 
-			//g_gameState = LOBBY_VIEW;
+			// Connection success. Now request Server for participation.
+			else {
+				Network::getInstance().startListening();
+				Network::getInstance().startProcessingMessageQueue();
+
+				std::cout << "Connected to the server." << std::endl;
+
+				// Log
+				std::cout << "Login infomation sending to server...\n";
+				std::cout << "Username: " << m_usernameText << "\n";
+
+				// Prepare JSON package
+				json message;
+				message["MessageType"] = "PLAYER_JOIN";
+				message["PlayerName"] = m_usernameText;
+				// Encode to string type
+				std::string messageString = message.dump();
+				// Send to server
+				sendMessageToServer(messageString);
+			}
 		}
 	}
 	return true;
@@ -217,6 +238,9 @@ bool Login::render()
 	m_window->draw(m_loginButton);
 	m_window->draw(m_loginButtonText);
 
+	// Render Popup if showed
+	m_popup->render();
+
 	// Display
 	m_window->display();
 	
@@ -225,8 +249,30 @@ bool Login::render()
 
 void Login::onMessageReceived(const nlohmann::json& jsonMessage)
 {
-	// Receive message
+	// Log
 	std::cout << "Login received from Server: " << jsonMessage << std::endl;
+
+	// Handle message type
+	if (jsonMessage["MessageType"] == "GAME_REJECT_PLAYER") {
+		m_popup->setMessage("Server refused to accept. Guess why mf.");
+		m_popup->show();
+
+		std::cout << "Server refused to accept. Guess why mf.\n";
+	}
+
+	// Handle Login success
+	else if (jsonMessage["MessageType"] == "GAME_ACCEPT_PLAYER") {
+		// Move on to Lobby screen
+		m_usernameText = jsonMessage["PlayerName"];
+		g_gameState = LOBBY_VIEW;
+	}
+
+	else {
+		std::cout << "Message received but could not decode meaningful data.\n";
+	}
+
+	// Send a response message
+	Network::getInstance().respondMessage(jsonMessage);
 }
 
 void Login::sendMessageToServer(const std::string & message)

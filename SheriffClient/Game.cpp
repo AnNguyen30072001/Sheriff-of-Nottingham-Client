@@ -36,7 +36,7 @@ void Game::initWindow()
 
 	// Configure the button left
 	m_ButtonLeft.setSize(sf::Vector2f(170.f, 70.f));
-	m_ButtonLeft.setFillColor(sf::Color::Red); // Cornflower Blue
+	m_ButtonLeft.setFillColor(sf::Color::Red);
 	m_ButtonLeft.setOutlineColor(sf::Color(30, 30, 30)); // Dark Gray
 	m_ButtonLeft.setOutlineThickness(3.f);
 	// Configure the text

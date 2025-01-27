@@ -1,6 +1,7 @@
 #include <iostream>
 #include "lobby.h"
 #include "GameState.h"
+#include <Windows.h>
 
 bool Lobby::initVariable()
 {
@@ -50,9 +51,14 @@ std::vector<Player*> Lobby::getPlayerList() const
 	return m_playerList;
 }
 
-bool Lobby::addToPlayerList(std::string name, sf::Color playerColor, bool isUserPlayer)
+bool Lobby::addToPlayerList(std::string name, sf::Color playerColor, bool isUserPlayer, Lobby::insertPos insertPos)
 {
-	m_playerList.push_back(new Player(name, playerColor, isUserPlayer));
+	if (insertPos == TAIL) {
+		m_playerList.push_back(new Player(name, playerColor, isUserPlayer));
+	}
+	else {
+		m_playerList.insert(m_playerList.begin() + 1, new Player(name, playerColor, isUserPlayer));
+	}
 
 	return true;
 }
@@ -77,7 +83,6 @@ bool Lobby::setupPlayerUI()
 		}
 		// Positioning
 		float xOffset = -230.f + (i % 6) * 380.f; // Distribute evenly horizontally
-		//float yOffset = (i < 3) ? 200.f : 400.f; // Top or bottom row
 
 		m_playerList[i]->initPlayer(xOffset, 50.f);
 	}
@@ -90,15 +95,15 @@ bool Lobby::handleMouseClick(sf::Vector2f mousePosXY)
 	for (auto& player : m_playerList) {
 		if (player->isUserPlayer()) {
 			if (player->getReadyButton().getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
-				bool current_status = player->isPlayerReady();
-				player->setPlayerReady(!current_status);
-				player->setReadyButtonAppearance(player->isPlayerReady() ?
-					sf::Color::Green : sf::Color(128, 128, 128));
+				bool prev_status = player->isPlayerReady();
 
 				// Need to send status of user to Server 
-				std::string message = player->getPlayerName() + ": " + (player->isPlayerReady() ? "Ready" : "Not Ready");
-				Network::sendMessage(message);
-				g_gameState = GAME_VIEW;
+				json message;
+				message["MessageType"] = prev_status ? "PLAYER_UNREADY" : "PLAYER_READY";
+				message["PlayerName"] = player->getPlayerName();
+
+				std::string messageString = message.dump();
+				Network::sendMessage(messageString);
 			}
 		}
 	}
@@ -156,5 +161,71 @@ bool Lobby::render()
 
 void Lobby::onMessageReceived(const nlohmann::json& jsonMessage)
 {
+	// Log
 	std::cout << "Lobby receive from Server: " << jsonMessage << std::endl;
+
+	// Handle previously joined players
+	if (jsonMessage["MessageType"] == "GAME_CONNECTED_PLAYER_RECENT") {
+		// Retrieve all player names
+		std::vector<std::string> playerNames;
+
+		// Get all previously joined players' name
+		for (auto it = jsonMessage["PlayersName"].begin(); it != jsonMessage["PlayersName"].end(); it++) {
+			playerNames.push_back(it.value().get<std::string>());
+		}
+
+		// Append to player list
+		for (std::string& playerName : playerNames) {
+			this->addToPlayerList(playerName, sf::Color::Blue, false);
+		}
+	}
+
+	// Handle a newly joined player
+	else if (jsonMessage["MessageType"] == "GAME_CONNECTED_PLAYER_NOW") {
+		std::string playerName = jsonMessage["PlayerName"];
+		this->addToPlayerList(playerName, sf::Color::Blue, false, Lobby::FRONT);
+	}
+
+	// Handle disconnected players
+	else if (jsonMessage["MessageType"] == "GAME_DISCONNECT_PLAYER") {
+		std::string playerName = jsonMessage["PlayerName"];
+		this->removeFromPlayerList(playerName);
+	}
+
+	// Handle player ready status
+	else if (jsonMessage["MessageType"] == "GAME_ACCEPT_READY") {
+		std::string playerName = jsonMessage["PlayerName"];
+		for (auto& player : m_playerList) {
+			if (player->getPlayerName() == playerName) {
+				player->setPlayerReady(true);
+				player->setReadyButtonAppearance(sf::Color::Green);
+				break;
+			}
+		}
+	}
+
+	// Handle player unready status
+	else if (jsonMessage["MessageType"] == "GAME_ACCEPT_UNREADY") {
+		for (auto& player : m_playerList) {
+			if (player->getPlayerName() == jsonMessage["PlayerName"]) {
+				player->setPlayerReady(false);
+				player->setReadyButtonAppearance(sf::Color(128, 128, 128));
+				break;
+			}
+		}
+	}
+
+	// Handle game start
+	else if (jsonMessage["MessageType"] == "GAME_START") {
+		// TO DO: Add UI to indicate game about to start 
+		Sleep(1000);
+		g_gameState = GAME_VIEW;
+	}
+
+	else {
+		std::cout << "Message received but could not decode meaningful data.\n";
+	}
+
+	// Send a response message
+	Network::getInstance().respondMessage(jsonMessage);
 }

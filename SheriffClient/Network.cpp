@@ -6,7 +6,7 @@ Network::Network(const std::string & serverAddress, unsigned short serverPort) :
 	m_listening(false),
 	m_connected(false),
 	m_listenerThread(&Network::listenToServer, this),
-	m_processing(true)
+	m_processing(false)
 {
 
 }
@@ -30,8 +30,10 @@ void Network::removeObserver(Observer * observer)
 
 void Network::startProcessingMessageQueue()
 {
-	m_processing = true;
-	std::thread(&Network::processMessages, this).detach();  // Run consumer loop in a separate thread
+	if (!m_processing) {
+		m_processing = true;
+		std::thread(&Network::processMessages, this).detach();  // Run consumer loop in a separate thread
+	}
 }
 
 void Network::stopProcessingMessageQueue()
@@ -59,6 +61,16 @@ void Network::disconnect()
 		m_connected = false;
 		stopListening();
 	}
+}
+
+bool Network::respondMessage(const nlohmann::json & jsonMessage)
+{
+	json messageResponse;
+	messageResponse["MessageType"] = "PLAYERRESPONSE";
+	messageResponse["MessageResponse"] = jsonMessage;
+	std::string messageResponseString = messageResponse.dump();
+
+	return send(messageResponseString);
 }
 
 bool Network::send(const std::string & message)

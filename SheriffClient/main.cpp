@@ -17,16 +17,15 @@ gameState g_gameState;
 
 int main() 
 {
-	//Network& network = Network::getInstance("127.0.0.1", 8080);
+	//if (!Network::getInstance().connect()) {
+	//	// TO DO: Show Popup saying connection failed
+	//	std::cerr << "Failed to connect to the server." << std::endl;
+	//	return -1;
+	//}
+	//Network::getInstance().startListening();
+	//Network::getInstance().startProcessingMessageQueue();
 
-	if (!Network::getInstance().connect()) {
-		std::cerr << "Failed to connect to the server." << std::endl;
-		return -1;
-	}
-	Network::getInstance().startListening();
-	Network::getInstance().startProcessingMessageQueue();
-
-	std::cout << "Connected to the server." << std::endl;
+	//std::cout << "Connected to the server." << std::endl;
 	g_gameState = LOGIN_VIEW;
 
 	Login* login = nullptr;
@@ -56,14 +55,14 @@ int main()
 				Network::getInstance().removeObserver(login);
 				lobby = new Lobby();
 				Network::getInstance().addObserver(lobby);
+				lobby->addToPlayerList(username, sf::Color::Cyan, true);
 
 				// For testing only
-				lobby->addToPlayerList(username, sf::Color::Red, true);
-				lobby->addToPlayerList("Hoang", sf::Color::Blue, false);
-				lobby->addToPlayerList("Tuan", sf::Color::Cyan, false);
-				lobby->addToPlayerList("Minh", sf::Color::Magenta, false);
-				lobby->addToPlayerList("Tu", sf::Color::White, false);
-				lobby->addToPlayerList("Thanh", sf::Color::Yellow, false);
+				//lobby->addToPlayerList("Hoang", sf::Color::Blue, false);
+				//lobby->addToPlayerList("Tuan", sf::Color::Red, false);
+				//lobby->addToPlayerList("Minh", sf::Color::Magenta, false);
+				//lobby->addToPlayerList("Tu", sf::Color::White, false);
+				//lobby->addToPlayerList("Thanh", sf::Color::Yellow, false, Lobby::FRONT);
 			}
 			lobby->update();
 			lobby->render();
@@ -96,33 +95,6 @@ int main()
 			break;
 		}
 	}
-
-	//while (login->running()) {
-	//	// Update
-	//	login->update();
-
-	//	// Render
-	//	login->render();
-
-	//}
-
-	//Lobby* lobby = new Lobby();
-	//network.addObserver(lobby);
-
-	//lobby->addToPlayerList("An", sf::Color::Red, true);
-	//lobby->addToPlayerList("Hoang", sf::Color::Blue, false);
-	//lobby->addToPlayerList("Tuan", sf::Color::Cyan, false);
-	//lobby->addToPlayerList("Minh", sf::Color::Magenta, false);
-	//lobby->addToPlayerList("Tu", sf::Color::White, false);
-	//lobby->addToPlayerList("Thanh", sf::Color::Yellow, false);
-
-	////lobby.removeFromPlayerList("Tuan");
-
-	//while (lobby->running()) {
-	//	lobby->update();
-
-	//	lobby->render();
-	//}
 
 	// End application
 	return 0;

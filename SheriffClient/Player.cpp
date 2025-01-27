@@ -9,6 +9,7 @@ Player::Player(std::string name, sf::Color playerColor, bool isUserPlayer)
 	m_isReady = false;
 	m_isSheriff = false;
 	m_isInTurn = false;
+	m_readyButton.setFillColor(sf::Color(128, 128, 128)); // Gray by default
 
 	initFontAndTexture();
 	if (isUserPlayer) {
@@ -60,7 +61,6 @@ bool Player::initUserPlayer(std::string name, sf::Color playerColor)
 	m_nameText.setString(name);
 
 	m_readyButton.setSize(sf::Vector2f(120.f, 50.f));
-	m_readyButton.setFillColor(sf::Color(128, 128, 128)); // Gray by default
 	m_readyButton.setOutlineColor(sf::Color::Black);
 	m_readyButton.setOutlineThickness(1.f);
 
@@ -115,7 +115,6 @@ bool Player::initPlayer(float posX, float posY)
 	m_nameText.setOutlineThickness(2.f);
 
 	m_readyButton.setSize(sf::Vector2f(60.f, 30.f));
-	m_readyButton.setFillColor(sf::Color(128, 128, 128)); // Gray by default
 	m_readyButton.setOutlineColor(sf::Color::Black);
 	m_readyButton.setOutlineThickness(1.f);
 

@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include "ColorMap.h"
 #include "Network.h"
+#include "Popup.h"
 #include <SFML/Graphics.hpp>
 
 class Login : public Observer
@@ -37,6 +38,8 @@ private:
 	sf::RenderWindow* m_window;
 	sf::Event m_ev;
 	sf::VideoMode m_videoMode;
+	Popup* m_popup;
+
 	sf::RectangleShape m_background;
 	sf::Texture m_backgroundTexture;
 
