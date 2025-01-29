@@ -5,6 +5,7 @@
 
 bool Lobby::initVariable()
 {
+	m_newPlayerIdx = 1;
 	m_window = nullptr;
 	if (!m_backgroundTexture.loadFromFile("Images/Background.png")) {
 		std::cerr << "Error loading background texture!";
@@ -57,7 +58,8 @@ bool Lobby::addToPlayerList(std::string name, sf::Color playerColor, bool isUser
 		m_playerList.push_back(new Player(name, playerColor, isUserPlayer));
 	}
 	else {
-		m_playerList.insert(m_playerList.begin() + 1, new Player(name, playerColor, isUserPlayer));
+		m_playerList.insert(m_playerList.begin() + m_newPlayerIdx, new Player(name, playerColor, isUserPlayer));
+		m_newPlayerIdx++;
 	}
 
 	return true;

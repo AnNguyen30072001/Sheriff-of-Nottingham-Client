@@ -16,6 +16,7 @@ private:
 	sf::Texture m_backgroundTexture;
 
 	std::vector<Player*> m_playerList;
+	uint8_t m_newPlayerIdx;
 
 	bool initVariable();
 	bool initWindow();

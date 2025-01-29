@@ -5,36 +5,20 @@
 #include "Player.h"
 #include "Card.h"
 #include "Deck.h"
+#include "Tablet.h"
 #include "Network.h"
 
 #pragma once
 class Game : public Observer
 {
-private:
-	sf::RenderWindow* m_window;
-	sf::VideoMode m_videoMode;
-	sf::Event m_ev;
-	sf::Font m_font;
-
-	sf::RectangleShape m_background;
-	sf::Texture m_backgroundTexture;
-	
-	sf::RectangleShape m_ButtonLeft;
-	sf::RectangleShape m_ButtonRight;
-	sf::Text m_ButtonLeftText;
-	sf::Text m_ButtonRightText;
-
-	std::vector<Card*> m_userHand;
-	//std::vector<Card*> m_selectedCards;
-	std::vector<Player*> m_playerList;
-	Deck* deck;
-
-	bool m_anyCardSelected;
-
-	void initVariables(std::vector<Player*> playerList);
-	void initWindow();
-
 public:
+	enum GameEvent {
+		DEFAULT,
+		DISCARD,
+		WITHDRAW,
+		PRESENT
+	};
+
 	Game(std::vector<Player*> playerList);
 	~Game();
 
@@ -54,6 +38,34 @@ public:
 	bool updateUserHandUI();
 
 	void onMessageReceived(const nlohmann::json& jsonMessage);
+
+private:
+	sf::RenderWindow* m_window;
+	sf::VideoMode m_videoMode;
+	sf::Event m_ev;
+	sf::Font m_font;
+	Game::GameEvent m_gameEvent;
+
+	sf::RectangleShape m_background;
+	sf::Texture m_backgroundTexture;
+
+	sf::RectangleShape m_ButtonLeft;
+	sf::RectangleShape m_ButtonRight;
+	sf::Text m_ButtonLeftText;
+	sf::Text m_ButtonRightText;
+
+	std::vector<Card*> m_userHand;
+	//std::vector<Card*> m_selectedCards;
+	std::vector<Player*> m_playerList;
+	Deck* m_deck;
+	Tablet* m_tablet;
+
+	bool m_anyCardSelected;
+
+	void initVariables(std::vector<Player*> playerList);
+	void initWindow();
+
+	void handlePresentEvent();
 };
 
 #endif // !GAME__

@@ -1,6 +1,17 @@
 #include <iostream>
 #include "Card.h"
 
+const std::unordered_map<Card::CardType, std::string> Card::m_cardNameToString = {
+	{APPLE, "Apple"},
+	{CHEESE, "Cheese"},
+	{BREAD, "Bread"},
+	{CHICKEN, "Chicken"},
+	{PEPPER, "Pepper"},
+	{MEAD, "Mead"},
+	{SILK, "Silk"},
+	{CROSSBOW, "Crossbow"}
+};
+
 Card::Card(CardType cardType)
 {
 	m_cardType = cardType;

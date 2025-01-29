@@ -18,16 +18,7 @@ public:
 		PEPPER,
 		SILK
 	};
-	const std::unordered_map<CardType, std::string> m_cardNameToString = {
-	{APPLE, "Apple"},
-	{CHEESE, "Cheese"},
-	{BREAD, "Bread"},
-	{CHICKEN, "Chicken"},
-	{PEPPER, "Pepper"},
-	{MEAD, "Mead"},
-	{SILK, "Silk"},
-	{CROSSBOW, "Crossbow"}
-	};
+	static const std::unordered_map<CardType, std::string> m_cardNameToString;
 
 	Card(CardType cardType);
 	~Card();
@@ -48,6 +39,7 @@ private:
 
 	void initVariables();
 };
+
 
 #endif // !_CARD__
 

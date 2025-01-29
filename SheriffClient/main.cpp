@@ -17,15 +17,6 @@ gameState g_gameState;
 
 int main() 
 {
-	//if (!Network::getInstance().connect()) {
-	//	// TO DO: Show Popup saying connection failed
-	//	std::cerr << "Failed to connect to the server." << std::endl;
-	//	return -1;
-	//}
-	//Network::getInstance().startListening();
-	//Network::getInstance().startProcessingMessageQueue();
-
-	//std::cout << "Connected to the server." << std::endl;
 	g_gameState = LOGIN_VIEW;
 
 	Login* login = nullptr;
@@ -72,13 +63,15 @@ int main()
 		case GAME_VIEW:
 			if (!game) {
 				std::vector<Player*> playerList = lobby->getPlayerList();
-				playerList[0]->setTurn(true);
 				delete lobby;
 				Network::getInstance().removeObserver(lobby);
 				game = new Game(playerList);
 				Network::getInstance().addObserver(game);
 
 				// For testing only
+				playerList[0]->setTurn(true);
+				playerList[0]->setSheriffStatus(false);
+				playerList[0]->setPlayerMoney(100);
 				game->addToUserHand(Card::APPLE);
 				game->addToUserHand(Card::CROSSBOW);
 				game->addToUserHand(Card::CHICKEN);

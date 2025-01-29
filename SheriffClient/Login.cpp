@@ -16,7 +16,7 @@ bool Login::initWindow()
 	m_window = new sf::RenderWindow(m_videoMode, "Sheriff of Nottingham", sf::Style::Default);
 	m_window->setVerticalSyncEnabled(true);
 
-	m_popup = new Popup(m_window);
+	m_popup = new Popup(m_window, 600, 300);
 
 	// Create UI for login screen
 	// Font
@@ -254,10 +254,24 @@ void Login::onMessageReceived(const nlohmann::json& jsonMessage)
 
 	// Handle message type
 	if (jsonMessage["MessageType"] == "GAME_REJECT_PLAYER") {
-		m_popup->setMessage("Server refused to accept. Guess why mf.");
+		// Handle reject reasons
+		std::string reason = jsonMessage["Reason"];
+		if (reason == "FULL") {
+			m_popup->setMessage("Lobby is full.\nGet out nobody needs you.");
+		}
+		else if (reason == "SAME_NAME_EXISTS") {
+			m_popup->setMessage("Someone picked your name.\nPick again you uncreative shit.");
+		}
+		else if (reason == "GAME_STARTED") {
+			m_popup->setMessage("Game started. Too slow niga");
+		}
+		else {
+			m_popup->setMessage("Server refused your request. Guess why mf.");
+		}
+		
 		m_popup->show();
 
-		std::cout << "Server refused to accept. Guess why mf.\n";
+		std::cout << "Server refused to accept.\n";
 	}
 
 	// Handle Login success

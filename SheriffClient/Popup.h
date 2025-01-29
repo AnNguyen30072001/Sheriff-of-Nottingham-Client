@@ -6,13 +6,14 @@
 class Popup
 {
 public:
-	Popup(sf::RenderWindow* parentWindow);
+	Popup(sf::RenderWindow* parentWindow, float width, float height);
 	~Popup();
 
 	bool handleMouseClick(sf::Vector2f mousePosXY);
 	bool pollEvents();
 	bool render();
 
+	sf::Text getPopupText() const;
 	void setMessage(const std::string& message);
 	void show();
 	void hide();
@@ -32,6 +33,8 @@ private:
 	bool m_isVisible;
 
 	void centerText(sf::Text& text, sf::RectangleShape& button);
+	void centerPopupText();
+	void centerButton();
 };
 
 

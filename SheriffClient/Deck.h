@@ -2,13 +2,14 @@
 #define _DECK__
 
 #include <unordered_map>
+#include <stack>
 #include <SFML/Graphics.hpp>
 #include "Card.h"
 
 class Deck
 {
 public:
-	const std::unordered_map<Card::CardType, std::string> m_cardNameToString = {
+	/*const std::unordered_map<Card::CardType, std::string> m_cardNameToString = {
 	{Card::APPLE, "Apple"},
 	{Card::CHEESE, "Cheese"},
 	{Card::BREAD, "Bread"},
@@ -17,7 +18,7 @@ public:
 	{Card::MEAD, "Mead"},
 	{Card::SILK, "Silk"},
 	{Card::CROSSBOW, "Crossbow"}
-	};
+	};*/
 
 	Deck();
 	~Deck();
@@ -30,11 +31,13 @@ public:
 	bool setDiscardDeckRightTexture(Card::CardType card);
 
 private:
-	
-
 	sf::RectangleShape m_mainDeck;
 	sf::RectangleShape m_discardDeckLeft;
 	sf::RectangleShape m_discardDeckRight;
+
+	//std::stack<Card*> m_cardsMainDeck;
+	std::stack<Card*> m_cardsDeckLeft;
+	std::stack<Card*> m_cardsDeckRight;
 
 	sf::Texture m_mainDeckTexture;
 	sf::Texture m_discardDeckLeftTexture;

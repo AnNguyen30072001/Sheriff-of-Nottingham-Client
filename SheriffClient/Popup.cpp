@@ -1,7 +1,7 @@
 #include <iostream>
 #include "Popup.h"
 
-Popup::Popup(sf::RenderWindow* parentWindow)
+Popup::Popup(sf::RenderWindow* parentWindow, float width, float height)
 {
 	m_parentWindow = parentWindow;
 
@@ -11,11 +11,11 @@ Popup::Popup(sf::RenderWindow* parentWindow)
 	}
 
 	// Initialize the popup
-	m_background.setSize(sf::Vector2f(400.f, 200.f));
+	m_background.setSize(sf::Vector2f(width, height));
 	m_background.setFillColor(sf::Color(50, 50, 50, 200)); // Semi-transparent dark gray
 	m_background.setOutlineThickness(3.f);
 	m_background.setOutlineColor(sf::Color::White);
-	m_background.setPosition((parentWindow->getSize().x - 400) / 2.f, (parentWindow->getSize().y - 200) / 2.f);
+	m_background.setPosition((parentWindow->getSize().x - width) / 2.f, (parentWindow->getSize().y - height) / 2.f);
 
 	// Popup text
 	m_popupText.setFont(m_font);
@@ -37,7 +37,6 @@ Popup::Popup(sf::RenderWindow* parentWindow)
 	m_okText.setOutlineColor(sf::Color::Black);
 	m_okText.setOutlineThickness(1.f);
 	m_okText.setString("OK");
-	centerText(m_okText, m_okButton);
 
 	m_isVisible = false; // Initially hidden
 }
@@ -89,14 +88,21 @@ bool Popup::render()
 	return true;
 }
 
+sf::Text Popup::getPopupText() const
+{
+	return m_popupText;
+}
+
 void Popup::setMessage(const std::string& message)
 {
 	m_popupText.setString(message);
+	centerPopupText();
 }
 
 void Popup::show()
 {
 	m_isVisible = true;
+	centerButton();
 }
 
 void Popup::hide()
@@ -114,4 +120,19 @@ void Popup::centerText(sf::Text & text, sf::RectangleShape & button)
 	float x = button.getPosition().x + (button.getSize().x - text.getLocalBounds().width) / 2.f;
 	float y = button.getPosition().y + (button.getSize().y - text.getLocalBounds().height) / 2.f - 5.f;
 	text.setPosition(x, y);
+}
+
+void Popup::centerPopupText()
+{
+	float x = m_background.getPosition().x + (m_background.getSize().x - m_popupText.getLocalBounds().width) / 2.f;
+	float y = m_background.getPosition().y + (m_background.getSize().y - m_popupText.getLocalBounds().height) / 2.f - 30.f;
+	m_popupText.setPosition(x, y);
+}
+
+void Popup::centerButton()
+{
+	float x = m_background.getPosition().x + (m_background.getSize().x - m_okButton.getSize().x) / 2.f;
+	float y = m_background.getPosition().y + m_background.getSize().y - 70.f;
+	m_okButton.setPosition(x, y);
+	centerText(m_okText, m_okButton);
 }

@@ -27,7 +27,7 @@ sf::RectangleShape Deck::getDiscardDeckRight() const
 
 bool Deck::setDiscardDeckLeftTexture(Card::CardType card)
 {
-	std::string texturePath = "Images/" + m_cardNameToString.at(card) + ".png";
+	std::string texturePath = "Images/" + Card::m_cardNameToString.at(card) + ".png";
 	if (!m_discardDeckLeftTexture.loadFromFile(texturePath)) {
 		std::cerr << "Error loading deck texture!" << std::endl;
 		return false;
@@ -39,7 +39,7 @@ bool Deck::setDiscardDeckLeftTexture(Card::CardType card)
 
 bool Deck::setDiscardDeckRightTexture(Card::CardType card)
 {
-	std::string texturePath = "Images/" + m_cardNameToString.at(card) + ".png";
+	std::string texturePath = "Images/" + Card::m_cardNameToString.at(card) + ".png";
 	if (!m_discardDeckRightTexture.loadFromFile(texturePath)) {
 		std::cerr << "Error loading deck texture!" << std::endl;
 		return false;

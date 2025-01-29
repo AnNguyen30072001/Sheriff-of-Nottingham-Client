@@ -2,6 +2,7 @@
 
 void Game::initVariables(std::vector<Player*> playerList)
 {
+	m_gameEvent = Game::DEFAULT;
 	m_anyCardSelected = false;
 	m_window = nullptr;
 	if (!m_backgroundTexture.loadFromFile("Images/Background.png")) {
@@ -14,12 +15,8 @@ void Game::initVariables(std::vector<Player*> playerList)
 	}
 
 	m_playerList = playerList;
-
-	deck = new Deck();
-	deck->setDiscardDeckLeftTexture(Card::APPLE);
-	deck->setDiscardDeckRightTexture(Card::CROSSBOW);
-
-
+	m_deck = nullptr;
+	m_tablet = nullptr;
 }
 
 void Game::initWindow()
@@ -28,6 +25,13 @@ void Game::initWindow()
 	m_videoMode.height = 1080;
 	m_window = new sf::RenderWindow(m_videoMode, "Sheriff of Nottingham", sf::Style::Default);
 	m_window->setVerticalSyncEnabled(true);
+
+	m_deck = new Deck();
+	m_tablet = new Tablet(m_window);
+
+	// For testing only
+	m_deck->setDiscardDeckLeftTexture(Card::APPLE);
+	m_deck->setDiscardDeckRightTexture(Card::CROSSBOW);
 
 	m_background.setPosition(sf::Vector2f(0.f, 0.f));
 	m_background.setFillColor(sf::Color::White);
@@ -71,6 +75,36 @@ void Game::initWindow()
 		m_ButtonRight.getPosition().y + m_ButtonRight.getSize().y / 2);
 }
 
+void Game::handlePresentEvent()
+{
+	// Get infomation
+	std::map<std::string, int> cardCount;
+	for (auto& userCard : m_userHand) {
+		if (userCard->isSelected()) {
+			cardCount[Card::m_cardNameToString.at(userCard->getCardType())]++;
+		}
+	}
+
+	// Prepare JSON message
+	json message;
+	message["MessageType"] = "MERCHANT_GIVE_BAG";
+	message["PlayerName"] = m_playerList[0]->getPlayerName();
+	// Add "Bag" section with card counts
+	for (auto it = cardCount.begin(); it != cardCount.end(); ++it) {
+		message["Bag"][it->first] = it->second;
+	}
+	message["Report"] = Card::m_cardNameToString.at(m_tablet->getPresentedGoods());
+	message["Fee"] = m_tablet->getBribeAmount();
+
+	// Convert message and send
+	std::string messageString = message.dump();
+	Network::sendMessage(messageString);
+
+	// Reset game event
+	m_tablet->resetOptions();
+	m_gameEvent = Game::DEFAULT;
+}
+
 Game::Game(std::vector<Player*> playerList)
 {
 	initVariables(playerList);
@@ -85,6 +119,8 @@ Game::~Game()
 	for (int i = 0; i < m_userHand.size(); i++) {
 		delete m_userHand[i];
 	}
+	delete m_deck;
+	delete m_tablet;
 	delete this->m_window;
 }
 
@@ -126,8 +162,10 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 		}
 
 		if (m_ButtonRight.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
-			// Handle present/pass
-			std::cout << "Present/Pass\n";
+			// Handle present
+			if (!m_playerList[0]->isSheriff()) {
+				m_tablet->showTablet(m_playerList[0]->getPlayerMoney());
+			}
 		}
 	}
 	return true;
@@ -158,9 +196,40 @@ bool Game::pollEvents()
 
 bool Game::update()
 {
-	setupPlayerUI();
-	updateUserHandUI();
-	pollEvents();
+	switch (m_gameEvent)
+	{
+	case Game::DEFAULT:
+		if (m_tablet->isTabletVisible()) {
+			// If tablet is shown, it is interactable
+			m_tablet->update();
+			if (m_tablet->isPresentConfirmed()) {
+				// Player confirm present options. Handle logic and then reset tablet options
+				m_gameEvent = Game::PRESENT;
+			}
+		}
+		else {
+			// Only poll events of ingame window if sub-contents are not shown
+			pollEvents();
+			setupPlayerUI();
+			updateUserHandUI();
+		}
+		break;
+
+	case Game::DISCARD:
+
+		break;
+
+	case Game::WITHDRAW:
+
+		break;
+
+	case Game::PRESENT:
+		handlePresentEvent();
+		break;
+
+	default:
+		break;
+	}
 
 	return true;
 }
@@ -173,16 +242,20 @@ bool Game::render()
 	m_window->draw(m_background);
 
 	// Decks
-	m_window->draw(deck->getMainDeck());
-	m_window->draw(deck->getDiscardDeckLeft());
-	m_window->draw(deck->getDiscardDeckRight());
+	m_window->draw(m_deck->getMainDeck());
+	m_window->draw(m_deck->getDiscardDeckLeft());
+	m_window->draw(m_deck->getDiscardDeckRight());
 
 	for (const auto& player : m_playerList) {
 		m_window->draw(player->getAvatar());
 		m_window->draw(player->getNameText());
 		m_window->draw(player->getInfoTabIcon());
-		m_window->draw(player->getSheriffBadge());
-		m_window->draw(player->getTurnIndicator());
+		if (player->isSheriff()) {
+			m_window->draw(player->getSheriffBadge());
+		}
+		if (player->isInTurn()) {
+			m_window->draw(player->getTurnIndicator());
+		}
 	}
 
 	for (const auto& card : m_userHand) {
@@ -194,6 +267,11 @@ bool Game::render()
 	m_window->draw(m_ButtonLeftText);
 	m_window->draw(m_ButtonRight);
 	m_window->draw(m_ButtonRightText);
+
+	// Render the tablet if shown
+	if (m_tablet->isTabletVisible()) {
+		m_tablet->render();
+	}
 
 	m_window->display();
 
@@ -237,3 +315,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 {
 	std::cout << "Game receive from Server: " << jsonMessage << std::endl;
 }
+
+
+
+

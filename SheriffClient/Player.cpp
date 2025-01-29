@@ -15,6 +15,16 @@ Player::Player(std::string name, sf::Color playerColor, bool isUserPlayer)
 	if (isUserPlayer) {
 		initUserPlayer(name, playerColor);
 	}
+
+	m_money = 0;
+	m_appleCount = 0;
+	m_chickenCount = 0;
+	m_cheeseCount = 0;
+	m_breadCount = 0;
+	m_crossbowCount = 0;
+	m_meadCount = 0;
+	m_pepperCount = 0;
+	m_silkCount = 0;
 }
 
 Player::~Player()
@@ -258,4 +268,94 @@ bool Player::setTurn(const bool status)
 bool Player::isInTurn()
 {
 	return m_isInTurn;
+}
+
+int Player::getPlayerMoney() const
+{
+	return m_money;
+}
+
+void Player::setPlayerMoney(int value)
+{
+	m_money = value;
+}
+
+int Player::getPlayerAppleCount() const
+{
+	return m_appleCount;
+}
+
+void Player::setPlayerAppleCount(int value)
+{
+	m_appleCount = value;
+}
+
+int Player::getPlayerChickenCount() const
+{
+	return m_chickenCount;
+}
+
+void Player::setPlayerChickenCount(int value)
+{
+	m_chickenCount = value;
+}
+
+int Player::getPlayerCheeseCount() const
+{
+	return m_cheeseCount;
+}
+
+void Player::setPlayerCheeseCount(int value)
+{
+	m_cheeseCount = value;
+}
+
+int Player::getPlayerBreadCount() const
+{
+	return m_breadCount;
+}
+
+void Player::setPlayerBreadCount(int value)
+{
+	m_breadCount = value;
+}
+
+int Player::getPlayerCrossbowCount() const
+{
+	return m_crossbowCount;
+}
+
+void Player::setPlayerCrossbowCount(int value)
+{
+	m_crossbowCount = value;
+}
+
+int Player::getPlayerSilkCount() const
+{
+	return m_silkCount;
+}
+
+void Player::setPlayerSilkCount(int value)
+{
+	m_silkCount = value;
+}
+
+int Player::getPlayerMeadCount() const
+{
+	return m_meadCount;
+}
+
+void Player::setPlayerMeadCount(int value)
+{
+	m_meadCount = value;
+}
+
+int Player::getPlayerPepperCount() const
+{
+	return m_pepperCount;
+}
+
+void Player::setPlayerPepperCount(int value)
+{
+	m_pepperCount = value;
 }

@@ -138,6 +138,7 @@
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Popup.cpp" />
+    <ClCompile Include="Tablet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Card.h" />
@@ -150,6 +151,7 @@
     <ClInclude Include="Network.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Popup.h" />
+    <ClInclude Include="Tablet.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
