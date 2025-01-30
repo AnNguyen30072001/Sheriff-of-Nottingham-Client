@@ -23,9 +23,9 @@ public:
 	Deck();
 	~Deck();
 
-	sf::RectangleShape getMainDeck() const;
-	sf::RectangleShape getDiscardDeckLeft() const;
-	sf::RectangleShape getDiscardDeckRight() const;
+	sf::RectangleShape& getMainDeck();
+	sf::RectangleShape& getDiscardDeckLeft();
+	sf::RectangleShape& getDiscardDeckRight();
 
 	bool setDiscardDeckLeftTexture(Card::CardType card);
 	bool setDiscardDeckRightTexture(Card::CardType card);

@@ -1,4 +1,5 @@
 #include "game.h"
+#include <Windows.h>
 
 void Game::initVariables(std::vector<Player*> playerList)
 {
@@ -17,6 +18,7 @@ void Game::initVariables(std::vector<Player*> playerList)
 	m_playerList = playerList;
 	m_deck = nullptr;
 	m_tablet = nullptr;
+	m_timer = nullptr;
 }
 
 void Game::initWindow()
@@ -28,6 +30,7 @@ void Game::initWindow()
 
 	m_deck = new Deck();
 	m_tablet = new Tablet(m_window);
+	m_timer = new Timer(m_window);
 
 	// For testing only
 	m_deck->setDiscardDeckLeftTexture(Card::APPLE);
@@ -135,7 +138,7 @@ const bool Game::running() const
 bool Game::addToUserHand(Card::CardType card)
 {
 	m_userHand.push_back(new Card(card));
-	UserHandUI();
+	//UserHandUI();
 
 	return true;
 }
@@ -145,7 +148,7 @@ bool Game::removeFromUserHand(Card::CardType card)
 	for (int i = 0; i < m_userHand.size(); i++) {
 		if (m_userHand[i]->getCardType() == card) {
 			m_userHand.erase(m_userHand.begin() + i);
-			UserHandUI();
+			//UserHandUI();
 
 			return true;
 		}
@@ -154,6 +157,7 @@ bool Game::removeFromUserHand(Card::CardType card)
 
 bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 {
+	// Select cards
 	m_anyCardSelected = false;
 	for (int i = 0; i < m_userHand.size(); i++) {
 		if (m_userHand[i]->getCard().getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
@@ -169,20 +173,25 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 		}
 	}
 
-	// If any card is selected and it is user's turn, the left and right buttons are interactable
-	if (m_anyCardSelected && m_playerList[0]->isInTurn()) {
+	// If any card is selected and it is user's merchant turn, the Discard and Present buttons are interactable
+	if (m_anyCardSelected && m_playerList[0]->isInTurn() && !m_playerList[0]->isSheriff()) {
 		if (m_ButtonLeft.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
-			// Handle discard/inspect
-			std::cout << "Discard/Inspect\n";
+			// Handle discard
+			std::cout << "Discard\n";
 		}
 
 		if (m_ButtonRight.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
 			// Handle present
-			if (!m_playerList[0]->isSheriff()) {
-				m_tablet->showTablet(m_playerList[0]->getPlayerMoney());
-			}
+			m_tablet->showTablet(m_playerList[0]->getPlayerMoney());
+			m_gameEvent = Game::PRESENT;
 		}
 	}
+
+	// If it is user's sheriff turn, the Inspect and Pass buttons are interactable
+	if (m_playerList[0]->isSheriff() && m_playerList[0]->isInTurn()) {
+
+	}
+
 	return true;
 }
 
@@ -211,26 +220,19 @@ bool Game::pollEvents()
 
 bool Game::update()
 {
+	float deltaTime = m_clock.restart().asSeconds();
 	switch (m_gameEvent)
 	{
 	case Game::DEFAULT:
-		if (m_tablet->isTabletVisible()) {
-			// If tablet is shown, it is interactable
-			m_tablet->update();
-			if (m_tablet->isPresentConfirmed()) {
-				// Player confirm present options. Handle logic and then reset tablet options
-				m_gameEvent = Game::PRESENT;
-			}
-		}
-		else {
-			// Only poll events of ingame window if sub-contents are not shown
-			pollEvents();
-			setupPlayerUI();
+		pollEvents();
+		setupPlayerUI();
 
-			float deltaTime = m_clock.restart().asSeconds();
-			m_animationPlayer.update(deltaTime);
-			updateUserHandAnimation(deltaTime);
-		}
+		// Update the timer if needed
+		m_timer->update();
+
+		// Update animation if needed
+		m_animationPlayer.update(deltaTime);
+		updateUserHandAnimation(deltaTime);
 		break;
 
 	case Game::DISCARD:
@@ -242,7 +244,17 @@ bool Game::update()
 		break;
 
 	case Game::PRESENT:
-		handlePresentEvent();
+		if (m_tablet->isTabletVisible()) {
+			// If tablet is shown, it is interactable
+			m_tablet->update();
+			if (m_tablet->isPresentConfirmed()) {
+				// Player confirm present options. Handle logic and then reset tablet options
+				handlePresentEvent();
+			}
+		}
+		else {
+			m_gameEvent = DEFAULT;
+		}
 		break;
 
 	default:
@@ -289,6 +301,11 @@ bool Game::render()
 	// Render the tablet if shown
 	if (m_tablet->isTabletVisible()) {
 		m_tablet->render();
+	}
+
+	// Render the timer if running
+	if (m_timer->isRunning()) {
+		m_timer->render();
 	}
 
 	m_window->display();
@@ -351,7 +368,53 @@ void Game::updateUserHandAnimation(float deltaTime)
 
 void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 {
+	// For testing
 	std::cout << "Game receive from Server: " << jsonMessage << std::endl;
+
+	// Game Deals Cards
+	if (jsonMessage["MessageType"] == "GAME_DEALS_CARDS" && jsonMessage.contains("Cards")) {
+		std::mutex mutex;
+		std::lock_guard<std::mutex> lock(mutex);
+		// Get all Card types
+		for (auto it = jsonMessage["Cards"].begin(); it != jsonMessage["Cards"].end(); it++) {
+			// Get card type as string
+			std::string cardName = it.key();
+			// Get that number of that card type
+			int count = it.value();
+			// Add to user hand
+			for (int i = 0; i < count; i++) {
+				if (m_userHand.size() >= 6U) break;	// Limit guard
+
+				addToUserHand(Card::m_stringToCardName.at(cardName));
+
+				// Add drawing animation of that card from the main deck
+				m_userHand[m_userHand.size() - 1]->getCard().setPosition(m_deck->getMainDeck().getPosition());
+				m_userHand[m_userHand.size() - 1]->getCard().setScale(sf::Vector2f(0.2, 0.2));
+				float posX = 520.f + ((m_userHand.size()-1) % 6) * 150.f;
+				m_userHand[m_userHand.size() - 1]->animationMove(0.3, sf::Vector2f(posX, 635));
+			}
+		}
+	}
+
+	// Start a new turn
+	if (jsonMessage["MessageType"] == "GAME_START_TURN") {
+		std::string playerName = jsonMessage["PlayerName"];
+		for (auto& player : m_playerList) {
+			if (player->getPlayerName() == playerName) {
+				player->setTurn(true);
+
+				// Start the timer if user player
+				if (player->isUserPlayer()) {
+					m_timer->reset();
+					m_timer->start();
+				}
+			}
+		}
+	}
+
+
+	// Send a response message
+	Network::getInstance().respondMessage(jsonMessage);
 }
 
 

@@ -35,7 +35,7 @@ public:
 	void setSelected(const bool status);
 	bool isSelected() const;
 
-	bool animationMove(float durationSeconds, sf::Vector2f posEndValue, float scaleEndValue = 1.f, Callback callback = nullptr);
+	bool animationMove(float durationSeconds, sf::Vector2f posEndValue, float scaleEndValue = 1.f, float delay = 0.f, Callback callback = nullptr);
 
 private:
 	CardType m_cardType;

@@ -140,6 +140,7 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Popup.cpp" />
     <ClCompile Include="Tablet.cpp" />
+    <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
@@ -154,6 +155,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="Popup.h" />
     <ClInclude Include="Tablet.h" />
+    <ClInclude Include="Timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

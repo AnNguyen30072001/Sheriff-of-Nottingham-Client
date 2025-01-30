@@ -12,10 +12,10 @@ public:
 	using Callback = std::function<void()>;
 
 	// Move or Move_and_scale animation
-	Animation(sf::Transformable& target, Type type, float durationSeconds, sf::Vector2f posEndValue, float scaleEndValue = 1.f, Callback callback = nullptr);
+	Animation(sf::Transformable& target, Type type, float durationSeconds, sf::Vector2f posEndValue, float scaleEndValue = 1.f, float delay = 0.f, Callback callback = nullptr);
 	
 	// Scale or Rotate animation
-	Animation(sf::Transformable& target, Type type, float endValue, float durationSeconds, Callback callback = nullptr);
+	Animation(sf::Transformable& target, Type type, float endValue, float durationSeconds, float delay = 0.f, Callback callback = nullptr);
 
 	~Animation();
 
@@ -35,8 +35,9 @@ private:
 	float m_startScale, m_endScale;
 	float m_startRotation, m_endRotation;
 	float m_startOpacity, m_endOpacity;
-	float m_duration, m_elapsedTime;
+	float m_duration, m_elapsedTime, m_delay;
 	bool m_running;
+	bool m_endDelay;
 	Callback m_callback;
 
 };

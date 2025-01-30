@@ -9,6 +9,7 @@
 #include "Tablet.h"
 #include "Network.h"
 #include "Animation.h"
+#include "Timer.h"
 
 #pragma once
 class Game : public Observer
@@ -50,6 +51,7 @@ private:
 	sf::Clock m_clock;
 	Game::GameEvent m_gameEvent;
 	AnimationManager m_animationPlayer;
+	Timer* m_timer;
 
 	sf::RectangleShape m_background;
 	sf::Texture m_backgroundTexture;

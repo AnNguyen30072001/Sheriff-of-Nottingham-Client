@@ -10,17 +10,17 @@ Deck::~Deck()
 {
 }
 
-sf::RectangleShape Deck::getMainDeck() const
+sf::RectangleShape& Deck::getMainDeck()
 {
 	return m_mainDeck;
 }
 
-sf::RectangleShape Deck::getDiscardDeckLeft() const
+sf::RectangleShape& Deck::getDiscardDeckLeft()
 {
 	return m_discardDeckLeft;
 }
 
-sf::RectangleShape Deck::getDiscardDeckRight() const
+sf::RectangleShape& Deck::getDiscardDeckRight()
 {
 	return m_discardDeckRight;
 }

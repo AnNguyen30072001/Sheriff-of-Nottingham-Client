@@ -69,15 +69,17 @@ int main()
 				Network::getInstance().addObserver(game);
 
 				// For testing only
-				playerList[0]->setTurn(true);
+				//playerList[0]->setTurn(true);
 				playerList[0]->setSheriffStatus(false);
 				playerList[0]->setPlayerMoney(100);
-				game->addToUserHand(Card::APPLE);
-				game->addToUserHand(Card::CROSSBOW);
-				game->addToUserHand(Card::CHICKEN);
-				game->addToUserHand(Card::BREAD);
-				game->addToUserHand(Card::APPLE);
-				game->addToUserHand(Card::APPLE);
+				//game->addToUserHand(Card::APPLE);
+				//game->addToUserHand(Card::CROSSBOW);
+				//game->addToUserHand(Card::CHICKEN);
+				//game->addToUserHand(Card::BREAD);
+				//game->addToUserHand(Card::APPLE);
+				//game->addToUserHand(Card::APPLE);
+				//game->UserHandUI();
+
 			}
 			game->update();
 			game->render();

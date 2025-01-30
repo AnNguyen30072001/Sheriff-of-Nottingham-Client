@@ -1,8 +1,9 @@
 #include "Animation.h"
 #include <iostream>
 
-Animation::Animation(sf::Transformable& target, Type type, float durationSeconds, sf::Vector2f posEndValue, float scaleEndValue, Callback callback)
-	: m_target(&target), m_type(type), m_endPos(posEndValue), m_duration(durationSeconds), m_callback(callback), m_elapsedTime(0), m_running(false) {
+Animation::Animation(sf::Transformable& target, Type type, float durationSeconds, sf::Vector2f posEndValue, float scaleEndValue, float delay, Callback callback)
+	: m_target(&target), m_type(type), m_endPos(posEndValue), m_duration(durationSeconds), m_delay(delay), m_callback(callback), m_elapsedTime(0), 
+	m_running(false), m_endDelay(false) {
 	if (type == Type::MOVE) {
 		m_startPos = target.getPosition();
 	}
@@ -13,8 +14,9 @@ Animation::Animation(sf::Transformable& target, Type type, float durationSeconds
 	}
 }
 
-Animation::Animation(sf::Transformable& target, Type type, float endValue, float duration, Callback callback)
-	: m_target(&target), m_type(type), m_duration(duration), m_callback(callback), m_elapsedTime(0), m_running(false) {
+Animation::Animation(sf::Transformable& target, Type type, float endValue, float duration, float delay, Callback callback)
+	: m_target(&target), m_type(type), m_duration(duration), m_delay(delay), m_callback(callback), m_elapsedTime(0), 
+	m_running(false), m_endDelay(false) {
 	if (type == Type::SCALE) {
 		m_startScale = target.getScale().x;
 		m_endScale = endValue;
@@ -42,6 +44,15 @@ void Animation::stop() {
 void Animation::update(float deltaTime) {
 	if (!m_running) return;
 
+	// No animation before delay ends
+	if (m_elapsedTime < m_delay) {
+		m_elapsedTime += deltaTime;
+		return;
+	}
+	if (!m_endDelay) {
+		m_endDelay = true;
+		m_elapsedTime -= m_delay;
+	}
 	m_elapsedTime += deltaTime;
 	float progress = m_elapsedTime / m_duration;
 
@@ -68,6 +79,22 @@ void Animation::update(float deltaTime) {
 	// Ensure animation stops correctly
 	if (m_elapsedTime >= m_duration) {
 		stop();
+
+		// Explicitly set the final values
+		if (m_type == Type::MOVE) {
+			m_target->setPosition(m_endPos);
+		}
+		else if (m_type == Type::SCALE) {
+			m_target->setScale(m_endScale, m_endScale);
+		}
+		else if (m_type == Type::MOVE_AND_SCALE) {
+			m_target->setPosition(m_endPos);
+			m_target->setScale(m_endScale, m_endScale);
+		}
+		else if (m_type == Type::ROTATE) {
+			m_target->setRotation(m_endRotation);
+		}
+
 		if (m_callback) {
 			m_callback(); // Execute callback when animation completes
 		}

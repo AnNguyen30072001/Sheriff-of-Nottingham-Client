@@ -74,9 +74,9 @@ bool Card::isSelected() const
 	return m_isSelected;
 }
 
-bool Card::animationMove(float durationSeconds, sf::Vector2f posEndValue, float scaleEndValue, Callback callback)
+bool Card::animationMove(float durationSeconds, sf::Vector2f posEndValue, float scaleEndValue, float delay, Callback callback)
 {
-	m_animationPlayer.addAnimation(new Animation(m_card, Animation::Type::MOVE_AND_SCALE, durationSeconds, posEndValue, scaleEndValue, callback));
+	m_animationPlayer.addAnimation(new Animation(m_card, Animation::Type::MOVE_AND_SCALE, durationSeconds, posEndValue, scaleEndValue, delay, callback));
 
 	return true;
 }
