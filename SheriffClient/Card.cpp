@@ -59,6 +59,11 @@ void Card::setupCardUI(float posX, float posY)
 	m_card.setPosition(posX, posY);
 }
 
+AnimationManager & Card::getAnimationPlayer()
+{
+	return m_animationPlayer;
+}
+
 void Card::setSelected(const bool status)
 {
 	m_isSelected = status;
@@ -67,6 +72,13 @@ void Card::setSelected(const bool status)
 bool Card::isSelected() const
 {
 	return m_isSelected;
+}
+
+bool Card::animationMove(float durationSeconds, sf::Vector2f posEndValue, float scaleEndValue, Callback callback)
+{
+	m_animationPlayer.addAnimation(new Animation(m_card, Animation::Type::MOVE_AND_SCALE, durationSeconds, posEndValue, scaleEndValue, callback));
+
+	return true;
 }
 
 void Card::initVariables()

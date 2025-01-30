@@ -49,6 +49,7 @@ public:
 	~AnimationManager();
 
 	void addAnimation(Animation* animation);
+	void cancel();
 	void update(float deltaTime);
 	bool isEmpty() const { return animations.empty(); }
 

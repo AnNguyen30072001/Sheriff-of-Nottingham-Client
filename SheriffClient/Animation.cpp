@@ -1,7 +1,7 @@
 #include "Animation.h"
 #include <iostream>
 
-Animation::Animation(sf::Transformable& target, Type type, float durationSeconds, sf::Vector2f posEndValue, float scaleEndValue = 1.f, Callback callback = nullptr)
+Animation::Animation(sf::Transformable& target, Type type, float durationSeconds, sf::Vector2f posEndValue, float scaleEndValue, Callback callback)
 	: m_target(&target), m_type(type), m_endPos(posEndValue), m_duration(durationSeconds), m_callback(callback), m_elapsedTime(0), m_running(false) {
 	if (type == Type::MOVE) {
 		m_startPos = target.getPosition();
@@ -67,7 +67,6 @@ void Animation::update(float deltaTime) {
 
 	// Ensure animation stops correctly
 	if (m_elapsedTime >= m_duration) {
-		std::cout << "Stop animation\n";
 		stop();
 		if (m_callback) {
 			m_callback(); // Execute callback when animation completes
@@ -84,6 +83,15 @@ bool Animation::isFinished() const
 void AnimationManager::addAnimation(Animation* animation) {
 	animations.push_back(animation);
 	animation->start();
+}
+
+void AnimationManager::cancel()
+{
+	for (int i = 0; i < animations.size(); i++) {
+		animations[i]->stop();
+		delete animations[i];
+		animations.erase(animations.begin() + i);
+	}
 }
 
 AnimationManager::AnimationManager()

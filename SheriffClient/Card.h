@@ -3,10 +3,12 @@
 
 #include <SFML/Graphics.hpp>
 #include <unordered_map>
+#include "Animation.h"
 
 class Card
 {
 public:
+	using Callback = std::function<void()>;
 	enum CardType {
 		INVALID,
 		APPLE,
@@ -28,15 +30,19 @@ public:
 	CardType getCardType() const;
 	void setCardTexture(CardType cardType);
 	void setupCardUI(float posX, float posY);
+	AnimationManager& getAnimationPlayer();
 
 	void setSelected(const bool status);
 	bool isSelected() const;
+
+	bool animationMove(float durationSeconds, sf::Vector2f posEndValue, float scaleEndValue = 1.f, Callback callback = nullptr);
 
 private:
 	CardType m_cardType;
 	sf::RectangleShape m_card;
 	sf::Texture m_cardTexture;
 	bool m_isSelected;
+	AnimationManager m_animationPlayer;
 
 	void initVariables();
 };

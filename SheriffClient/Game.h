@@ -37,7 +37,8 @@ public:
 	bool render();
 
 	bool setupPlayerUI();
-	bool updateUserHandUI();
+	bool UserHandUI();
+	void updateUserHandAnimation(float deltaTime);
 
 	void onMessageReceived(const nlohmann::json& jsonMessage);
 

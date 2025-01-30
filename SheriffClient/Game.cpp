@@ -73,6 +73,9 @@ void Game::initWindow()
 		m_ButtonLeft.getPosition().y + m_ButtonLeft.getSize().y / 2);
 	m_ButtonRightText.setPosition(m_ButtonRight.getPosition().x + m_ButtonRight.getSize().x / 2,
 		m_ButtonRight.getPosition().y + m_ButtonRight.getSize().y / 2);
+
+	// Initial draw user hand
+	UserHandUI();
 }
 
 void Game::handlePresentEvent()
@@ -132,6 +135,7 @@ const bool Game::running() const
 bool Game::addToUserHand(Card::CardType card)
 {
 	m_userHand.push_back(new Card(card));
+	UserHandUI();
 
 	return true;
 }
@@ -141,6 +145,8 @@ bool Game::removeFromUserHand(Card::CardType card)
 	for (int i = 0; i < m_userHand.size(); i++) {
 		if (m_userHand[i]->getCardType() == card) {
 			m_userHand.erase(m_userHand.begin() + i);
+			UserHandUI();
+
 			return true;
 		}
 	}
@@ -148,9 +154,18 @@ bool Game::removeFromUserHand(Card::CardType card)
 
 bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 {
-	for (auto& card : m_userHand) {
-		if (card->getCard().getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
-			card->setSelected(!card->isSelected());
+	m_anyCardSelected = false;
+	for (int i = 0; i < m_userHand.size(); i++) {
+		if (m_userHand[i]->getCard().getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
+			m_userHand[i]->setSelected(!m_userHand[i]->isSelected());
+			float posX = 520.f + (i % 6) * 150.f;
+			m_userHand[i]->animationMove(0.1,
+				sf::Vector2f(posX, m_userHand[i]->isSelected() ? 600.f : 635.f));
+		}
+
+		// Check if any card is selected for other interactions
+		if (m_userHand[i]->isSelected()) {
+			m_anyCardSelected = true;
 		}
 	}
 
@@ -211,10 +226,10 @@ bool Game::update()
 			// Only poll events of ingame window if sub-contents are not shown
 			pollEvents();
 			setupPlayerUI();
-			updateUserHandUI();
+
 			float deltaTime = m_clock.restart().asSeconds();
-			//std::cout << "Delta time: " << deltaTime << std::endl;
 			m_animationPlayer.update(deltaTime);
+			updateUserHandAnimation(deltaTime);
 		}
 		break;
 
@@ -310,7 +325,7 @@ bool Game::setupPlayerUI()
 	return true;
 }
 
-bool Game::updateUserHandUI()
+bool Game::UserHandUI()
 {
 	m_anyCardSelected = false;
 	for (int i = 0; i < m_userHand.size(); i++) {
@@ -325,6 +340,13 @@ bool Game::updateUserHandUI()
 	}
 
 	return true;
+}
+
+void Game::updateUserHandAnimation(float deltaTime)
+{
+	for (auto& card : m_userHand) {
+		card->getAnimationPlayer().update(deltaTime);
+	}
 }
 
 void Game::onMessageReceived(const nlohmann::json& jsonMessage)
