@@ -12,6 +12,17 @@ const std::unordered_map<Card::CardType, std::string> Card::m_cardNameToString =
 	{CROSSBOW, "Crossbow"}
 };
 
+const std::unordered_map<std::string, Card::CardType> Card::m_stringToCardName = {
+	{"Apple", Card::APPLE},
+	{"Cheese", Card::CHEESE},
+	{"Bread", Card::BREAD},
+	{"Chicken", Card::CHICKEN},
+	{"Pepper", Card::PEPPER},
+	{"Mead", Card::MEAD},
+	{"Silk", Card::SILK},
+	{"Crossbow", Card::CROSSBOW}
+};
+
 Card::Card(CardType cardType)
 {
 	m_cardType = cardType;
@@ -24,7 +35,7 @@ Card::~Card()
 
 }
 
-sf::RectangleShape Card::getCard() const
+sf::RectangleShape& Card::getCard()
 {
 	return m_card;
 }

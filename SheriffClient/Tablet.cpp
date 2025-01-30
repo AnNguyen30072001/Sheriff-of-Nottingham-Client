@@ -63,7 +63,7 @@ bool Tablet::handleMouseClick(sf::Vector2f mousePosXY)
 		}
 	}
 
-	// Enter bribe amount
+	// Click inside bribe box
 	if (m_bribeBox.getGlobalBounds().contains(mousePosXY)) {
 		m_BoxOutline.setFillColor(sf::Color(255, 255, 255, 255));
 	}

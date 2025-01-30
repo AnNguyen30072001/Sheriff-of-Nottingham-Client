@@ -212,6 +212,9 @@ bool Game::update()
 			pollEvents();
 			setupPlayerUI();
 			updateUserHandUI();
+			float deltaTime = m_clock.restart().asSeconds();
+			//std::cout << "Delta time: " << deltaTime << std::endl;
+			m_animationPlayer.update(deltaTime);
 		}
 		break;
 
@@ -282,6 +285,19 @@ bool Game::setupPlayerUI()
 {
 	for (int i = 0; i < m_playerList.size(); i++) {
 		if (m_playerList[i]->isUserPlayer()) {
+			// The buttons are colored only when it is user's turn
+			m_ButtonLeft.setFillColor(m_playerList[i]->isInTurn() ? sf::Color::Red : sf::Color(128, 128, 128));
+			m_ButtonRight.setFillColor(m_playerList[i]->isInTurn() ? sf::Color(100, 149, 237) : sf::Color(128, 128, 128));
+
+			// Render button texts based on user player role
+			m_ButtonLeftText.setString(m_playerList[i]->isSheriff() ? "Inspect" : "Discard");
+			m_ButtonRightText.setString(m_playerList[i]->isSheriff() ? "Pass" : "Present");
+			// Center the text within the button
+			sf::FloatRect textBoundsLeft = m_ButtonLeftText.getLocalBounds();
+			sf::FloatRect textBoundsRight = m_ButtonRightText.getLocalBounds();
+			m_ButtonLeftText.setOrigin(textBoundsLeft.left + textBoundsLeft.width / 2, textBoundsLeft.top + textBoundsLeft.height / 2);
+			m_ButtonRightText.setOrigin(textBoundsRight.left + textBoundsRight.width / 2, textBoundsRight.top + textBoundsRight.height / 2);
+
 			continue;
 		}
 		// Positioning

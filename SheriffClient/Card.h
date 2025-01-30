@@ -19,11 +19,12 @@ public:
 		SILK
 	};
 	static const std::unordered_map<CardType, std::string> m_cardNameToString;
+	static const std::unordered_map<std::string, CardType> m_stringToCardName;
 
 	Card(CardType cardType);
 	~Card();
 
-	sf::RectangleShape getCard() const;
+	sf::RectangleShape& getCard();
 	CardType getCardType() const;
 	void setCardTexture(CardType cardType);
 	void setupCardUI(float posX, float posY);

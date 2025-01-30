@@ -2,11 +2,13 @@
 #define GAME__
 
 #include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
 #include "Player.h"
 #include "Card.h"
 #include "Deck.h"
 #include "Tablet.h"
 #include "Network.h"
+#include "Animation.h"
 
 #pragma once
 class Game : public Observer
@@ -44,7 +46,9 @@ private:
 	sf::VideoMode m_videoMode;
 	sf::Event m_ev;
 	sf::Font m_font;
+	sf::Clock m_clock;
 	Game::GameEvent m_gameEvent;
+	AnimationManager m_animationPlayer;
 
 	sf::RectangleShape m_background;
 	sf::Texture m_backgroundTexture;
