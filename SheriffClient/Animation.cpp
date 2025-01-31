@@ -45,14 +45,15 @@ void Animation::update(float deltaTime) {
 	if (!m_running) return;
 
 	// No animation before delay ends
-	if (m_elapsedTime < m_delay) {
+	if (m_elapsedTime < m_delay && m_endDelay == false) {
 		m_elapsedTime += deltaTime;
 		return;
 	}
 	if (!m_endDelay) {
 		m_endDelay = true;
-		m_elapsedTime -= m_delay;
+		m_elapsedTime = 0.f;
 	}
+
 	m_elapsedTime += deltaTime;
 	float progress = m_elapsedTime / m_duration;
 

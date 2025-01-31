@@ -62,6 +62,14 @@ int main()
 
 		case GAME_VIEW:
 			if (!game) {
+				// For testing only
+				//lobby = new Lobby();
+				//lobby->addToPlayerList("Sarah", sf::Color::Blue, true);
+				//Network::getInstance().connect();
+				//Network::getInstance().startListening();
+				//Network::getInstance().startProcessingMessageQueue();
+
+				// Real logic code
 				std::vector<Player*> playerList = lobby->getPlayerList();
 				delete lobby;
 				Network::getInstance().removeObserver(lobby);
@@ -69,7 +77,7 @@ int main()
 				Network::getInstance().addObserver(game);
 
 				// For testing only
-				//playerList[0]->setTurn(true);
+				playerList[0]->setTurn(true);
 				playerList[0]->setSheriffStatus(false);
 				playerList[0]->setPlayerMoney(100);
 				//game->addToUserHand(Card::APPLE);

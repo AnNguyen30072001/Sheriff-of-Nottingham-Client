@@ -166,7 +166,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 			m_userHand[i]->animationMove(0.1,
 				sf::Vector2f(posX, m_userHand[i]->isSelected() ? 600.f : 635.f));
 		}
-
+		
 		// Check if any card is selected for other interactions
 		if (m_userHand[i]->isSelected()) {
 			m_anyCardSelected = true;
@@ -182,7 +182,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 
 		if (m_ButtonRight.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
 			// Handle present
-			m_tablet->showTablet(m_playerList[0]->getPlayerMoney());
+			m_tablet->showTablet(Tablet::Type::GIVE_BAG, m_playerList[0]->getPlayerMoney());
 			m_gameEvent = Game::PRESENT;
 		}
 	}
@@ -190,6 +190,13 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	// If it is user's sheriff turn, the Inspect and Pass buttons are interactable
 	if (m_playerList[0]->isSheriff() && m_playerList[0]->isInTurn()) {
 
+	}
+
+	// If a player's catalog is clicked, show that player's info
+	for (auto& player : m_playerList) {
+		if (player->getInfoTabIcon().getGlobalBounds().contains(mousePosXY)) {
+			m_tablet->showTablet(Tablet::Type::INFO, player->getPlayerMoney(), player);
+		}
 	}
 
 	return true;
@@ -224,8 +231,13 @@ bool Game::update()
 	switch (m_gameEvent)
 	{
 	case Game::DEFAULT:
-		pollEvents();
+		if (!m_tablet->isTabletVisible()) {
+			pollEvents();
+		}
 		setupPlayerUI();
+
+		// If tablet is shown, it is interactable
+		m_tablet->update();
 
 		// Update the timer if needed
 		m_timer->update();
@@ -375,24 +387,24 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 	if (jsonMessage["MessageType"] == "GAME_DEALS_CARDS" && jsonMessage.contains("Cards")) {
 		std::mutex mutex;
 		std::lock_guard<std::mutex> lock(mutex);
+		int index = 0;
 		// Get all Card types
 		for (auto it = jsonMessage["Cards"].begin(); it != jsonMessage["Cards"].end(); it++) {
+			if (m_userHand.size() >= 6U) break;	// Limit guard
 			// Get card type as string
-			std::string cardName = it.key();
-			// Get that number of that card type
-			int count = it.value();
+			std::string cardName = *it;
+
 			// Add to user hand
-			for (int i = 0; i < count; i++) {
-				if (m_userHand.size() >= 6U) break;	// Limit guard
+			addToUserHand(Card::m_stringToCardName.at(cardName));
 
-				addToUserHand(Card::m_stringToCardName.at(cardName));
-
-				// Add drawing animation of that card from the main deck
-				m_userHand[m_userHand.size() - 1]->getCard().setPosition(m_deck->getMainDeck().getPosition());
-				m_userHand[m_userHand.size() - 1]->getCard().setScale(sf::Vector2f(0.2, 0.2));
-				float posX = 520.f + ((m_userHand.size()-1) % 6) * 150.f;
-				m_userHand[m_userHand.size() - 1]->animationMove(0.3, sf::Vector2f(posX, 635));
-			}
+			// Add drawing animation of that card from the main deck
+			m_userHand[m_userHand.size() - 1]->getCard().setPosition(m_deck->getMainDeck().getPosition() + sf::Vector2f(75, 100));
+			m_userHand[m_userHand.size() - 1]->getCard().setScale(sf::Vector2f(0.f, 0.f));
+			float posX = 520.f + ((m_userHand.size()-1) % 6) * 150.f;
+			float delay = index * 0.6;
+			// Add animation
+			m_userHand[m_userHand.size() - 1]->animationMove(0.2, sf::Vector2f(posX, 635), 1.f, delay);
+			index++;
 		}
 	}
 

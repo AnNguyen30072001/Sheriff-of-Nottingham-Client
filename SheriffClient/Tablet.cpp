@@ -14,7 +14,17 @@ Tablet::Tablet(sf::RenderWindow* parentWindow)
 		std::cerr << "Error loading tablet font!" << std::endl;
 	}
 
-	if (!m_tabletTexture.loadFromFile("Images/ReportBackground.png")) {
+	if (!m_goldMedalTexture.loadFromFile("Images/GoldToken.png") || 
+		!m_silverMedalTexture.loadFromFile("Images/SilverToken.png") || 
+		!m_moneyIconTexture.loadFromFile("Images/MoneyIcon.png")) {
+		std::cerr << "Error loading tablet texture!" << std::endl;
+	}
+
+	if (!m_tabletTextureGiveBag.loadFromFile("Images/ReportBackground.png")) {
+		std::cerr << "Error loading tablet background!" << std::endl;
+	}
+
+	if (!m_tabletTextureInfo.loadFromFile("Images/ReportBackground_2.png")) {
 		std::cerr << "Error loading tablet background!" << std::endl;
 	}
 }
@@ -26,7 +36,19 @@ Tablet::~Tablet()
 
 sf::RectangleShape Tablet::getTablet() const
 {
-	return m_tablet;
+	switch (m_tabletType)
+	{
+	case Tablet::Type::GIVE_BAG:
+		return m_tabletGiveBag;
+
+		break;
+	case Tablet::Type::INFO:
+		return m_tabletInfo;
+
+		break;
+	default:
+		break;
+	}
 }
 
 sf::RectangleShape Tablet::getOkButton() const
@@ -42,7 +64,14 @@ sf::RectangleShape Tablet::getGoodsButton(uint8_t index) const
 bool Tablet::handleMouseClick(sf::Vector2f mousePosXY)
 {
 	// If press outside of tablet, close tablet and cancel all previous choices
-	if (!m_tablet.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
+	if (!m_tabletGiveBag.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY)) && m_tabletType == Tablet::Type::GIVE_BAG) {
+		hideTablet();
+		resetOptions();
+
+		return true;
+	}
+
+	if (!m_tabletInfo.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY)) && m_tabletType == Tablet::Type::INFO) {
 		hideTablet();
 		resetOptions();
 
@@ -51,7 +80,7 @@ bool Tablet::handleMouseClick(sf::Vector2f mousePosXY)
 
 	// Handle goods selection
 	for (int i = 0; i < 4; ++i) {
-		if (m_goodsButtons[i].getGlobalBounds().contains(mousePosXY)) {
+		if (m_goodsButtons[i].getGlobalBounds().contains(mousePosXY) && m_tabletType == Tablet::Type::GIVE_BAG) {
 			m_selectedGoods = static_cast<Card::CardType>(i + 1);
 			// Highlight selected button
 			for (int j = 0; j < 4; ++j) {
@@ -64,7 +93,7 @@ bool Tablet::handleMouseClick(sf::Vector2f mousePosXY)
 	}
 
 	// Click inside bribe box
-	if (m_bribeBox.getGlobalBounds().contains(mousePosXY)) {
+	if (m_bribeBox.getGlobalBounds().contains(mousePosXY) && m_tabletType == Tablet::Type::GIVE_BAG) {
 		m_BoxOutline.setFillColor(sf::Color(255, 255, 255, 255));
 	}
 	else {
@@ -73,7 +102,7 @@ bool Tablet::handleMouseClick(sf::Vector2f mousePosXY)
 	}
 
 	// Check OK button
-	if (m_okButton.getGlobalBounds().contains(mousePosXY)) {
+	if (m_okButton.getGlobalBounds().contains(mousePosXY) && m_tabletType == Tablet::Type::GIVE_BAG) {
 		m_confirm = confirmSelection();
 
 		return true;
@@ -189,17 +218,49 @@ void Tablet::update()
 void Tablet::render()
 {
 	// This is sub-content, so no clear() or display()
-	m_parentWindow->draw(m_tablet);
-	for (auto& button : m_goodsButtons) {
-		m_parentWindow->draw(button);
+	switch (m_tabletType)
+	{
+	case Tablet::Type::GIVE_BAG:
+		m_parentWindow->draw(m_tabletGiveBag);
+
+		for (int i = 0; i < 4; i++) {
+			m_parentWindow->draw(m_goodsButtons[i]);
+		}
+		m_parentWindow->draw(m_bribeText);
+		m_parentWindow->draw(m_bribeBox);
+		m_parentWindow->draw(m_BoxOutline);
+		m_parentWindow->draw(m_bribeBoxText);
+
+		m_parentWindow->draw(m_maxMoneyText);
+
+		m_parentWindow->draw(m_okButton);
+		m_parentWindow->draw(m_okButtonText);
+
+		break;
+	case Tablet::Type::INFO:
+		m_parentWindow->draw(m_tabletInfo);
+
+		m_parentWindow->draw(m_playerAvatar);
+		m_parentWindow->draw(m_playerName);
+
+		for (int i = 0; i < 8; i++) {
+			m_parentWindow->draw(m_goodsButtons[i]);
+			m_parentWindow->draw(m_goodsAmountText[i]);
+		}
+
+		for (int i = 0; i < 4; i++) {
+			m_parentWindow->draw(m_goldMedals[i]);
+			m_parentWindow->draw(m_silverMedals[i]);
+		}
+
+		m_parentWindow->draw(m_moneyIcon);
+		m_parentWindow->draw(m_moneyText);
+
+		break;
+
+	default:
+		break;
 	}
-	m_parentWindow->draw(m_bribeText);
-	m_parentWindow->draw(m_bribeBox);
-	m_parentWindow->draw(m_BoxOutline);
-	m_parentWindow->draw(m_bribeBoxText);
-	m_parentWindow->draw(m_maxMoneyText);
-	m_parentWindow->draw(m_okButton);
-	m_parentWindow->draw(m_okButtonText);
 }
 
 bool Tablet::isTabletVisible() const
@@ -207,16 +268,51 @@ bool Tablet::isTabletVisible() const
 	return m_isTabletVisible;
 }
 
-void Tablet::showTablet(int maxMoney)
+void Tablet::showTablet(Tablet::Type type, int maxMoney, Player* player)
 {
 	m_playerMoney = maxMoney;
 	m_isTabletVisible = true;
+	m_tabletType = type;
 
+	switch (type)
+	{
+	case Tablet::Type::GIVE_BAG:
+		setupGiveBagUI();
+
+		break;
+
+	case Tablet::Type::INFO:
+		setupInfoUI(player);
+
+		break;
+
+	default:
+		break;
+	}
+
+}
+
+void Tablet::hideTablet()
+{
+	m_isTabletVisible = false;
+}
+
+void Tablet::resetOptions()
+{
+	m_confirm = false;
+	m_bribeAmount = 0;
+	m_playerMoney = 0;
+	m_bribeInput = "";
+	m_selectedGoods = Card::INVALID;
+}
+
+void Tablet::setupGiveBagUI()
+{
 	// Tablet background
-	m_tablet.setSize({ 750, 400 });
-	m_tablet.setFillColor(sf::Color::White);
-	m_tablet.setTexture(&m_tabletTexture);
-	m_tablet.setPosition(m_parentWindow->getSize().x / 2 - m_tablet.getSize().x / 2, 150);
+	m_tabletGiveBag.setSize({ 750, 400 });
+	m_tabletGiveBag.setFillColor(sf::Color::White);
+	m_tabletGiveBag.setTexture(&m_tabletTextureGiveBag);
+	m_tabletGiveBag.setPosition(m_parentWindow->getSize().x / 2 - m_tabletGiveBag.getSize().x / 2, 150);
 
 	// Goods buttons
 	std::string texturePaths[4] = { "AppleReport.png", "BreadReport.png", "CheeseReport.png", "ChickenReport.png" };
@@ -277,21 +373,74 @@ void Tablet::showTablet(int maxMoney)
 	m_okButtonText.setString("Confirm");
 	m_okButtonText.setCharacterSize(32);
 	m_okButtonText.setPosition(900.f, 450.f);
-
 }
 
-void Tablet::hideTablet()
+void Tablet::setupInfoUI(Player * player)
 {
-	m_isTabletVisible = false;
-}
+	// Tablet background
+	m_tabletInfo.setSize({ 1110, 1158 });
+	m_tabletInfo.setFillColor(sf::Color::White);
+	m_tabletInfo.setTexture(&m_tabletTextureInfo);
+	m_tabletInfo.setPosition(m_parentWindow->getSize().x / 2 - m_tabletInfo.getSize().x / 2, -39.f);
 
-void Tablet::resetOptions()
-{
-	m_confirm = false;
-	m_bribeAmount = 0;
-	m_playerMoney = 0;
-	m_bribeInput = "";
-	m_selectedGoods = Card::INVALID;
+	// Player avatar
+	m_playerAvatar = player->getAvatar();
+	m_playerName = player->getNameText();
+	m_playerAvatar.setPosition(710.f, 154.f);
+	m_playerName.setCharacterSize(30);
+	m_playerName.setPosition(m_playerAvatar.getPosition() + sf::Vector2f(0.f, 150.f));
+
+	// Player money
+	m_moneyIcon.setSize(sf::Vector2f(100.f, 100.f));
+	m_moneyIcon.setFillColor(sf::Color::White);
+	m_moneyIcon.setTexture(&m_moneyIconTexture);
+	m_moneyIcon.setPosition(1045.f, 154.f);
+	m_moneyText.setFont(m_font);
+	m_moneyText.setFillColor(sf::Color::Black);
+	m_moneyText.setString(std::to_string(m_playerMoney));
+	m_moneyText.setCharacterSize(60);
+	m_moneyText.setPosition(1170.f, 167.f);
+
+	// Goods
+	std::string texturePathsHighlight[8] = 
+	{ "AppleReportHighlight.png", "BreadReportHighlight.png", "CheeseReportHighlight.png", "ChickenReportHighlight.png", 
+		"CrossbowReportHighlight.png", "MeadReportHighlight.png", "PepperReportHighlight.png", "SilkReportHighlight.png"};
+	for (int i = 0; i < 8; ++i) {
+		m_goodsButtonTexturesHighLight[i].loadFromFile("Images/" + texturePathsHighlight[i]);
+		m_goodsButtons[i].setSize(sf::Vector2f(100.f, 100.f));
+		m_goodsButtons[i].setFillColor(sf::Color::White);
+		m_goodsButtons[i].setTexture(&m_goodsButtonTexturesHighLight[i]);
+		float posX = 610.f + (i % 4) * 200.f;
+		float posY = i < 4 ? 423.f : 744.f;
+		m_goodsButtons[i].setPosition(posX, posY); // Position buttons in a row
+
+		// Goods Text
+		m_goodsAmountText[i].setFont(m_font);
+		m_goodsAmountText[i].setFillColor(sf::Color::Black);
+		// Get the amount of that card type (have to shift index by 1 because first card type is INVALID)
+		int goodAmount = player->getPlayerGoodsAmount(i + 1);
+		std::string amount = std::to_string(goodAmount);
+		m_goodsAmountText[i].setString(amount);
+		m_goodsAmountText[i].setCharacterSize(48);
+		m_goodsAmountText[i].setPosition(posX + (goodAmount < 10 ? 35.f : 20.f), posY + (i < 4 ? 164.f : 116.f));
+	}
+
+	// Gold medals
+	for (int i = 0; i < 4; i++) {
+		m_goldMedals[i].setSize(sf::Vector2f(70.f, 70.f));
+		m_goldMedals[i].setFillColor(sf::Color(255, 255, 255, 180));
+		m_goldMedals[i].setTexture(&m_goldMedalTexture);
+		m_goldMedals[i].setPosition(m_goodsButtons[i].getPosition() + sf::Vector2f(50.f, -50.f));
+	}
+
+	// Silver medals
+	for (int i = 0; i < 4; i++) {
+		m_silverMedals[i].setSize(sf::Vector2f(70.f, 70.f));
+		m_silverMedals[i].setFillColor(sf::Color(255, 255, 255, 180));
+		m_silverMedals[i].setTexture(&m_silverMedalTexture);
+		m_silverMedals[i].setPosition(m_goodsButtons[i].getPosition() + sf::Vector2f(50.f, 80.f));
+	}
+
 }
 
 bool Tablet::confirmSelection()

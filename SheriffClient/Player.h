@@ -30,15 +30,17 @@ private:
 	// Game logic and stuff
 	bool m_isSheriff;
 	bool m_isInTurn;
+
+	int m_goods[8];
 	int m_money;
-	int m_appleCount;
-	int m_chickenCount;
-	int m_cheeseCount;
-	int m_breadCount;
-	int m_crossbowCount;
-	int m_meadCount;
-	int m_pepperCount;
-	int m_silkCount;
+	//int m_appleCount;
+	//int m_chickenCount;
+	//int m_cheeseCount;
+	//int m_breadCount;
+	//int m_crossbowCount;
+	//int m_meadCount;
+	//int m_pepperCount;
+	//int m_silkCount;
 
 public:
 	Player(std::string name, sf::Color playerColor, bool isUserPlayer);
@@ -54,10 +56,10 @@ public:
 	sf::Color getPlayerColor() const;
 	bool setPlayerColor(const sf::Color color);
 
-	sf::CircleShape getAvatar() const;
-	sf::Text getNameText() const;
+	sf::CircleShape& getAvatar();
+	sf::Text& getNameText();
 
-	sf::RectangleShape getInfoTabIcon() const;
+	sf::RectangleShape& getInfoTabIcon();
 	sf::RectangleShape getSheriffBadge() const;
 	sf::Text getTurnIndicator() const;
 
@@ -73,32 +75,35 @@ public:
 	bool setTurn(const bool status);
 	bool isInTurn();
 
+	int getPlayerGoodsAmount(int cardType);
+	void increasePlayerGoodsAmount(int cardType, int value);
+
 	int getPlayerMoney() const;
 	void setPlayerMoney(int value);
 
-	int getPlayerAppleCount() const;
-	void setPlayerAppleCount(int value);
+	//int getPlayerAppleCount() const;
+	//void setPlayerAppleCount(int value);
 
-	int getPlayerChickenCount() const;
-	void setPlayerChickenCount(int value);
+	//int getPlayerChickenCount() const;
+	//void setPlayerChickenCount(int value);
 
-	int getPlayerCheeseCount() const;
-	void setPlayerCheeseCount(int value);
+	//int getPlayerCheeseCount() const;
+	//void setPlayerCheeseCount(int value);
 
-	int getPlayerBreadCount() const;
-	void setPlayerBreadCount(int value);
+	//int getPlayerBreadCount() const;
+	//void setPlayerBreadCount(int value);
 
-	int getPlayerCrossbowCount() const;
-	void setPlayerCrossbowCount(int value);
+	//int getPlayerCrossbowCount() const;
+	//void setPlayerCrossbowCount(int value);
 
-	int getPlayerSilkCount() const;
-	void setPlayerSilkCount(int value);
+	//int getPlayerSilkCount() const;
+	//void setPlayerSilkCount(int value);
 
-	int getPlayerMeadCount() const;
-	void setPlayerMeadCount(int value);
+	//int getPlayerMeadCount() const;
+	//void setPlayerMeadCount(int value);
 
-	int getPlayerPepperCount() const;
-	void setPlayerPepperCount(int value);
+	//int getPlayerPepperCount() const;
+	//void setPlayerPepperCount(int value);
 };
 
 #endif // !PLAYER__
