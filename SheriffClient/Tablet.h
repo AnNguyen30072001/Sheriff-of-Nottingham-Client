@@ -45,6 +45,7 @@ private:
 	sf::RectangleShape	m_tabletInfo;				
 	sf::Texture			m_tabletTextureGiveBag;
 	sf::Texture			m_tabletTextureInfo;
+	sf::RectangleShape	m_backgroundMask;				// Window background black mask
 	sf::CircleShape		m_playerAvatar;					// Player avatar
 	sf::Text			m_playerName;
 	sf::RectangleShape	m_moneyIcon;					// Money icon

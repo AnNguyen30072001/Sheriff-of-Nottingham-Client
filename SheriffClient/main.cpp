@@ -17,7 +17,7 @@ gameState g_gameState;
 
 int main() 
 {
-	g_gameState = LOGIN_VIEW;
+	g_gameState = GAME_VIEW;
 
 	Login* login = nullptr;
 	Lobby* lobby = nullptr;
@@ -63,11 +63,11 @@ int main()
 		case GAME_VIEW:
 			if (!game) {
 				// For testing only
-				//lobby = new Lobby();
-				//lobby->addToPlayerList("Sarah", sf::Color::Blue, true);
-				//Network::getInstance().connect();
-				//Network::getInstance().startListening();
-				//Network::getInstance().startProcessingMessageQueue();
+				lobby = new Lobby();
+				lobby->addToPlayerList("Sarah", sf::Color::Blue, true);
+				Network::getInstance().connect();
+				Network::getInstance().startListening();
+				Network::getInstance().startProcessingMessageQueue();
 
 				// Real logic code
 				std::vector<Player*> playerList = lobby->getPlayerList();

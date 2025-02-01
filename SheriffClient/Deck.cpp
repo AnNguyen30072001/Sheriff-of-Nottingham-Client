@@ -8,6 +8,7 @@ Deck::Deck()
 
 Deck::~Deck()
 {
+
 }
 
 sf::RectangleShape& Deck::getMainDeck()
@@ -23,6 +24,16 @@ sf::RectangleShape& Deck::getDiscardDeckLeft()
 sf::RectangleShape& Deck::getDiscardDeckRight()
 {
 	return m_discardDeckRight;
+}
+
+std::stack<Card*>& Deck::getStackLeft()
+{
+	return m_cardsDeckLeft;
+}
+
+std::stack<Card*>& Deck::getStackRight()
+{
+	return m_cardsDeckRight;
 }
 
 bool Deck::setDiscardDeckLeftTexture(Card::CardType card)

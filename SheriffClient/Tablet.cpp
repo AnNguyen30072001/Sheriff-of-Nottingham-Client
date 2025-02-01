@@ -27,6 +27,9 @@ Tablet::Tablet(sf::RenderWindow* parentWindow)
 	if (!m_tabletTextureInfo.loadFromFile("Images/ReportBackground_2.png")) {
 		std::cerr << "Error loading tablet background!" << std::endl;
 	}
+
+	m_backgroundMask.setSize(sf::Vector2f(1920.f, 1080.f));
+	m_backgroundMask.setFillColor(sf::Color(0, 0, 0, 180));
 }
 
 Tablet::~Tablet()
@@ -218,6 +221,8 @@ void Tablet::update()
 void Tablet::render()
 {
 	// This is sub-content, so no clear() or display()
+	m_parentWindow->draw(m_backgroundMask);
+
 	switch (m_tabletType)
 	{
 	case Tablet::Type::GIVE_BAG:
@@ -388,7 +393,8 @@ void Tablet::setupInfoUI(Player * player)
 	m_playerName = player->getNameText();
 	m_playerAvatar.setPosition(710.f, 154.f);
 	m_playerName.setCharacterSize(30);
-	m_playerName.setPosition(m_playerAvatar.getPosition() + sf::Vector2f(0.f, 150.f));
+	m_playerName.setPosition(m_playerAvatar.getPosition() + 
+		(player->isUserPlayer() ? sf::Vector2f(0.f, 150.f) : sf::Vector2f(0.f, 130.f)));
 
 	// Player money
 	m_moneyIcon.setSize(sf::Vector2f(100.f, 100.f));

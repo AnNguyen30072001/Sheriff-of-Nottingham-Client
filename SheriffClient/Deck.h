@@ -9,23 +9,15 @@
 class Deck
 {
 public:
-	/*const std::unordered_map<Card::CardType, std::string> m_cardNameToString = {
-	{Card::APPLE, "Apple"},
-	{Card::CHEESE, "Cheese"},
-	{Card::BREAD, "Bread"},
-	{Card::CHICKEN, "Chicken"},
-	{Card::PEPPER, "Pepper"},
-	{Card::MEAD, "Mead"},
-	{Card::SILK, "Silk"},
-	{Card::CROSSBOW, "Crossbow"}
-	};*/
-
 	Deck();
 	~Deck();
 
 	sf::RectangleShape& getMainDeck();
 	sf::RectangleShape& getDiscardDeckLeft();
 	sf::RectangleShape& getDiscardDeckRight();
+
+	std::stack<Card*>& getStackLeft();
+	std::stack<Card*>& getStackRight();
 
 	bool setDiscardDeckLeftTexture(Card::CardType card);
 	bool setDiscardDeckRightTexture(Card::CardType card);

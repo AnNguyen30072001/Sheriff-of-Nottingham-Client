@@ -30,7 +30,7 @@ public:
 
 	// Function
 	bool addToUserHand(Card::CardType card);
-	bool removeFromUserHand(Card::CardType card);
+	bool removeFromUserHand(uint8_t index);
 
 	bool handleMouseClick(sf::Vector2f mousePosXY);
 	bool pollEvents();
@@ -38,7 +38,7 @@ public:
 	bool render();
 
 	bool setupPlayerUI();
-	bool UserHandUI();
+	void userHandUI();
 	void updateUserHandAnimation(float deltaTime);
 
 	void onMessageReceived(const nlohmann::json& jsonMessage);
@@ -53,8 +53,10 @@ private:
 	AnimationManager m_animationPlayer;
 	Timer* m_timer;
 
+	// Background static stuff
 	sf::RectangleShape m_background;
 	sf::Texture m_backgroundTexture;
+	sf::RectangleShape m_withdrawEventMask;
 
 	sf::RectangleShape m_ButtonLeft;
 	sf::RectangleShape m_ButtonRight;
@@ -62,7 +64,7 @@ private:
 	sf::Text m_ButtonRightText;
 
 	std::vector<Card*> m_userHand;
-	//std::vector<Card*> m_selectedCards;
+	std::vector<Card*> m_selectedCards;
 	std::vector<Player*> m_playerList;
 	Deck* m_deck;
 	Tablet* m_tablet;

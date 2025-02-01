@@ -17,13 +17,13 @@ Timer::Timer(sf::RenderWindow* parentWindow) : m_parentWindow(parentWindow)
 	m_timerIcon.setSize(sf::Vector2f(100.f, 100.f));
 	m_timerIcon.setFillColor(sf::Color::White);
 	m_timerIcon.setTexture(&m_timerIconTexture);
-	m_timerIcon.setOutlineThickness(2.f);
-	m_timerIcon.setOutlineColor(sf::Color::Black);
 
 	// Timer text setup
 	m_timerText.setFont(m_font);
 	m_timerText.setCharacterSize(60);
 	m_timerText.setFillColor(sf::Color::White);
+	m_timerText.setOutlineColor(sf::Color::Black);
+	m_timerText.setOutlineThickness(2.f);
 	m_timerText.setString("01:00");
 
 	// Position the timer at the bottom right of the window
