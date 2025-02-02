@@ -48,6 +48,12 @@ int main()
 				Network::getInstance().addObserver(lobby);
 				lobby->addToPlayerList(username, sf::Color::Cyan, true);
 
+				// Send response message to notify server that lobby has initiated
+				json receivedLoginMessage;
+				receivedLoginMessage["MessageType"] = "GAME_ACCEPT_PLAYER";
+				receivedLoginMessage["PlayerName"] = username;
+				Network::getInstance().respondMessage(receivedLoginMessage);
+
 				// For testing only
 				//lobby->addToPlayerList("Hoang", sf::Color::Blue, false);
 				//lobby->addToPlayerList("Tuan", sf::Color::Red, false);
@@ -68,6 +74,7 @@ int main()
 				Network::getInstance().connect();
 				Network::getInstance().startListening();
 				Network::getInstance().startProcessingMessageQueue();
+				// EoT
 
 				// Real logic code
 				std::vector<Player*> playerList = lobby->getPlayerList();
@@ -75,6 +82,10 @@ int main()
 				Network::getInstance().removeObserver(lobby);
 				game = new Game(playerList);
 				Network::getInstance().addObserver(game);
+				// Send a response message to nofity game started
+				json receivedStartMessage;
+				receivedStartMessage["MessageType"] = "GAME_START";
+				Network::getInstance().respondMessage(receivedStartMessage);
 
 				// For testing only
 				playerList[0]->setTurn(true);

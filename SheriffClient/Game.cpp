@@ -5,6 +5,7 @@ void Game::initVariables(std::vector<Player*> playerList)
 {
 	m_gameEvent = Game::DEFAULT;
 	m_anyCardSelected = false;
+	m_anyCardDragged = false;
 	m_window = nullptr;
 	if (!m_backgroundTexture.loadFromFile("Images/Background.png")) {
 		std::cerr << "Error loading background texture!";
@@ -15,6 +16,7 @@ void Game::initVariables(std::vector<Player*> playerList)
 		std::cerr << "Error loading font!\n";
 	}
 
+	m_dragOffset = sf::Vector2f(0.f, 0.f);
 	m_playerList = playerList;
 	m_deck = nullptr;
 	m_tablet = nullptr;
@@ -33,16 +35,18 @@ void Game::initWindow()
 	m_timer = new Timer(m_window);
 
 	// For testing only
-	m_deck->getStackLeft().push(new Card(Card::PEPPER));
+	m_deck->getStackLeft().push(new Card(Card::SILK));
 	m_deck->getStackLeft().push(new Card(Card::PEPPER));
 	m_deck->getStackLeft().push(new Card(Card::CHICKEN));
 	m_deck->getStackLeft().push(new Card(Card::APPLE));
+	m_deck->getStackLeft().push(new Card(Card::MEAD));
+	m_deck->getStackLeft().push(new Card(Card::BREAD));
 	m_deck->getStackRight().push(new Card(Card::APPLE));
 	m_deck->getStackRight().push(new Card(Card::APPLE));
 	m_deck->getStackRight().push(new Card(Card::BREAD));
 	m_deck->getStackRight().push(new Card(Card::CROSSBOW));
-	m_deck->setDiscardDeckLeftTexture(Card::APPLE);
-	m_deck->setDiscardDeckRightTexture(Card::CROSSBOW);
+	m_deck->setDiscardDeckLeftTexture(m_deck->getStackLeft().top()->getCardType());
+	m_deck->setDiscardDeckRightTexture(m_deck->getStackRight().top()->getCardType());
 	// End of Test
 
 	// Backgrounds
@@ -52,6 +56,8 @@ void Game::initWindow()
 	m_background.setTexture(&m_backgroundTexture);
 	m_withdrawEventMask.setSize(sf::Vector2f(1920.f, 1080.f));
 	m_withdrawEventMask.setFillColor(sf::Color(0, 0, 0, 180));
+	m_discardEventMask.setSize(sf::Vector2f(1920.f, 1080.f));
+	m_discardEventMask.setFillColor(sf::Color(0, 0, 0, 180));
 
 	// Configure the button left
 	m_ButtonLeft.setSize(sf::Vector2f(170.f, 70.f));
@@ -123,6 +129,122 @@ void Game::handlePresentEvent()
 	m_gameEvent = Game::DEFAULT;
 }
 
+void Game::handleWithdrawEvent(PileType type)
+{
+	Card* topCard = nullptr;
+	float posX = 0.f;
+	switch (type)
+	{
+	case Game::PileType::LEFT_DISCARD_PILE:
+		topCard = m_deck->getStackLeft().top();
+
+		// Add new card to user hand and start animation
+		addToUserHand(topCard->getCardType());
+		m_userHand[m_userHand.size() - 1]->getCard().setScale(0.8, 0.8);
+		m_userHand[m_userHand.size() - 1]->getCard().setPosition(sf::Vector2f(650.f, 324.f));
+		posX = 520.f + ((m_userHand.size() - 1) % 6) * 150.f;
+		m_animationPlayer.addAnimation(new Animation(m_userHand[m_userHand.size() - 1]->getCard(), Animation::Type::MOVE_AND_SCALE,
+			0.2, sf::Vector2f(posX, 635.f)));
+
+		// Pop the left deck
+		m_deck->getStackLeft().pop();
+		delete topCard;
+		if (!m_deck->getStackLeft().empty()) {
+			m_deck->setDiscardDeckLeftTexture(m_deck->getStackLeft().top()->getCardType());
+		}
+		else {
+			m_deck->setDiscardDeckLeftOutOfStockTexture();
+		}
+
+		break;
+	case Game::PileType::RIGHT_DISCARD_PILE:
+		topCard = m_deck->getStackRight().top();
+
+		// Add new card to user hand and start animation
+		addToUserHand(topCard->getCardType());
+		m_userHand[m_userHand.size() - 1]->getCard().setScale(0.8, 0.8);
+		m_userHand[m_userHand.size() - 1]->getCard().setPosition(sf::Vector2f(1162.f, 324.f));
+		posX = 520.f + ((m_userHand.size() - 1) % 6) * 150.f;
+		m_animationPlayer.addAnimation(new Animation(m_userHand[m_userHand.size() - 1]->getCard(), Animation::Type::MOVE_AND_SCALE,
+			0.2, sf::Vector2f(posX, 635.f)));
+
+		// Pop the right deck
+		m_deck->getStackRight().pop();
+		delete topCard;
+		if (!m_deck->getStackRight().empty()) {
+			m_deck->setDiscardDeckRightTexture(m_deck->getStackRight().top()->getCardType());
+		}
+		else {
+			m_deck->setDiscardDeckRightOutOfStockTexture();
+		}
+
+		break;
+	case Game::PileType::MAIN_DECK:
+		m_userHand[m_userHand.size() - 1]->getCard().setScale(0.8, 0.8);
+		m_userHand[m_userHand.size() - 1]->getCard().setPosition(sf::Vector2f(885.f, 280.f));
+		posX = 520.f + ((m_userHand.size() - 1) % 6) * 150.f;
+		m_animationPlayer.addAnimation(new Animation(m_userHand[m_userHand.size() - 1]->getCard(), Animation::Type::MOVE_AND_SCALE,
+			0.2, sf::Vector2f(posX, 635.f)));
+
+		break;
+	default:
+		break;
+	}
+}
+
+void Game::handleDiscardEvent(PileType type, std::string cardName)
+{
+	switch (type)
+	{
+	case Game::PileType::LEFT_DISCARD_PILE:
+		for (int i = 0; i < m_selectedCards.size(); i++) {
+			// Look for the right card to insert to pile
+			if (m_selectedCards[i]->isDragging() && m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName)) {
+				m_deck->getStackLeft().push(m_selectedCards[i]);
+				// Animation card fit into deck, callback to function set texture
+				m_animationPlayer.addAnimation(new Animation(m_selectedCards[i]->getCard(), Animation::Type::MOVE,
+					0.2, sf::Vector2f(650.f, 324.f), 0.8, 0.f, [this]
+				{this->getDeck()->setDiscardDeckLeftTexture(this->m_deck->getStackLeft().top()->getCardType()); }));
+				// Animation card fit into deck, callback to remove from selected cards
+				m_animationPlayer.addAnimation(new Animation(m_selectedCards[i]->getCard(), Animation::Type::SCALE,
+					0.8, 0.2, 0.f, [this, i] {this->getSelectedCards().erase(this->getSelectedCards().begin() + i); }));
+
+				// Reset status
+				m_anyCardDragged = false;
+
+				break;
+			}
+		}
+
+		break;
+
+	case Game::PileType::RIGHT_DISCARD_PILE:
+		for (int i = 0; i < m_selectedCards.size(); i++) {
+			// Look for the right card to insert to pile
+			if (m_selectedCards[i]->isDragging() && m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName)) {
+				m_deck->getStackRight().push(m_selectedCards[i]);
+				// Animation card fit into deck, callback to function set texture
+				m_animationPlayer.addAnimation(new Animation(m_selectedCards[i]->getCard(), Animation::Type::MOVE,
+					0.2, sf::Vector2f(1162.f, 324.f), 0.8, 0.f, [this]
+				{this->getDeck()->setDiscardDeckRightTexture(this->m_deck->getStackRight().top()->getCardType()); }));
+				// Animation card fit into deck, callback to remove from selected cards
+				m_animationPlayer.addAnimation(new Animation(m_selectedCards[i]->getCard(), Animation::Type::SCALE,
+					0.8, 0.2, 0.f, [this, i] {this->getSelectedCards().erase(this->getSelectedCards().begin() + i); }));
+
+				// Reset status
+				m_anyCardDragged = false;
+
+				break;
+			}
+		}
+
+		break;
+
+	default:
+		break;
+	}
+}
+
 Game::Game(std::vector<Player*> playerList)
 {
 	initVariables(playerList);
@@ -166,6 +288,16 @@ bool Game::removeFromUserHand(uint8_t index)
 	m_userHand.erase(m_userHand.begin() + index);
 
 	return true;
+}
+
+std::vector<Card*>& Game::getSelectedCards()
+{
+	return m_selectedCards;
+}
+
+Deck * Game::getDeck()
+{
+	return m_deck;
 }
 
 bool Game::handleMouseClick(sf::Vector2f mousePosXY)
@@ -233,6 +365,9 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 
 	// Left deck is clicked when withdrawing
 	if (m_deck->getDiscardDeckLeft().getGlobalBounds().contains(mousePosXY) && m_gameEvent == WITHDRAW) {
+		// Only interactable if that deck has any card left
+		if (m_deck->getStackLeft().empty()) return false;
+
 		json message;
 		message["MessageType"] = "MERCHANT_WITHDRAW_CARDS";
 		message["PlayerName"] = m_playerList[0]->getPlayerName();
@@ -244,6 +379,9 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 
 	// Right deck is clicked when withdrawing
 	if (m_deck->getDiscardDeckRight().getGlobalBounds().contains(mousePosXY) && m_gameEvent == WITHDRAW) {
+		// Only interactable if that deck has any card left
+		if (m_deck->getStackRight().empty()) return false;
+
 		json message;
 		message["MessageType"] = "MERCHANT_WITHDRAW_CARDS";
 		message["PlayerName"] = m_playerList[0]->getPlayerName();
@@ -264,12 +402,79 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 		Network::sendMessage(messageString);
 	}
 
+	// A selected card is clicked when discarding
+	for (auto& card : m_selectedCards) {
+		if (card->getCard().getGlobalBounds().contains(mousePosXY) && m_gameEvent == DISCARD) {
+			// Start the drag and save static position
+			if (!card->isDragging() && !m_anyCardDragged) {
+				card->setupCardUI(card->getCard().getPosition().x, card->getCard().getPosition().y, sf::Vector2f(0.72, 0.72));
+				card->getCard().setScale(1, 1);
+				m_dragOffset = card->getCard().getPosition() - mousePosXY;
+				m_anyCardDragged = true;
+				card->setDragging(true);
+			}
+		}
+	}
+
+	return true;
+}
+
+bool Game::handleMouseDrag(sf::Vector2f mousePosXY)
+{
+	for (auto& card : m_selectedCards) {
+		if (card->isDragging() && m_gameEvent == DISCARD) {
+			card->getCard().setPosition(mousePosXY + m_dragOffset);
+		}
+	}
+
+	return true;
+}
+
+bool Game::handleMouseRelease()
+{
+	for (int i = 0; i < m_selectedCards.size(); i++) {
+		if (m_selectedCards[i]->isDragging()) {
+			// If the dragged card is placed on top of left discard pile
+			if (m_selectedCards[i]->getCard().getGlobalBounds().intersects(m_deck->getDiscardDeckLeft().getGlobalBounds())) {
+				// Notify server
+				json message;
+				message["MessageType"] = "MERCHANT_DISCARD_CARDS";
+				message["PlayerName"] = m_playerList[0]->getPlayerName();
+				message["Pile"] = "LEFT_DISCARD_PILE";
+				message["Card"] = Card::m_cardNameToString.at(m_selectedCards[i]->getCardType());
+				std::string messageString = message.dump();
+				Network::getInstance().sendMessage(messageString);
+			}
+
+			// If the dragged card is placed on top of right discard pile
+			else if (m_selectedCards[i]->getCard().getGlobalBounds().intersects(m_deck->getDiscardDeckRight().getGlobalBounds())) {
+				// Notify server
+				json message;
+				message["MessageType"] = "MERCHANT_DISCARD_CARDS";
+				message["PlayerName"] = m_playerList[0]->getPlayerName();
+				message["Pile"] = "RIGHT_DISCARD_PILE";
+				message["Card"] = Card::m_cardNameToString.at(m_selectedCards[i]->getCardType());
+				std::string messageString = message.dump();
+				Network::getInstance().sendMessage(messageString);
+			}
+
+			else {
+				// If the dragged card is not placed on anything, reset its UI
+				m_selectedCards[i]->setDragging(false);
+				m_anyCardDragged = false;
+				m_selectedCards[i]->resetStaticPosition();
+			}
+		}
+	}
+
 	return true;
 }
 
 bool Game::pollEvents()
 {
 	while (m_window->pollEvent(m_ev)) {
+		sf::Vector2i mousePosXYLocal = sf::Mouse::getPosition(*m_window);
+		sf::Vector2f mousePosXY = m_window->mapPixelToCoords(mousePosXYLocal);
 		switch (m_ev.type) {
 		case sf::Event::Closed:
 			m_window->close();
@@ -277,11 +482,21 @@ bool Game::pollEvents()
 
 		case sf::Event::MouseButtonPressed:
 			if (m_ev.mouseButton.button == sf::Mouse::Left) {
-				sf::Vector2i mousePosXYLocal = sf::Mouse::getPosition(*m_window);
-				sf::Vector2f mousePosXY = m_window->mapPixelToCoords(mousePosXYLocal);
 				handleMouseClick(mousePosXY);
 			}
 			break;
+
+		case sf::Event::MouseMoved:
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+				handleMouseDrag(mousePosXY);
+			}
+			break;
+
+		case sf::Event::MouseButtonReleased:
+			handleMouseRelease();
+
+			break;
+
 		default:
 			break;
 		}
@@ -314,7 +529,15 @@ bool Game::update()
 		break;
 
 	case Game::DISCARD:
+		if (!m_tablet->isTabletVisible()) {
+			pollEvents();
+		}
+		setupPlayerUI();
 
+		// If all cards are discarded, change game state
+		if (m_selectedCards.empty()) {
+			m_gameEvent = DEFAULT;
+		}
 
 		break;
 
@@ -323,6 +546,11 @@ bool Game::update()
 			pollEvents();
 		}
 		setupPlayerUI();
+
+		// If done withdrawing, change game state
+		if (m_userHand.size() == 6U) {
+			m_gameEvent = DISCARD;
+		}
 
 		break;
 
@@ -386,12 +614,24 @@ bool Game::render()
 
 	// Decks
 	m_window->draw(m_deck->getMainDeck());
+	// A mask to focus on discard event, filter out the main deck
+	if (m_gameEvent == DISCARD) {
+		m_window->draw(m_discardEventMask);
+	}
 	m_window->draw(m_deck->getDiscardDeckLeft());
 	m_window->draw(m_deck->getDiscardDeckRight());
 
 	// Selected cards, for discard,present...
+	Card* draggedCard = nullptr;
 	for (const auto& card : m_selectedCards) {
-		m_window->draw(card->getCard());
+		if (!card->isDragging())
+			m_window->draw(card->getCard());
+		else
+			draggedCard = card;
+	}
+	// The dragged card is rendered last
+	if (draggedCard) {
+		m_window->draw(draggedCard->getCard());
 	}
 
 	// Render the tablet if shown
@@ -519,6 +759,8 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 	if ( jsonMessage["MessageType"] == "MERCHANT_GIVE_BAG_RESPONSE" && 
 		jsonMessage["PlayerName"] == m_playerList[0]->getPlayerName() ) 
 	{
+		std::mutex mutex;
+		std::lock_guard<std::mutex> lock(mutex);
 		if (!m_userHand.empty()) {
 			// Move presented cards from user hand to present bag
 			for (int i = 0; i < m_userHand.size(); i++) {
@@ -540,76 +782,45 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 
 	// Server confirm player withdrawing
 	if (jsonMessage["MessageType"] == "MERCHANT_WITHDRAW_CARDS_RESPONSE") {
+		std::mutex mutex;
+		std::lock_guard<std::mutex> lock(mutex);
 		// Check if it is user's withdraw
 		if (jsonMessage["PlayerName"] == m_playerList[0]->getPlayerName()) {
 			if (jsonMessage["Pile"] == "LEFT_DISCARD_PILE") {
-				Card* topCard = m_deck->getStackLeft().top();
-
-				// Add new card to user hand and start animation
-				addToUserHand(topCard->getCardType());
-				m_userHand[m_userHand.size() - 1]->getCard().setScale(0.8, 0.8);
-				m_userHand[m_userHand.size() - 1]->getCard().setPosition(sf::Vector2f(650.f, 324.f));
-				float posX = 520.f + ((m_userHand.size() - 1) % 6) * 150.f;
-				m_animationPlayer.addAnimation(new Animation(m_userHand[m_userHand.size() - 1]->getCard(), Animation::Type::MOVE_AND_SCALE,
-					0.2, sf::Vector2f(posX, 635.f)));
-
-				// Pop the left deck
-				m_deck->getStackLeft().pop();
-				delete topCard;
-				m_deck->setDiscardDeckLeftTexture(m_deck->getStackLeft().top()->getCardType());
-
-				// If done withdrawing, change game state
-				if (m_userHand.size() == 6U) {
-					m_gameEvent = DEFAULT;
-				}
-
-				// Send a response message
-				Network::getInstance().respondMessage(jsonMessage);
+				handleWithdrawEvent(Game::PileType::LEFT_DISCARD_PILE);
 			}
 			else if (jsonMessage["Pile"] == "RIGHT_DISCARD_PILE") {
-				Card* topCard = m_deck->getStackRight().top();
-
-				// Add new card to user hand and start animation
-				addToUserHand(topCard->getCardType());
-				m_userHand[m_userHand.size() - 1]->getCard().setScale(0.8, 0.8);
-				m_userHand[m_userHand.size() - 1]->getCard().setPosition(sf::Vector2f(1162.f, 324.f));
-				float posX = 520.f + ((m_userHand.size() - 1) % 6) * 150.f;
-				m_animationPlayer.addAnimation(new Animation(m_userHand[m_userHand.size() - 1]->getCard(), Animation::Type::MOVE_AND_SCALE,
-					0.2, sf::Vector2f(posX, 635.f)));
-
-				// Pop the right deck
-				m_deck->getStackRight().pop();
-				delete topCard;
-				m_deck->setDiscardDeckRightTexture(m_deck->getStackRight().top()->getCardType());
-
-				// If done withdrawing, change game state
-				if (m_userHand.size() == 6U) {
-					m_gameEvent = DEFAULT;
-				}
-
-				// Send a response message
-				Network::getInstance().respondMessage(jsonMessage);
+				handleWithdrawEvent(Game::PileType::RIGHT_DISCARD_PILE);
 			}
 			else if (jsonMessage["Pile"] == "MAIN_DECK") {
 				// Add new card to user hand and start animation
 				addToUserHand(Card::m_stringToCardName.at(jsonMessage["Card"]));
-				m_userHand[m_userHand.size() - 1]->getCard().setScale(0.8, 0.8);
-				m_userHand[m_userHand.size() - 1]->getCard().setPosition(sf::Vector2f(885.f, 280.f));
-				float posX = 520.f + ((m_userHand.size() - 1) % 6) * 150.f;
-				m_animationPlayer.addAnimation(new Animation(m_userHand[m_userHand.size() - 1]->getCard(), Animation::Type::MOVE_AND_SCALE,
-					0.2, sf::Vector2f(posX, 635.f)));
-
-				// If done withdrawing, change game state
-				if (m_userHand.size() == 6U) {
-					m_gameEvent = DEFAULT;
-				}
-
-				// Send a response message
-				Network::getInstance().respondMessage(jsonMessage);
+				handleWithdrawEvent(Game::PileType::MAIN_DECK);
 			}
 		}
+
+		// Send a response message
+		Network::getInstance().respondMessage(jsonMessage);
 	}
 
+	// Server confirm player discarding
+	if (jsonMessage["MessageType"] == "MERCHANT_DISCARD_CARDS_RESPONSE") {
+		std::mutex mutex;
+		std::lock_guard<std::mutex> lock(mutex);
+		// Check if it is user's withdraw
+		if (jsonMessage["PlayerName"] == m_playerList[0]->getPlayerName()) {
+			std::string cardName = jsonMessage["Card"];
+			if (jsonMessage["Pile"] == "LEFT_DISCARD_PILE") {
+				handleDiscardEvent(Game::PileType::LEFT_DISCARD_PILE, cardName);
+			}
+			else if (jsonMessage["Pile"] == "RIGHT_DISCARD_PILE") {
+				handleDiscardEvent(Game::PileType::RIGHT_DISCARD_PILE, cardName);
+			}
+		}
+
+		// Send a response message
+		Network::getInstance().respondMessage(jsonMessage);
+	}
 
 }
 

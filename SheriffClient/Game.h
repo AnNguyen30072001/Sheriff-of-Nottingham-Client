@@ -15,6 +15,11 @@
 class Game : public Observer
 {
 public:
+	enum class PileType {
+		LEFT_DISCARD_PILE,
+		RIGHT_DISCARD_PILE,
+		MAIN_DECK
+	};
 	enum GameEvent {
 		DEFAULT,
 		DISCARD,
@@ -31,8 +36,9 @@ public:
 	// Function
 	bool addToUserHand(Card::CardType card);
 	bool removeFromUserHand(uint8_t index);
+	std::vector<Card*>& getSelectedCards();
+	Deck* getDeck();
 
-	bool handleMouseClick(sf::Vector2f mousePosXY);
 	bool pollEvents();
 	bool update();
 	bool render();
@@ -49,6 +55,7 @@ private:
 	sf::Event m_ev;
 	sf::Font m_font;
 	sf::Clock m_clock;
+	sf::Vector2f m_dragOffset;
 	Game::GameEvent m_gameEvent;
 	AnimationManager m_animationPlayer;
 	Timer* m_timer;
@@ -57,6 +64,7 @@ private:
 	sf::RectangleShape m_background;
 	sf::Texture m_backgroundTexture;
 	sf::RectangleShape m_withdrawEventMask;
+	sf::RectangleShape m_discardEventMask;
 
 	sf::RectangleShape m_ButtonLeft;
 	sf::RectangleShape m_ButtonRight;
@@ -70,11 +78,17 @@ private:
 	Tablet* m_tablet;
 
 	bool m_anyCardSelected;
+	bool m_anyCardDragged;
 
 	void initVariables(std::vector<Player*> playerList);
 	void initWindow();
 
+	bool handleMouseClick(sf::Vector2f mousePosXY);
+	bool handleMouseDrag(sf::Vector2f mousePosXY);
+	bool handleMouseRelease();
 	void handlePresentEvent();
+	void handleWithdrawEvent(PileType type);
+	void handleDiscardEvent(PileType type, std::string cardName);
 };
 
 #endif // !GAME__

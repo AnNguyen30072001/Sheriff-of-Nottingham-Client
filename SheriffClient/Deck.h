@@ -21,6 +21,8 @@ public:
 
 	bool setDiscardDeckLeftTexture(Card::CardType card);
 	bool setDiscardDeckRightTexture(Card::CardType card);
+	bool setDiscardDeckLeftOutOfStockTexture();
+	bool setDiscardDeckRightOutOfStockTexture();
 
 private:
 	sf::RectangleShape m_mainDeck;
@@ -34,6 +36,7 @@ private:
 	sf::Texture m_mainDeckTexture;
 	sf::Texture m_discardDeckLeftTexture;
 	sf::Texture m_discardDeckRightTexture;
+	sf::Texture m_outOfStockTexture;
 
 	bool initDeckUI();
 };

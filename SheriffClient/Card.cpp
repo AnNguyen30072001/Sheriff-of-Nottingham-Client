@@ -54,9 +54,11 @@ void Card::setCardTexture(CardType cardType)
 	m_card.setTexture(&m_cardTexture);
 }
 
-void Card::setupCardUI(float posX, float posY)
+void Card::setupCardUI(float posX, float posY, sf::Vector2f scale)
 {
 	m_card.setPosition(posX, posY);
+	m_staticPos = sf::Vector2f(posX, posY);
+	m_staticScale = scale;
 }
 
 AnimationManager & Card::getAnimationPlayer()
@@ -74,6 +76,22 @@ bool Card::isSelected() const
 	return m_isSelected;
 }
 
+void Card::setDragging(const bool status)
+{
+	m_isDragging = status;
+}
+
+bool Card::isDragging() const
+{
+	return m_isDragging;
+}
+
+void Card::resetStaticPosition()
+{
+	m_card.setPosition(m_staticPos);
+	m_card.setScale(m_staticScale);
+}
+
 bool Card::animationMove(float durationSeconds, sf::Vector2f posEndValue, float scaleEndValue, float delay, Callback callback)
 {
 	m_animationPlayer.addAnimation(new Animation(m_card, Animation::Type::MOVE_AND_SCALE, durationSeconds, posEndValue, scaleEndValue, delay, callback));
@@ -89,4 +107,7 @@ void Card::initVariables()
 	m_card.setOutlineColor(sf::Color::Black);
 
 	m_isSelected = false;
+	m_isDragging = false;
+	m_staticPos = sf::Vector2f(0.f, 0.f);
+	m_staticScale = sf::Vector2f(1.f, 1.f);
 }

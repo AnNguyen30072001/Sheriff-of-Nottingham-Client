@@ -272,9 +272,12 @@ void Login::onMessageReceived(const nlohmann::json& jsonMessage)
 		m_popup->show();
 
 		std::cout << "Server refused to accept.\n";
+
+		// Send a response message
+		Network::getInstance().respondMessage(jsonMessage);
 	}
 
-	// Handle Login success
+	// Handle Login success (in this case, response message is not sent here, but sent after Lobby is initiated)
 	else if (jsonMessage["MessageType"] == "GAME_ACCEPT_PLAYER") {
 		// Move on to Lobby screen
 		m_usernameText = jsonMessage["PlayerName"];
@@ -285,8 +288,6 @@ void Login::onMessageReceived(const nlohmann::json& jsonMessage)
 		std::cout << "Message received but could not decode meaningful data.\n";
 	}
 
-	// Send a response message
-	Network::getInstance().respondMessage(jsonMessage);
 }
 
 void Login::sendMessageToServer(const std::string & message)

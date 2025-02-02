@@ -43,7 +43,7 @@ bool Deck::setDiscardDeckLeftTexture(Card::CardType card)
 		std::cerr << "Error loading deck texture!" << std::endl;
 		return false;
 	}
-	m_discardDeckLeft.setTexture(&m_discardDeckLeftTexture);
+	m_discardDeckLeft.setTexture(&m_discardDeckLeftTexture, true);
 
 	return true;
 }
@@ -55,7 +55,21 @@ bool Deck::setDiscardDeckRightTexture(Card::CardType card)
 		std::cerr << "Error loading deck texture!" << std::endl;
 		return false;
 	}
-	m_discardDeckRight.setTexture(&m_discardDeckRightTexture);
+	m_discardDeckRight.setTexture(&m_discardDeckRightTexture, true);
+
+	return true;
+}
+
+bool Deck::setDiscardDeckLeftOutOfStockTexture()
+{
+	m_discardDeckLeft.setTexture(&m_outOfStockTexture, true);
+
+	return true;
+}
+
+bool Deck::setDiscardDeckRightOutOfStockTexture()
+{
+	m_discardDeckRight.setTexture(&m_outOfStockTexture, true);
 
 	return true;
 }
@@ -63,6 +77,9 @@ bool Deck::setDiscardDeckRightTexture(Card::CardType card)
 bool Deck::initDeckUI()
 {
 	if (!m_mainDeckTexture.loadFromFile("Images/MainDeck_2.png")) {
+		std::cerr << "Error loading deck texture!" << std::endl;
+	}
+	if (!m_outOfStockTexture.loadFromFile("Images/OutOfStock.png")) {
 		std::cerr << "Error loading deck texture!" << std::endl;
 	}
 

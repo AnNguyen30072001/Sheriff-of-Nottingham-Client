@@ -217,7 +217,7 @@ void Lobby::onMessageReceived(const nlohmann::json& jsonMessage)
 		}
 	}
 
-	// Handle game start
+	// Handle game start (in this case, response message is not sent here, but sent after Lobby is initiated)
 	else if (jsonMessage["MessageType"] == "GAME_START") {
 		// TO DO: Add UI to indicate game about to start 
 		Sleep(1000);
@@ -228,6 +228,9 @@ void Lobby::onMessageReceived(const nlohmann::json& jsonMessage)
 		std::cout << "Message received but could not decode meaningful data.\n";
 	}
 
-	// Send a response message
-	Network::getInstance().respondMessage(jsonMessage);
+	if (jsonMessage["MessageType"] != "GAME_START") {
+		// Send a response message
+		Network::getInstance().respondMessage(jsonMessage);
+	}
+
 }

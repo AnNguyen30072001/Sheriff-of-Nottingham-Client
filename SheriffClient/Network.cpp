@@ -67,7 +67,7 @@ bool Network::respondMessage(const nlohmann::json & jsonMessage)
 {
 	json messageResponse;
 	messageResponse["MessageType"] = "PLAYERRESPONSE";
-	messageResponse["MessageResponse"] = jsonMessage;
+	messageResponse["ReasonType"] = jsonMessage["MessageType"];
 	std::string messageResponseString = messageResponse.dump();
 
 	return send(messageResponseString);
