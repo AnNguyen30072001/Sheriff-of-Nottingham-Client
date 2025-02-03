@@ -124,9 +124,9 @@ void Game::handlePresentEvent()
 	std::string messageString = message.dump();
 	Network::sendMessage(messageString);
 
-	// Reset game event
+	// Reset tablet and wait for server response
 	m_tablet->resetOptions();
-	m_gameEvent = Game::DEFAULT;
+	m_gameEvent = Game::IDLE;
 }
 
 void Game::handleWithdrawEvent(PileType type)
@@ -204,10 +204,10 @@ void Game::handleDiscardEvent(PileType type, std::string cardName)
 				// Animation card fit into deck, callback to function set texture
 				m_animationPlayer.addAnimation(new Animation(m_selectedCards[i]->getCard(), Animation::Type::MOVE,
 					0.2, sf::Vector2f(650.f, 324.f), 0.8, 0.f, [this]
-				{this->getDeck()->setDiscardDeckLeftTexture(this->m_deck->getStackLeft().top()->getCardType()); }));
+				{this->getDeck()->setDiscardDeckLeftTexture(this->m_deck->getStackLeft().top()->getCardType());}));
 				// Animation card fit into deck, callback to remove from selected cards
 				m_animationPlayer.addAnimation(new Animation(m_selectedCards[i]->getCard(), Animation::Type::SCALE,
-					0.8, 0.2, 0.f, [this, i] {this->getSelectedCards().erase(this->getSelectedCards().begin() + i); }));
+					0.8, 0.2, 0.f, [this, i] {this->getSelectedCards().erase(this->getSelectedCards().begin() + i); this->getGameEvent() = Game::DISCARD; }));
 
 				// Reset status
 				m_anyCardDragged = false;
@@ -229,7 +229,7 @@ void Game::handleDiscardEvent(PileType type, std::string cardName)
 				{this->getDeck()->setDiscardDeckRightTexture(this->m_deck->getStackRight().top()->getCardType()); }));
 				// Animation card fit into deck, callback to remove from selected cards
 				m_animationPlayer.addAnimation(new Animation(m_selectedCards[i]->getCard(), Animation::Type::SCALE,
-					0.8, 0.2, 0.f, [this, i] {this->getSelectedCards().erase(this->getSelectedCards().begin() + i); }));
+					0.8, 0.2, 0.f, [this, i] {this->getSelectedCards().erase(this->getSelectedCards().begin() + i); this->getGameEvent() = Game::DISCARD; }));
 
 				// Reset status
 				m_anyCardDragged = false;
@@ -237,6 +237,77 @@ void Game::handleDiscardEvent(PileType type, std::string cardName)
 				break;
 			}
 		}
+
+		break;
+
+	default:
+		break;
+	}
+}
+
+void Game::handleOpponentWithdrawEvent(PileType type, int playerIndex)
+{
+	Card* dummyCard = nullptr;
+	sf::Vector2f endPos = m_playerList[playerIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f);
+	int index = 0;
+	switch (type)
+	{
+	case Game::PileType::LEFT_DISCARD_PILE:
+		m_dummyCards.push_back(m_deck->getStackLeft().top());
+		index = m_dummyCards.size() - 1;
+		dummyCard = m_dummyCards[index];
+		dummyCard->getCard().setPosition(650.f, 324.f);
+		// Add animation withdraw for the player, pop the left deck and set new texture once animation is done
+		m_animationPlayer.addAnimation(new Animation(dummyCard->getCard(), Animation::Type::MOVE_AND_SCALE, 1.f,
+			endPos, 0.3, 0.f, [this, dummyCard, index]
+		{ 
+			delete dummyCard;
+			if (!m_dummyCards.empty()) { m_dummyCards.erase(m_dummyCards.begin()); }
+		}));
+
+		m_deck->getStackLeft().pop();
+		if (!m_deck->getStackLeft().empty()) {
+			m_deck->setDiscardDeckLeftTexture(m_deck->getStackLeft().top()->getCardType());
+		}
+		else {
+			m_deck->setDiscardDeckLeftOutOfStockTexture();
+		}
+
+		break;
+	case Game::PileType::RIGHT_DISCARD_PILE:
+		m_dummyCards.push_back(m_deck->getStackRight().top());
+		index = m_dummyCards.size() - 1;
+		dummyCard = m_dummyCards[index];
+		dummyCard->getCard().setPosition(1162.f, 324.f);
+		// Add animation withdraw for the player, pop the left deck and set new texture once animation is done
+		m_animationPlayer.addAnimation(new Animation(dummyCard->getCard(), Animation::Type::MOVE_AND_SCALE, 1.f,
+			endPos, 0.3, 0.f, [this, dummyCard, index]
+		{
+			delete dummyCard;
+			if (!m_dummyCards.empty()) { m_dummyCards.erase(m_dummyCards.begin()); }
+		}));
+
+		m_deck->getStackRight().pop();
+		if (!m_deck->getStackRight().empty()) {
+			m_deck->setDiscardDeckRightTexture(m_deck->getStackRight().top()->getCardType());
+		}
+		else {
+			m_deck->setDiscardDeckRightOutOfStockTexture();
+		}
+
+		break;
+	case Game::PileType::MAIN_DECK:
+		// Add animation withdraw of an unknown card
+		m_dummyCards.push_back(new Card(Card::UNKNOWN));
+		index = m_dummyCards.size() - 1;
+		dummyCard = m_dummyCards[index];
+		dummyCard->getCard().setPosition(885.f, 280.f);
+		m_animationPlayer.addAnimation(new Animation(dummyCard->getCard(), Animation::Type::MOVE_AND_SCALE, 1.f,
+			endPos, 0.3, 0.f, [this, dummyCard, index]
+		{
+			delete dummyCard;
+			if (!m_dummyCards.empty()) { m_dummyCards.erase(m_dummyCards.begin()); }
+		}));
 
 		break;
 
@@ -298,6 +369,11 @@ std::vector<Card*>& Game::getSelectedCards()
 Deck * Game::getDeck()
 {
 	return m_deck;
+}
+
+Game::GameEvent & Game::getGameEvent()
+{
+	return m_gameEvent;
 }
 
 bool Game::handleMouseClick(sf::Vector2f mousePosXY)
@@ -444,6 +520,9 @@ bool Game::handleMouseRelease()
 				message["Card"] = Card::m_cardNameToString.at(m_selectedCards[i]->getCardType());
 				std::string messageString = message.dump();
 				Network::getInstance().sendMessage(messageString);
+
+				// Wait for server confirmation
+				m_gameEvent = IDLE;
 			}
 
 			// If the dragged card is placed on top of right discard pile
@@ -456,6 +535,9 @@ bool Game::handleMouseRelease()
 				message["Card"] = Card::m_cardNameToString.at(m_selectedCards[i]->getCardType());
 				std::string messageString = message.dump();
 				Network::getInstance().sendMessage(messageString);
+
+				// Wait for server confirmation
+				m_gameEvent = IDLE;
 			}
 
 			else {
@@ -517,6 +599,10 @@ bool Game::update()
 
 	switch (m_gameEvent)
 	{
+	case Game::IDLE:
+		// Do nothing
+		break;
+
 	case Game::DEFAULT:
 		if (!m_tablet->isTabletVisible()) {
 			pollEvents();
@@ -615,11 +701,18 @@ bool Game::render()
 	// Decks
 	m_window->draw(m_deck->getMainDeck());
 	// A mask to focus on discard event, filter out the main deck
-	if (m_gameEvent == DISCARD) {
+	if (m_gameEvent == DISCARD || (m_gameEvent == IDLE && !m_tablet->isTabletVisible())) {
 		m_window->draw(m_discardEventMask);
 	}
 	m_window->draw(m_deck->getDiscardDeckLeft());
 	m_window->draw(m_deck->getDiscardDeckRight());
+	// Draw opponent's withdraw / discard animation if needed
+	//if (m_dummyCard != nullptr) {
+	//	m_window->draw(m_dummyCard->getCard());
+	//}
+	for (auto& card : m_dummyCards) {
+		m_window->draw(card->getCard());
+	}
 
 	// Selected cards, for discard,present...
 	Card* draggedCard = nullptr;
@@ -773,8 +866,11 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 			for (auto& card : m_selectedCards) {
 				m_animationPlayer.addAnimation(new Animation(card->getCard(), Animation::Type::SCALE, 0.f, 0.3));
 			}
+			// Hide tablet
+			m_tablet->hideTablet();
 			// Re-arrange userhand
 			userHandUI();
+			m_gameEvent = DEFAULT;
 		}
 		// Send a response message
 		Network::getInstance().respondMessage(jsonMessage);
@@ -796,6 +892,23 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 				// Add new card to user hand and start animation
 				addToUserHand(Card::m_stringToCardName.at(jsonMessage["Card"]));
 				handleWithdrawEvent(Game::PileType::MAIN_DECK);
+			}
+		}
+		
+		// If it is not user's withdraw, setup animation of opponent's withdraw
+		else {
+			for (int i = 1; i < m_playerList.size(); i++) {
+				if (jsonMessage["PlayerName"] == m_playerList[i]->getPlayerName()) {
+					if (jsonMessage["Pile"] == "LEFT_DISCARD_PILE") {
+						handleOpponentWithdrawEvent(Game::PileType::LEFT_DISCARD_PILE, i);
+					}
+					else if (jsonMessage["Pile"] == "RIGHT_DISCARD_PILE") {
+						handleOpponentWithdrawEvent(Game::PileType::RIGHT_DISCARD_PILE, i);
+					}
+					else if (jsonMessage["Pile"] == "MAIN_DECK") {
+						handleOpponentWithdrawEvent(Game::PileType::MAIN_DECK, i);
+					}
+				}
 			}
 		}
 

@@ -18,7 +18,8 @@ public:
 		CROSSBOW,
 		MEAD,
 		PEPPER,
-		SILK
+		SILK,
+		UNKNOWN
 	};
 	static const std::unordered_map<CardType, std::string> m_cardNameToString;
 	static const std::unordered_map<std::string, CardType> m_stringToCardName;

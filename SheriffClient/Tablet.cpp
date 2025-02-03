@@ -460,6 +460,5 @@ bool Tablet::confirmSelection()
 	std::cout << "Reported goods: " << Card::m_cardNameToString.at(m_selectedGoods)
 		<< ", Bribe: " << m_bribeAmount << " Gold" << std::endl;
 
-	hideTablet(); // Hide tablet UI
 	return true;
 }

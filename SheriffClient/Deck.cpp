@@ -45,6 +45,9 @@ bool Deck::setDiscardDeckLeftTexture(Card::CardType card)
 	}
 	m_discardDeckLeft.setTexture(&m_discardDeckLeftTexture, true);
 
+	//m_cardsDeckLeft.top()->getCard().setScale(0.8, 0.8);
+	//m_cardsDeckLeft.top()->getCard().setPosition(650.f, 324.f);
+
 	return true;
 }
 
@@ -56,6 +59,9 @@ bool Deck::setDiscardDeckRightTexture(Card::CardType card)
 		return false;
 	}
 	m_discardDeckRight.setTexture(&m_discardDeckRightTexture, true);
+
+	//m_cardsDeckRight.top()->getCard().setScale(0.8, 0.8);
+	//m_cardsDeckRight.top()->getCard().setPosition(1162.f, 324.f);
 
 	return true;
 }

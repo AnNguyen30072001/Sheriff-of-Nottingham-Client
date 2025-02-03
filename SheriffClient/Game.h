@@ -21,6 +21,7 @@ public:
 		MAIN_DECK
 	};
 	enum GameEvent {
+		IDLE,
 		DEFAULT,
 		DISCARD,
 		WITHDRAW,
@@ -38,6 +39,7 @@ public:
 	bool removeFromUserHand(uint8_t index);
 	std::vector<Card*>& getSelectedCards();
 	Deck* getDeck();
+	GameEvent& getGameEvent();
 
 	bool pollEvents();
 	bool update();
@@ -60,22 +62,25 @@ private:
 	AnimationManager m_animationPlayer;
 	Timer* m_timer;
 
-	// Background static stuff
+	// Background static stuffs
 	sf::RectangleShape m_background;
 	sf::Texture m_backgroundTexture;
 	sf::RectangleShape m_withdrawEventMask;
 	sf::RectangleShape m_discardEventMask;
 
+	// Button stuffs
 	sf::RectangleShape m_ButtonLeft;
 	sf::RectangleShape m_ButtonRight;
 	sf::Text m_ButtonLeftText;
 	sf::Text m_ButtonRightText;
 
+	// Card stuffs
 	std::vector<Card*> m_userHand;
 	std::vector<Card*> m_selectedCards;
 	std::vector<Player*> m_playerList;
 	Deck* m_deck;
 	Tablet* m_tablet;
+	std::vector<Card*> m_dummyCards;
 
 	bool m_anyCardSelected;
 	bool m_anyCardDragged;
@@ -89,6 +94,7 @@ private:
 	void handlePresentEvent();
 	void handleWithdrawEvent(PileType type);
 	void handleDiscardEvent(PileType type, std::string cardName);
+	void handleOpponentWithdrawEvent(PileType type, int playerIndex);
 };
 
 #endif // !GAME__

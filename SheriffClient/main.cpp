@@ -70,7 +70,8 @@ int main()
 			if (!game) {
 				// For testing only
 				lobby = new Lobby();
-				lobby->addToPlayerList("Sarah", sf::Color::Blue, true);
+				lobby->addToPlayerList("Sarah", sf::Color::Cyan, true);
+				lobby->addToPlayerList("Josh", sf::Color::Blue, false);
 				Network::getInstance().connect();
 				Network::getInstance().startListening();
 				Network::getInstance().startProcessingMessageQueue();

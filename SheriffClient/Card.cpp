@@ -9,7 +9,8 @@ const std::unordered_map<Card::CardType, std::string> Card::m_cardNameToString =
 	{PEPPER, "Pepper"},
 	{MEAD, "Mead"},
 	{SILK, "Silk"},
-	{CROSSBOW, "Crossbow"}
+	{CROSSBOW, "Crossbow"},
+	{UNKNOWN, "Unknown"}
 };
 
 const std::unordered_map<std::string, Card::CardType> Card::m_stringToCardName = {
@@ -20,7 +21,8 @@ const std::unordered_map<std::string, Card::CardType> Card::m_stringToCardName =
 	{"Pepper", Card::PEPPER},
 	{"Mead", Card::MEAD},
 	{"Silk", Card::SILK},
-	{"Crossbow", Card::CROSSBOW}
+	{"Crossbow", Card::CROSSBOW},
+	{"Unknown", Card::UNKNOWN}
 };
 
 Card::Card(CardType cardType)
