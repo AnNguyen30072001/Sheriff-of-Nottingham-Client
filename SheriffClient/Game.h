@@ -95,6 +95,7 @@ private:
 	void handleWithdrawEvent(PileType type);
 	void handleDiscardEvent(PileType type, std::string cardName);
 	void handleOpponentWithdrawEvent(PileType type, int playerIndex);
+	void handleOpponentDiscardEvent(PileType type, int playerIndex, Card::CardType cardType);
 };
 
 #endif // !GAME__

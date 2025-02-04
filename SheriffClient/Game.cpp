@@ -136,8 +136,9 @@ void Game::handleWithdrawEvent(PileType type)
 	switch (type)
 	{
 	case Game::PileType::LEFT_DISCARD_PILE:
+		if (m_deck->getStackLeft().empty()) return;			// Prevent drawing from null
+		
 		topCard = m_deck->getStackLeft().top();
-
 		// Add new card to user hand and start animation
 		addToUserHand(topCard->getCardType());
 		m_userHand[m_userHand.size() - 1]->getCard().setScale(0.8, 0.8);
@@ -158,8 +159,9 @@ void Game::handleWithdrawEvent(PileType type)
 
 		break;
 	case Game::PileType::RIGHT_DISCARD_PILE:
-		topCard = m_deck->getStackRight().top();
+		if (m_deck->getStackRight().empty()) return;			// Prevent drawing from null
 
+		topCard = m_deck->getStackRight().top();
 		// Add new card to user hand and start animation
 		addToUserHand(topCard->getCardType());
 		m_userHand[m_userHand.size() - 1]->getCard().setScale(0.8, 0.8);
@@ -253,6 +255,8 @@ void Game::handleOpponentWithdrawEvent(PileType type, int playerIndex)
 	switch (type)
 	{
 	case Game::PileType::LEFT_DISCARD_PILE:
+		if (m_deck->getStackLeft().empty()) return;			// Prevent drawing from null
+
 		m_dummyCards.push_back(m_deck->getStackLeft().top());
 		index = m_dummyCards.size() - 1;
 		dummyCard = m_dummyCards[index];
@@ -275,6 +279,8 @@ void Game::handleOpponentWithdrawEvent(PileType type, int playerIndex)
 
 		break;
 	case Game::PileType::RIGHT_DISCARD_PILE:
+		if (m_deck->getStackRight().empty()) return;			// Prevent drawing from null
+
 		m_dummyCards.push_back(m_deck->getStackRight().top());
 		index = m_dummyCards.size() - 1;
 		dummyCard = m_dummyCards[index];
@@ -306,6 +312,55 @@ void Game::handleOpponentWithdrawEvent(PileType type, int playerIndex)
 			endPos, 0.3, 0.f, [this, dummyCard, index]
 		{
 			delete dummyCard;
+			if (!m_dummyCards.empty()) { m_dummyCards.erase(m_dummyCards.begin()); }
+		}));
+
+		break;
+
+	default:
+		break;
+	}
+}
+
+void Game::handleOpponentDiscardEvent(PileType type, int playerIndex, Card::CardType cardType)
+{
+	sf::Vector2f startPos = m_playerList[playerIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f);
+	sf::Vector2f startScale = sf::Vector2f(0.3, 0.3);
+	sf::Vector2f endPosLeft = sf::Vector2f(650.f, 324.f);
+	sf::Vector2f endPosRight = sf::Vector2f(1162.f, 324.f);
+	Card* dummyCard = nullptr;
+	int index = 0;
+
+	switch (type)
+	{
+	case Game::PileType::LEFT_DISCARD_PILE:
+		m_deck->getStackLeft().push(new Card(cardType));
+		m_dummyCards.push_back(m_deck->getStackLeft().top());
+		index = m_dummyCards.size() - 1;
+		dummyCard = m_dummyCards[index];
+		dummyCard->getCard().setPosition(startPos);
+		dummyCard->getCard().setScale(startScale);
+		// Add animation discard card
+		m_animationPlayer.addAnimation(new Animation(dummyCard->getCard(), Animation::Type::MOVE_AND_SCALE, 1.f, 
+			endPosLeft, 0.8, 0.f, [this] 
+		{
+			m_deck->setDiscardDeckLeftTexture(m_deck->getStackLeft().top()->getCardType());
+			if (!m_dummyCards.empty()) { m_dummyCards.erase(m_dummyCards.begin()); }
+		}));
+
+		break;
+	case Game::PileType::RIGHT_DISCARD_PILE:
+		m_deck->getStackRight().push(new Card(cardType));
+		m_dummyCards.push_back(m_deck->getStackRight().top());
+		index = m_dummyCards.size() - 1;
+		dummyCard = m_dummyCards[index];
+		dummyCard->getCard().setPosition(startPos);
+		dummyCard->getCard().setScale(startScale);
+		// Add animation discard card
+		m_animationPlayer.addAnimation(new Animation(dummyCard->getCard(), Animation::Type::MOVE_AND_SCALE, 1.f,
+			endPosRight, 0.8, 0.f, [this]
+		{
+			m_deck->setDiscardDeckRightTexture(m_deck->getStackRight().top()->getCardType());
 			if (!m_dummyCards.empty()) { m_dummyCards.erase(m_dummyCards.begin()); }
 		}));
 
@@ -920,7 +975,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 	if (jsonMessage["MessageType"] == "MERCHANT_DISCARD_CARDS_RESPONSE") {
 		std::mutex mutex;
 		std::lock_guard<std::mutex> lock(mutex);
-		// Check if it is user's withdraw
+		// Check if it is user's discard
 		if (jsonMessage["PlayerName"] == m_playerList[0]->getPlayerName()) {
 			std::string cardName = jsonMessage["Card"];
 			if (jsonMessage["Pile"] == "LEFT_DISCARD_PILE") {
@@ -928,6 +983,22 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 			}
 			else if (jsonMessage["Pile"] == "RIGHT_DISCARD_PILE") {
 				handleDiscardEvent(Game::PileType::RIGHT_DISCARD_PILE, cardName);
+			}
+		}
+
+		// If it is not user's discard, setup animation of opponent's discard
+		else {
+			for (int i = 1; i < m_playerList.size(); i++) {
+				if (jsonMessage["PlayerName"] == m_playerList[i]->getPlayerName()) {
+					// Get card type from message
+					Card::CardType card = Card::m_stringToCardName.at(jsonMessage["Card"]);
+					if (jsonMessage["Pile"] == "LEFT_DISCARD_PILE") {
+						handleOpponentDiscardEvent(Game::PileType::LEFT_DISCARD_PILE, i, card);
+					}
+					else if (jsonMessage["Pile"] == "RIGHT_DISCARD_PILE") {
+						handleOpponentDiscardEvent(Game::PileType::RIGHT_DISCARD_PILE, i, card);
+					}
+				}
 			}
 		}
 
