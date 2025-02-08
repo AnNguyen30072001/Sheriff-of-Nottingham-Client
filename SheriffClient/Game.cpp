@@ -518,14 +518,36 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 		}
 	}
 
-	// If it is user's sheriff turn, the Inspect and Pass buttons are interactable
-	if (m_playerList[0]->isSheriff() && m_playerList[0]->isInTurn() && m_gameEvent == DEFAULT) {
+	// If it is user's sheriff turn, the Inspect and Pass button are interactable
+	if (m_playerList[0]->isSheriff() && m_playerList[0]->isInTurn() && m_gameEvent == SHERIFF_TURN) {
+		// If player press "Inspect" button
+		if (m_ButtonLeft.getGlobalBounds().contains(mousePosXY)) {
+			// Send message to server
+			json message;
+			message["MessageType"] = "SHERIFF_CHECK";
+			message["PlayerName"] = m_playerList[0]->getPlayerName();
+			std::string messageString = message.dump();
+			Network::getInstance().sendMessage(messageString);
+			// Wait for server confirmation
+			m_gameEvent = IDLE;
+		}
 
+		// If player press "Pass" button
+		else if (m_ButtonRight.getGlobalBounds().contains(mousePosXY)) {
+			// Send message to server
+			json message;
+			message["MessageType"] = "SHERIFF_PASS";
+			message["PlayerName"] = m_playerList[0]->getPlayerName();
+			std::string messageString = message.dump();
+			Network::getInstance().sendMessage(messageString);
+			// Wait for server confirmation
+			m_gameEvent = IDLE;
+		}
 	}
 
 	// If a player's catalog is clicked, show that player's info
 	for (auto& player : m_playerList) {
-		if (player->getInfoTabIcon().getGlobalBounds().contains(mousePosXY) && m_gameEvent == DEFAULT) {
+		if (player->getInfoTabIcon().getGlobalBounds().contains(mousePosXY)) {
 			m_tablet->showTablet(Tablet::Type::INFO, player->getPlayerMoney(), player);
 		}
 	}
@@ -747,7 +769,13 @@ bool Game::update()
 		break;
 
 	case Game::SHERIFF_TURN:
+		if (!m_tablet->isTabletVisible()) {
+			pollEvents();
+		}
+		setupPlayerUI();
 
+		// If tablet is shown, it is interactable
+		m_tablet->update();
 
 		break;
 
@@ -829,6 +857,14 @@ bool Game::render()
 		m_window->draw(m_playerList[m_MerchantShowingBagIndex]->getNameText());
 		m_window->draw(m_playerList[m_MerchantShowingBagIndex]->getInfoTabIcon());
 		m_window->draw(m_playerList[m_MerchantShowingBagIndex]->getBagIcon());
+
+		// If it is user's sheriff turn, highlight buttons
+		if (m_playerList[0]->isInTurn()) {
+			m_window->draw(m_ButtonLeft);
+			m_window->draw(m_ButtonLeftText);
+			m_window->draw(m_ButtonRight);
+			m_window->draw(m_ButtonRightText);
+		}
 	}
 
 	// Draw dummy card animation if needed
@@ -924,7 +960,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 		Network::getInstance().respondMessage(jsonMessage);
 	}
 
-	// Game deals role
+	// Game deals role, only care to switch status for sheriff player, the rest are merchants
 	if (jsonMessage["MessageType"] == "GAME_DEALS_ROLE") {
 		if (jsonMessage["Role"] == "SHERIFF") {
 			for (auto& player : m_playerList) {
@@ -1006,11 +1042,27 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 					m_goodsReportText.setString("Report: " + Card::m_cardNameToString.at(m_goodsReport));
 					m_goodsReportText.setPosition((1920.f - m_goodsReportText.getGlobalBounds().width) / 2, 215.f);
 					m_BribeAmountText.setString(std::to_string(m_bribeAmount));
+
+					// Temporary hide all decks and user cards
+					m_deck->getDiscardDeckLeft().setScale(0.f, 0.f);
+					m_deck->getDiscardDeckRight().setScale(0.f, 0.f);
+					m_deck->getMainDeck().setScale(0.f, 0.f);
+					for (auto& card : m_userHand) {
+						card->getCard().setScale(0.f, 0.f);
+					}
 				}
 				// If it is a merchant's turn, reset all previous stored goods infomation, for safety measure
 				else {
 					m_dummyCards.clear();
 					m_selectedCards.clear();
+
+					// Show decks and user cards again
+					m_deck->getDiscardDeckLeft().setScale(1.f, 1.f);
+					m_deck->getDiscardDeckRight().setScale(1.f, 1.f);
+					m_deck->getMainDeck().setScale(1.f, 1.f);
+					for (auto& card : m_userHand) {
+						card->getCard().setScale(1.f, 1.f);
+					}
 				}
 			}
 		}
@@ -1085,9 +1137,9 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 				// Add animation put cards to bag
 				for (int j = 0; j < goodsAmount; j++) {
 					m_dummyCards.push_back(new Card(Card::UNKNOWN));
-					m_dummyCards[j]->getCard().setScale(0.4, 0.4);
-					m_dummyCards[j]->getCard().setPosition(m_playerList[i]->getAvatar().getPosition() + sf::Vector2f(30.f, 30.f));
-					m_animationPlayer.addAnimation(new Animation(m_dummyCards[j]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.5,
+					m_dummyCards[m_dummyCards.size() - 1]->getCard().setScale(0.4, 0.4);
+					m_dummyCards[m_dummyCards.size() - 1]->getCard().setPosition(m_playerList[i]->getAvatar().getPosition() + sf::Vector2f(30.f, 30.f));
+					m_animationPlayer.addAnimation(new Animation(m_dummyCards[m_dummyCards.size() - 1]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.5,
 						m_playerList[i]->getBagIcon().getPosition() + sf::Vector2f(30.f, 30.f), 0.f));
 				}
 				// Animation highlighting bag
