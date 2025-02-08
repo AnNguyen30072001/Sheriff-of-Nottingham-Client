@@ -1,4 +1,5 @@
 #include "Network.h"
+#include <string>
 
 Network::Network(const std::string & serverAddress, unsigned short serverPort) : 
 	m_serverAddress(serverAddress), 
@@ -114,6 +115,13 @@ void Network::listenToServer()
 		}
 		else if (status == sf::Socket::Disconnected) {
 			std::cerr << "Server disconnected." << std::endl;
+
+			// Notify client
+			json message;
+			message["MessageType"] = "SERVER_DISCONNECTED";
+			std::string messageString = message.dump();
+			notifyObservers(messageString);
+
 			m_listening = false;
 			m_connected = false;
 		}

@@ -4,10 +4,6 @@
 
 void Game::initVariables(std::vector<Player*> playerList)
 {
-	m_gameEvent = Game::DEFAULT;
-	m_anyCardSelected = false;
-	m_anyCardDragged = false;
-	m_window = nullptr;
 	if (!m_backgroundTexture.loadFromFile("Images/Background.png")) {
 		std::cerr << "Error loading background texture!";
 	}
@@ -21,6 +17,12 @@ void Game::initVariables(std::vector<Player*> playerList)
 		std::cerr << "Error loading font!\n";
 	}
 
+	m_gameEvent = Game::DEFAULT;
+	m_lastUpdatedGameEvent = DEFAULT;
+	m_elapsedTime = 0.f;
+	m_anyCardSelected = false;
+	m_anyCardDragged = false;
+	m_window = nullptr;
 	m_bribeAmount = 0;
 	m_goodsReport = Card::UNKNOWN;
 	m_dragOffset = sf::Vector2f(0.f, 0.f);
@@ -28,6 +30,7 @@ void Game::initVariables(std::vector<Player*> playerList)
 	m_deck = nullptr;
 	m_tablet = nullptr;
 	m_timer = nullptr;
+	m_disconnectPopup = nullptr;
 	m_MerchantShowingBagIndex = 0;
 }
 
@@ -47,6 +50,7 @@ void Game::initWindow()
 	m_deck = new Deck();
 	m_tablet = new Tablet(m_window);
 	m_timer = new Timer(m_window);
+	m_disconnectPopup = new Popup(m_window, 400, 200);
 
 	// For testing only
 	m_deck->getStackLeft().push(new Card(Card::SILK));
@@ -129,6 +133,27 @@ void Game::initWindow()
 
 	// Initial draw user hand
 	userHandUI();
+}
+
+bool Game::attemptReconnect(float deltaTime)
+{
+	m_elapsedTime += deltaTime;
+	// Attempt reconnect every 5 seconds
+	if (m_elapsedTime < 5.f) {
+		return false;
+	}
+	// Attempt connection to server
+	if (!Network::getInstance().connect()) {
+		m_elapsedTime = 0.f;
+		return false;
+	}
+
+	// Connection success.
+	else {
+		Network::getInstance().startListening();
+		Network::getInstance().startProcessingMessageQueue();
+		return true;
+	}
 }
 
 void Game::handlePresentEvent()
@@ -547,7 +572,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 
 	// If a player's catalog is clicked, show that player's info
 	for (auto& player : m_playerList) {
-		if (player->getInfoTabIcon().getGlobalBounds().contains(mousePosXY)) {
+		if (player->getInfoTabIcon().getGlobalBounds().contains(mousePosXY) && m_gameEvent != DISCONNECTED) {
 			m_tablet->showTablet(Tablet::Type::INFO, player->getPlayerMoney(), player);
 		}
 	}
@@ -712,6 +737,22 @@ bool Game::update()
 
 	switch (m_gameEvent)
 	{
+	case Game::DISCONNECTED:
+		m_disconnectPopup->show();
+		if (!m_tablet->isTabletVisible()) {
+			pollEvents();
+		}
+		// If tablet is shown, it is interactable
+		m_tablet->update();
+
+		// If connection is re-established, restore game state
+		if (attemptReconnect(deltaTime)) {
+			m_disconnectPopup->hide();
+			m_gameEvent = m_lastUpdatedGameEvent;
+		}
+
+		break;
+
 	case Game::IDLE:
 		// Do nothing
 		break;
@@ -731,6 +772,9 @@ bool Game::update()
 		if (!m_tablet->isTabletVisible()) {
 			pollEvents();
 		}
+		// If tablet is shown, it is interactable
+		m_tablet->update();
+
 		setupPlayerUI();
 
 		// If all cards are discarded, change game state
@@ -744,6 +788,9 @@ bool Game::update()
 		if (!m_tablet->isTabletVisible()) {
 			pollEvents();
 		}
+		// If tablet is shown, it is interactable
+		m_tablet->update();
+
 		setupPlayerUI();
 
 		// If done withdrawing, change game state
@@ -772,10 +819,10 @@ bool Game::update()
 		if (!m_tablet->isTabletVisible()) {
 			pollEvents();
 		}
-		setupPlayerUI();
-
 		// If tablet is shown, it is interactable
 		m_tablet->update();
+
+		setupPlayerUI();
 
 		break;
 
@@ -895,6 +942,11 @@ bool Game::render()
 		m_timer->render();
 	}
 
+	// Render popup if experience disconection
+	if (m_gameEvent == DISCONNECTED) {
+		m_disconnectPopup->render();
+	}
+
 	m_window->display();
 
 	return true;
@@ -952,6 +1004,14 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 {
 	// For testing
 	std::cout << "Game receive from Server: " << jsonMessage << std::endl;
+
+	// Disconnected from server
+	if (jsonMessage["MessageType"] == "SERVER_DISCONNECTED") {
+		m_disconnectPopup->setMessage("Server disconnected.\nAttempting reconnection...");
+		m_lastUpdatedGameEvent = m_gameEvent;
+		m_elapsedTime = 0.f;
+		m_gameEvent = DISCONNECTED;
+	}
 
 	// Game start round
 	if (jsonMessage["MessageType"] == "GAME_START_ROUND") {

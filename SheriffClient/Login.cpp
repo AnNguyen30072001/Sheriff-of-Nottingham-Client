@@ -184,7 +184,7 @@ bool Login::update()
 			// Attempt connection to server
 			if (!Network::getInstance().connect()) {
 				// Show Popup saying connection failed
-				m_popup->setMessage("Failed to connect to the server.\nYou have Cambodian Wifi or what?");
+				m_popup->setMessage("Failed to connect to the server.\n");
 				m_popup->show();
 
 				std::cerr << "Failed to connect to the server." << std::endl;
@@ -257,16 +257,16 @@ void Login::onMessageReceived(const nlohmann::json& jsonMessage)
 		// Handle reject reasons
 		std::string reason = jsonMessage["Reason"];
 		if (reason == "FULL") {
-			m_popup->setMessage("Lobby is full.\nGet out nobody needs you.");
+			m_popup->setMessage("Lobby is full.\n");
 		}
 		else if (reason == "SAME_NAME_EXISTS") {
-			m_popup->setMessage("Someone picked your name.\nPick again you uncreative shit.");
+			m_popup->setMessage("Someone picked your name.\n");
 		}
 		else if (reason == "GAME_STARTED") {
-			m_popup->setMessage("Game started. Too slow niga");
+			m_popup->setMessage("Game started.");
 		}
 		else {
-			m_popup->setMessage("Server refused your request. Guess why mf.");
+			m_popup->setMessage("Server refused your request. We don't know why :(");
 		}
 		
 		m_popup->show();

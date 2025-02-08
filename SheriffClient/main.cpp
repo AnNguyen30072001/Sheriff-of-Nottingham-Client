@@ -92,8 +92,8 @@ int main()
 				Network::getInstance().respondMessage(receivedStartMessage);
 
 				// For testing only
-				playerList[2]->setTurn(true);
-				playerList[0]->setSheriffStatus(true);
+				playerList[0]->setTurn(true);
+				playerList[2]->setSheriffStatus(true);
 				playerList[0]->setPlayerMoney(100);
 				//game->addToUserHand(Card::APPLE);
 				//game->addToUserHand(Card::CROSSBOW);

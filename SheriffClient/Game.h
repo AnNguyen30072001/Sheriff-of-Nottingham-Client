@@ -10,6 +10,7 @@
 #include "Network.h"
 #include "Animation.h"
 #include "Timer.h"
+#include "Popup.h"
 
 #pragma once
 class Game : public Observer
@@ -21,6 +22,7 @@ public:
 		MAIN_DECK
 	};
 	enum GameEvent {
+		DISCONNECTED,
 		IDLE,
 		DEFAULT,
 		DISCARD,
@@ -59,6 +61,7 @@ private:
 	sf::Event m_ev;
 	sf::Font m_font;
 	sf::Clock m_clock;
+	Popup* m_disconnectPopup;
 
 	// Background static stuffs
 	sf::RectangleShape m_background;
@@ -88,9 +91,11 @@ private:
 	// Game logic stuff
 	sf::Vector2f m_dragOffset;
 	Game::GameEvent m_gameEvent;
+	Game::GameEvent m_lastUpdatedGameEvent;
 	AnimationManager m_animationPlayer;
 	Timer* m_timer;
 	Card::CardType m_goodsReport;
+	float m_elapsedTime;
 	int	m_bribeAmount;
 	int m_MerchantShowingBagIndex;
 	bool m_anyCardSelected;
@@ -98,6 +103,8 @@ private:
 
 	void initVariables(std::vector<Player*> playerList);
 	void initWindow();
+
+	bool attemptReconnect(float deltaTime);
 
 	bool handleMouseClick(sf::Vector2f mousePosXY);
 	bool handleMouseDrag(sf::Vector2f mousePosXY);
