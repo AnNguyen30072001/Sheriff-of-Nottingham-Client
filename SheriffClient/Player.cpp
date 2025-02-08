@@ -20,15 +20,6 @@ Player::Player(std::string name, sf::Color playerColor, bool isUserPlayer)
 	for (auto& good : m_goods) {
 		good = 0;
 	}
-	//m_money = 0;
-	//m_appleCount = 0;
-	//m_chickenCount = 0;
-	//m_cheeseCount = 0;
-	//m_breadCount = 0;
-	//m_crossbowCount = 0;
-	//m_meadCount = 0;
-	//m_pepperCount = 0;
-	//m_silkCount = 0;
 }
 
 Player::~Player()
@@ -51,6 +42,10 @@ bool Player::initFontAndTexture()
 		return false;
 	}
 	if (!m_infoTabIconTexture.loadFromFile("Images/InfoTab.png")) {
+		std::cerr << "Error loading texture!\n";
+		return false;
+	}
+	if (!m_bagIconTexture.loadFromFile("Images/MerchantBag.png")) {
 		std::cerr << "Error loading texture!\n";
 		return false;
 	}
@@ -93,6 +88,10 @@ bool Player::initUserPlayer(std::string name, sf::Color playerColor)
 	m_sheriffBadge.setFillColor(sf::Color::White);
 	m_sheriffBadge.setTexture(&m_sheriffBadgeTexture);
 
+	m_bagIcon.setSize(sf::Vector2f(80, 80));
+	m_bagIcon.setFillColor(sf::Color::White);
+	m_bagIcon.setTexture(&m_bagIconTexture);
+
 	m_turnIndicator.setFont(m_font);
 	m_turnIndicator.setCharacterSize(24);
 	m_turnIndicator.setFillColor(sf::Color::Green);
@@ -109,6 +108,7 @@ bool Player::initUserPlayer(std::string name, sf::Color playerColor)
 
 	m_infoTabIcon.setPosition(740.f, 890.f);
 	m_sheriffBadge.setPosition(1080.f, 900.f);
+	m_bagIcon.setPosition(1080.f, 900.f);
 	m_turnIndicator.setPosition(922.f, 1025.f);
 
 	return true;
@@ -147,6 +147,10 @@ bool Player::initPlayer(float posX, float posY)
 	m_sheriffBadge.setFillColor(sf::Color::White);
 	m_sheriffBadge.setTexture(&m_sheriffBadgeTexture);
 
+	m_bagIcon.setSize(sf::Vector2f(60, 60));
+	m_bagIcon.setFillColor(sf::Color::White);
+	m_bagIcon.setTexture(&m_bagIconTexture);
+
 	m_turnIndicator.setFont(m_font);
 	m_turnIndicator.setCharacterSize(24);
 	m_turnIndicator.setFillColor(sf::Color::Green);
@@ -166,6 +170,7 @@ bool Player::initPlayer(float posX, float posY)
 
 	m_infoTabIcon.setPosition(posX - 110.f, posY + 12.f);
 	m_sheriffBadge.setPosition(posX + 135.f, posY + 20.f);
+	m_bagIcon.setPosition(posX + 135.f, posY + 20.f);
 	m_turnIndicator.setPosition(posX + 12.f, posY + 115.f);
 
 	return true;
@@ -208,9 +213,14 @@ sf::RectangleShape& Player::getInfoTabIcon()
 	return m_infoTabIcon;
 }
 
-sf::RectangleShape Player::getSheriffBadge() const
+sf::RectangleShape& Player::getSheriffBadge()
 {
 	return m_sheriffBadge;
+}
+
+sf::RectangleShape & Player::getBagIcon()
+{
+	return m_bagIcon;
 }
 
 sf::Text Player::getTurnIndicator() const
@@ -293,83 +303,3 @@ void Player::setPlayerMoney(int value)
 {
 	m_money = value;
 }
-//
-//int Player::getPlayerAppleCount() const
-//{
-//	return m_appleCount;
-//}
-//
-//void Player::setPlayerAppleCount(int value)
-//{
-//	m_appleCount = value;
-//}
-//
-//int Player::getPlayerChickenCount() const
-//{
-//	return m_chickenCount;
-//}
-//
-//void Player::setPlayerChickenCount(int value)
-//{
-//	m_chickenCount = value;
-//}
-//
-//int Player::getPlayerCheeseCount() const
-//{
-//	return m_cheeseCount;
-//}
-//
-//void Player::setPlayerCheeseCount(int value)
-//{
-//	m_cheeseCount = value;
-//}
-//
-//int Player::getPlayerBreadCount() const
-//{
-//	return m_breadCount;
-//}
-//
-//void Player::setPlayerBreadCount(int value)
-//{
-//	m_breadCount = value;
-//}
-//
-//int Player::getPlayerCrossbowCount() const
-//{
-//	return m_crossbowCount;
-//}
-//
-//void Player::setPlayerCrossbowCount(int value)
-//{
-//	m_crossbowCount = value;
-//}
-//
-//int Player::getPlayerSilkCount() const
-//{
-//	return m_silkCount;
-//}
-//
-//void Player::setPlayerSilkCount(int value)
-//{
-//	m_silkCount = value;
-//}
-//
-//int Player::getPlayerMeadCount() const
-//{
-//	return m_meadCount;
-//}
-//
-//void Player::setPlayerMeadCount(int value)
-//{
-//	m_meadCount = value;
-//}
-//
-//int Player::getPlayerPepperCount() const
-//{
-//	return m_pepperCount;
-//}
-//
-//void Player::setPlayerPepperCount(int value)
-//{
-//	m_pepperCount = value;
-//}

@@ -22,6 +22,9 @@ private:
 	sf::RectangleShape m_infoTabIcon;
 	sf::Texture m_infoTabIconTexture;
 
+	sf::RectangleShape m_bagIcon;
+	sf::Texture m_bagIconTexture;
+
 	sf::Text m_turnIndicator;
 
 	bool m_isReady;             
@@ -33,14 +36,6 @@ private:
 
 	int m_goods[8];
 	int m_money;
-	//int m_appleCount;
-	//int m_chickenCount;
-	//int m_cheeseCount;
-	//int m_breadCount;
-	//int m_crossbowCount;
-	//int m_meadCount;
-	//int m_pepperCount;
-	//int m_silkCount;
 
 public:
 	Player(std::string name, sf::Color playerColor, bool isUserPlayer);
@@ -60,7 +55,8 @@ public:
 	sf::Text& getNameText();
 
 	sf::RectangleShape& getInfoTabIcon();
-	sf::RectangleShape getSheriffBadge() const;
+	sf::RectangleShape& getSheriffBadge();
+	sf::RectangleShape& getBagIcon();
 	sf::Text getTurnIndicator() const;
 
 	bool setReadyButtonAppearance(sf::Color color);
@@ -80,30 +76,6 @@ public:
 
 	int getPlayerMoney() const;
 	void setPlayerMoney(int value);
-
-	//int getPlayerAppleCount() const;
-	//void setPlayerAppleCount(int value);
-
-	//int getPlayerChickenCount() const;
-	//void setPlayerChickenCount(int value);
-
-	//int getPlayerCheeseCount() const;
-	//void setPlayerCheeseCount(int value);
-
-	//int getPlayerBreadCount() const;
-	//void setPlayerBreadCount(int value);
-
-	//int getPlayerCrossbowCount() const;
-	//void setPlayerCrossbowCount(int value);
-
-	//int getPlayerSilkCount() const;
-	//void setPlayerSilkCount(int value);
-
-	//int getPlayerMeadCount() const;
-	//void setPlayerMeadCount(int value);
-
-	//int getPlayerPepperCount() const;
-	//void setPlayerPepperCount(int value);
 };
 
 #endif // !PLAYER__

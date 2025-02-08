@@ -1,5 +1,6 @@
 #include "game.h"
 #include <Windows.h>
+#include <string.h>
 
 void Game::initVariables(std::vector<Player*> playerList)
 {
@@ -12,15 +13,22 @@ void Game::initVariables(std::vector<Player*> playerList)
 	}
 	m_backgroundTexture.setSmooth(true);
 
+	if (!m_moneyIconTexture.loadFromFile("Images/MoneyIcon.png")) {
+		std::cerr << "Error loading game texture!";
+	}
+
 	if (!m_font.loadFromFile("arial-font/arial.ttf")) {
 		std::cerr << "Error loading font!\n";
 	}
 
+	m_bribeAmount = 0;
+	m_goodsReport = Card::UNKNOWN;
 	m_dragOffset = sf::Vector2f(0.f, 0.f);
 	m_playerList = playerList;
 	m_deck = nullptr;
 	m_tablet = nullptr;
 	m_timer = nullptr;
+	m_MerchantShowingBagIndex = 0;
 }
 
 void Game::initWindow()
@@ -29,6 +37,12 @@ void Game::initWindow()
 	m_videoMode.height = 1080;
 	m_window = new sf::RenderWindow(m_videoMode, "Sheriff of Nottingham", sf::Style::Default);
 	m_window->setVerticalSyncEnabled(true);
+
+	for (int i = 1; i < m_playerList.size(); i++) {
+		// Positioning players
+		float xOffset = -230.f + (i % 6) * 380.f; // Distribute evenly horizontally
+		m_playerList[i]->initPlayer(xOffset, 50.f);
+	}
 
 	m_deck = new Deck();
 	m_tablet = new Tablet(m_window);
@@ -58,6 +72,8 @@ void Game::initWindow()
 	m_withdrawEventMask.setFillColor(sf::Color(0, 0, 0, 180));
 	m_discardEventMask.setSize(sf::Vector2f(1920.f, 1080.f));
 	m_discardEventMask.setFillColor(sf::Color(0, 0, 0, 180));
+	m_SheriffEventMask.setSize(sf::Vector2f(1920.f, 1080.f));
+	m_SheriffEventMask.setFillColor(sf::Color(0, 0, 0, 180));
 
 	// Configure the button left
 	m_ButtonLeft.setSize(sf::Vector2f(170.f, 70.f));
@@ -87,6 +103,17 @@ void Game::initWindow()
 	sf::FloatRect textBoundsRight = m_ButtonRightText.getLocalBounds();
 	m_ButtonRightText.setOrigin(textBoundsRight.left + textBoundsRight.width / 2, textBoundsRight.top + textBoundsRight.height / 2);
 
+	// Setup bribe amount, goods report
+	m_goodsReportText.setFont(m_font);
+	m_goodsReportText.setCharacterSize(48);
+	m_goodsReportText.setFillColor(sf::Color::White);
+	m_BribeAmountText.setFont(m_font);
+	m_BribeAmountText.setCharacterSize(48);
+	m_BribeAmountText.setFillColor(sf::Color::White);
+	m_moneyIcon.setSize(sf::Vector2f(100.f, 100.f));
+	m_moneyIcon.setFillColor(sf::Color::White);
+	m_moneyIcon.setTexture(&m_moneyIconTexture);
+
 	// Positioning buttons
 	m_ButtonLeft.setPosition(500.f, 905.f);
 	m_ButtonRight.setPosition(1245.f, 905.f);
@@ -94,6 +121,11 @@ void Game::initWindow()
 		m_ButtonLeft.getPosition().y + m_ButtonLeft.getSize().y / 2);
 	m_ButtonRightText.setPosition(m_ButtonRight.getPosition().x + m_ButtonRight.getSize().x / 2,
 		m_ButtonRight.getPosition().y + m_ButtonRight.getSize().y / 2);
+
+	// Positioning bribe amount, goods report
+	m_goodsReportText.setPosition(804.f, 215.f);
+	m_moneyIcon.setPosition(910.f, 515.f);
+	m_BribeAmountText.setPosition(1030.f, 534.f);
 
 	// Initial draw user hand
 	userHandUI();
@@ -123,6 +155,10 @@ void Game::handlePresentEvent()
 	// Convert message and send
 	std::string messageString = message.dump();
 	Network::sendMessage(messageString);
+
+	// Save information for next Sheriff turn
+	m_goodsReport = m_tablet->getPresentedGoods();
+	m_bribeAmount = m_tablet->getBribeAmount();
 
 	// Reset tablet and wait for server response
 	m_tablet->resetOptions();
@@ -710,6 +746,11 @@ bool Game::update()
 		}
 		break;
 
+	case Game::SHERIFF_TURN:
+
+
+		break;
+
 	default:
 		break;
 	}
@@ -725,12 +766,17 @@ bool Game::render()
 	m_window->draw(m_background);
 
 	// Player avatar and stuff
+	Player* sheriffPlayer = nullptr;
 	for (const auto& player : m_playerList) {
 		m_window->draw(player->getAvatar());
 		m_window->draw(player->getNameText());
 		m_window->draw(player->getInfoTabIcon());
 		if (player->isSheriff()) {
+			sheriffPlayer = player;
 			m_window->draw(player->getSheriffBadge());
+		}
+		else {
+			m_window->draw(player->getBagIcon());
 		}
 		if (player->isInTurn()) {
 			m_window->draw(player->getTurnIndicator());
@@ -753,18 +799,39 @@ bool Game::render()
 		m_window->draw(card->getCard());
 	}
 
-	// Decks
-	m_window->draw(m_deck->getMainDeck());
-	// A mask to focus on discard event, filter out the main deck
-	if (m_gameEvent == DISCARD || (m_gameEvent == IDLE && !m_tablet->isTabletVisible())) {
-		m_window->draw(m_discardEventMask);
+	// Draw decks if it is not sheriff turn
+	if (m_gameEvent != SHERIFF_TURN) {
+		// Decks
+		m_window->draw(m_deck->getMainDeck());
+		// A mask to focus on discard event, filter out the main deck
+		if (m_gameEvent == DISCARD || (m_gameEvent == IDLE && !m_tablet->isTabletVisible())) {
+			m_window->draw(m_discardEventMask);
+		}
+		m_window->draw(m_deck->getDiscardDeckLeft());
+		m_window->draw(m_deck->getDiscardDeckRight());
 	}
-	m_window->draw(m_deck->getDiscardDeckLeft());
-	m_window->draw(m_deck->getDiscardDeckRight());
-	// Draw opponent's withdraw / discard animation if needed
-	//if (m_dummyCard != nullptr) {
-	//	m_window->draw(m_dummyCard->getCard());
-	//}
+
+	// Draw Sheriff event objects
+	if (m_gameEvent == SHERIFF_TURN) {
+		// Draw objects
+		m_window->draw(m_SheriffEventMask);
+		m_window->draw(m_goodsReportText);
+		m_window->draw(m_moneyIcon);
+		m_window->draw(m_BribeAmountText);
+
+		// Draw highlighted sheriff and merchant
+		m_window->draw(sheriffPlayer->getAvatar());
+		m_window->draw(sheriffPlayer->getNameText());
+		m_window->draw(sheriffPlayer->getInfoTabIcon());
+		m_window->draw(sheriffPlayer->getSheriffBadge());
+		m_window->draw(sheriffPlayer->getTurnIndicator());
+		m_window->draw(m_playerList[m_MerchantShowingBagIndex]->getAvatar());
+		m_window->draw(m_playerList[m_MerchantShowingBagIndex]->getNameText());
+		m_window->draw(m_playerList[m_MerchantShowingBagIndex]->getInfoTabIcon());
+		m_window->draw(m_playerList[m_MerchantShowingBagIndex]->getBagIcon());
+	}
+
+	// Draw dummy card animation if needed
 	for (auto& card : m_dummyCards) {
 		m_window->draw(card->getCard());
 	}
@@ -816,10 +883,6 @@ bool Game::setupPlayerUI()
 
 			continue;
 		}
-		// Positioning
-		float xOffset = -230.f + (i % 6) * 380.f; // Distribute evenly horizontally
-
-		m_playerList[i]->initPlayer(xOffset, 50.f);
 	}
 
 	return true;
@@ -853,6 +916,29 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 {
 	// For testing
 	std::cout << "Game receive from Server: " << jsonMessage << std::endl;
+
+	// Game start round
+	if (jsonMessage["MessageType"] == "GAME_START_ROUND") {
+		// T.B.D
+		// Send a response message
+		Network::getInstance().respondMessage(jsonMessage);
+	}
+
+	// Game deals role
+	if (jsonMessage["MessageType"] == "GAME_DEALS_ROLE") {
+		if (jsonMessage["Role"] == "SHERIFF") {
+			for (auto& player : m_playerList) {
+				if (player->getPlayerName() == jsonMessage["PlayerName"]) {
+					player->setSheriffStatus(true);
+				}
+				else {
+					player->setSheriffStatus(false);
+				}
+			}
+		}
+		// Send a response message
+		Network::getInstance().respondMessage(jsonMessage);
+	}
 
 	// Game Deals Cards
 	if (jsonMessage["MessageType"] == "GAME_DEALS_CARDS" && jsonMessage.contains("Cards")) {
@@ -888,14 +974,43 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 	// Start a new turn
 	if (jsonMessage["MessageType"] == "GAME_START_TURN") {
 		std::string playerName = jsonMessage["PlayerName"];
-		for (auto& player : m_playerList) {
-			if (player->getPlayerName() == playerName) {
-				player->setTurn(true);
+		for (int i = 0; i < m_playerList.size(); i++) {
+			// Reset turn UI
+			m_playerList[i]->setTurn(false);
+			// Handle logic if find player's turn
+			if (m_playerList[i]->getPlayerName() == playerName) {
+				m_playerList[i]->setTurn(true);
 
 				// Start the timer if user player
-				if (player->isUserPlayer()) {
+				if (m_playerList[i]->isUserPlayer()) {
 					m_timer->reset();
 					m_timer->start();
+				}
+
+				// If it is sheriff's turn, setup animations and UI of giving bag
+				if (m_playerList[i]->isSheriff() && !m_dummyCards.empty()) {
+					// Change game state
+					m_gameEvent = SHERIFF_TURN;
+					// Setup initial position to make sure the cards are centered
+					float totalWidth = m_dummyCards.size() * 135.f + (m_dummyCards.size() - 1) * 15.f;
+					float posXOffset = ((1920 - totalWidth) / 2.f) + 67.5;
+					// Animation
+					for (int i = 0; i < m_dummyCards.size(); i++) {
+						float posX = posXOffset + i * (135.f + 15.f);
+						m_dummyCards[i]->getCard().setOrigin(67.5, 97.5);
+						m_animationPlayer.addAnimation(new Animation(m_dummyCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.3,
+							sf::Vector2f(posX, 395.f), 1.f));
+					}
+
+					// Set infomation
+					m_goodsReportText.setString("Report: " + Card::m_cardNameToString.at(m_goodsReport));
+					m_goodsReportText.setPosition((1920.f - m_goodsReportText.getGlobalBounds().width) / 2, 215.f);
+					m_BribeAmountText.setString(std::to_string(m_bribeAmount));
+				}
+				// If it is a merchant's turn, reset all previous stored goods infomation, for safety measure
+				else {
+					m_dummyCards.clear();
+					m_selectedCards.clear();
 				}
 			}
 		}
@@ -916,19 +1031,79 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 					m_selectedCards.push_back(m_userHand[i]);
 					removeFromUserHand(i);
 					i--;
+					// Push a dummy card to render next Sheriff turn
+					m_dummyCards.push_back(new Card(Card::UNKNOWN));
+					m_dummyCards[m_dummyCards.size() - 1]->getCard().setScale(0.f, 0.f);
+					m_dummyCards[m_dummyCards.size() - 1]->getCard().setPosition(m_playerList[0]->getBagIcon().getPosition() + sf::Vector2f(40.f, 40.f));
 				}
 			}
+			// Animation highlighting bag
+			m_animationPlayer.addAnimation(new Animation(m_playerList[0]->getBagIcon(), Animation::Type::SCALE, 1.2, 0.15, 0.2, 
+				[this, jsonMessage]
+			{
+				m_animationPlayer.addAnimation(new Animation(m_playerList[0]->getBagIcon(), Animation::Type::SCALE, 1.f, 0.15, 0.f, 
+					[this, jsonMessage]
+				{
+					// Send a response message
+					Network::getInstance().respondMessage(jsonMessage);
+				}));
+			}));
 			for (auto& card : m_selectedCards) {
-				m_animationPlayer.addAnimation(new Animation(card->getCard(), Animation::Type::SCALE, 0.f, 0.3));
+				// Animation put cards into bag
+				m_animationPlayer.addAnimation(new Animation(card->getCard(), Animation::Type::MOVE_AND_SCALE, 0.3f,
+					m_playerList[0]->getBagIcon().getPosition() + sf::Vector2f(40.f, 40.f), 0.f));
 			}
+			// Store information of merchant giving bag for next Sheriff turn
+			m_MerchantShowingBagIndex = 0;
 			// Hide tablet
 			m_tablet->hideTablet();
 			// Re-arrange userhand
 			userHandUI();
 			m_gameEvent = DEFAULT;
 		}
-		// Send a response message
-		Network::getInstance().respondMessage(jsonMessage);
+	}
+
+	// Server confirm give bag event of opponents
+	if (jsonMessage["MessageType"] == "MERCHANT_GIVE_BAG") {
+		std::mutex mutex;
+		std::lock_guard<std::mutex> lock(mutex);
+		for (int i = 0; i < m_playerList.size(); i++) {
+			if (m_playerList[i]->getPlayerName() == jsonMessage["PlayerName"]) {
+				// Clear dummy cards to store new ones. Just a safety measure
+				for (auto& card : m_dummyCards) {
+					delete card;
+				}
+				m_dummyCards.clear();
+
+				// Store data to render the next Sheriff turn
+				m_goodsReport = Card::m_stringToCardName.at(jsonMessage["Report"]);
+				m_bribeAmount = jsonMessage["Fee"];
+				std::string amount = jsonMessage["Amount"];
+				int goodsAmount = std::stoi(amount);
+				m_MerchantShowingBagIndex = i;
+
+				// Add animation put cards to bag
+				for (int j = 0; j < goodsAmount; j++) {
+					m_dummyCards.push_back(new Card(Card::UNKNOWN));
+					m_dummyCards[j]->getCard().setScale(0.4, 0.4);
+					m_dummyCards[j]->getCard().setPosition(m_playerList[i]->getAvatar().getPosition() + sf::Vector2f(30.f, 30.f));
+					m_animationPlayer.addAnimation(new Animation(m_dummyCards[j]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.5,
+						m_playerList[i]->getBagIcon().getPosition() + sf::Vector2f(30.f, 30.f), 0.f));
+				}
+				// Animation highlighting bag
+				m_animationPlayer.addAnimation(new Animation(m_playerList[i]->getBagIcon(), Animation::Type::SCALE, 1.2, 0.2, 0.3,
+					[this, jsonMessage, i]
+				{
+					m_animationPlayer.addAnimation(new Animation(m_playerList[i]->getBagIcon(), Animation::Type::SCALE, 1.f, 0.2, 0.f,
+						[this, jsonMessage]
+					{
+						// Send a response message
+						Network::getInstance().respondMessage(jsonMessage);
+					}));
+				}));
+				break;
+			}
+		}
 	}
 
 	// Server confirm player withdrawing

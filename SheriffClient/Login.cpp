@@ -16,7 +16,7 @@ bool Login::initWindow()
 	m_window = new sf::RenderWindow(m_videoMode, "Sheriff of Nottingham", sf::Style::Default);
 	m_window->setVerticalSyncEnabled(true);
 
-	m_popup = new Popup(m_window, 600, 300);
+	m_popup = new Popup(m_window, 500, 200);
 
 	// Create UI for login screen
 	// Font

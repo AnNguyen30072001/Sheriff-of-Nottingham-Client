@@ -25,7 +25,8 @@ public:
 		DEFAULT,
 		DISCARD,
 		WITHDRAW,
-		PRESENT
+		PRESENT,
+		SHERIFF_TURN
 	};
 
 	Game(std::vector<Player*> playerList);
@@ -52,27 +53,29 @@ public:
 	void onMessageReceived(const nlohmann::json& jsonMessage);
 
 private:
+	// Initial stuffs
 	sf::RenderWindow* m_window;
 	sf::VideoMode m_videoMode;
 	sf::Event m_ev;
 	sf::Font m_font;
 	sf::Clock m_clock;
-	sf::Vector2f m_dragOffset;
-	Game::GameEvent m_gameEvent;
-	AnimationManager m_animationPlayer;
-	Timer* m_timer;
 
 	// Background static stuffs
 	sf::RectangleShape m_background;
 	sf::Texture m_backgroundTexture;
 	sf::RectangleShape m_withdrawEventMask;
 	sf::RectangleShape m_discardEventMask;
+	sf::RectangleShape m_SheriffEventMask;
 
-	// Button stuffs
+	// Objects
 	sf::RectangleShape m_ButtonLeft;
 	sf::RectangleShape m_ButtonRight;
 	sf::Text m_ButtonLeftText;
 	sf::Text m_ButtonRightText;
+	sf::RectangleShape m_moneyIcon;
+	sf::Texture m_moneyIconTexture;
+	sf::Text m_BribeAmountText;
+	sf::Text m_goodsReportText;
 
 	// Card stuffs
 	std::vector<Card*> m_userHand;
@@ -80,8 +83,16 @@ private:
 	std::vector<Player*> m_playerList;
 	Deck* m_deck;
 	Tablet* m_tablet;
-	std::vector<Card*> m_dummyCards;
+	std::vector<Card*> m_dummyCards;		// Dummy cards for animation render and temporary displays
 
+	// Game logic stuff
+	sf::Vector2f m_dragOffset;
+	Game::GameEvent m_gameEvent;
+	AnimationManager m_animationPlayer;
+	Timer* m_timer;
+	Card::CardType m_goodsReport;
+	int	m_bribeAmount;
+	int m_MerchantShowingBagIndex;
 	bool m_anyCardSelected;
 	bool m_anyCardDragged;
 

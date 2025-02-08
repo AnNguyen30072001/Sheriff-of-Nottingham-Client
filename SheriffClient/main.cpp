@@ -72,6 +72,9 @@ int main()
 				lobby = new Lobby();
 				lobby->addToPlayerList("Sarah", sf::Color::Cyan, true);
 				lobby->addToPlayerList("Josh", sf::Color::Blue, false);
+				lobby->addToPlayerList("Minh", sf::Color::Blue, false);
+				lobby->addToPlayerList("Bob", sf::Color::Blue, false, Lobby::FRONT);
+				lobby->addToPlayerList("Hoang", sf::Color::Blue, false, Lobby::FRONT);
 				Network::getInstance().connect();
 				Network::getInstance().startListening();
 				Network::getInstance().startProcessingMessageQueue();
@@ -89,8 +92,8 @@ int main()
 				Network::getInstance().respondMessage(receivedStartMessage);
 
 				// For testing only
-				playerList[0]->setTurn(true);
-				playerList[0]->setSheriffStatus(false);
+				playerList[2]->setTurn(true);
+				playerList[0]->setSheriffStatus(true);
 				playerList[0]->setPlayerMoney(100);
 				//game->addToUserHand(Card::APPLE);
 				//game->addToUserHand(Card::CROSSBOW);

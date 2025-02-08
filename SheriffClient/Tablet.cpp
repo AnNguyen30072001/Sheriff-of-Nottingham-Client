@@ -314,10 +314,10 @@ void Tablet::resetOptions()
 void Tablet::setupGiveBagUI()
 {
 	// Tablet background
-	m_tabletGiveBag.setSize({ 750, 400 });
+	m_tabletGiveBag.setSize(sf::Vector2f(750.f, 400.f));
 	m_tabletGiveBag.setFillColor(sf::Color::White);
 	m_tabletGiveBag.setTexture(&m_tabletTextureGiveBag);
-	m_tabletGiveBag.setPosition(m_parentWindow->getSize().x / 2 - m_tabletGiveBag.getSize().x / 2, 150);
+	m_tabletGiveBag.setPosition(585.f, 150.f);
 
 	// Goods buttons
 	std::string texturePaths[4] = { "AppleReport.png", "BreadReport.png", "CheeseReport.png", "ChickenReport.png" };
@@ -383,10 +383,10 @@ void Tablet::setupGiveBagUI()
 void Tablet::setupInfoUI(Player * player)
 {
 	// Tablet background
-	m_tabletInfo.setSize({ 1110, 1158 });
+	m_tabletInfo.setSize(sf::Vector2f(1110.f, 1158.f));
 	m_tabletInfo.setFillColor(sf::Color::White);
 	m_tabletInfo.setTexture(&m_tabletTextureInfo);
-	m_tabletInfo.setPosition(m_parentWindow->getSize().x / 2 - m_tabletInfo.getSize().x / 2, -39.f);
+	m_tabletInfo.setPosition(405.f, -39.f);
 
 	// Player avatar
 	m_playerAvatar = player->getAvatar();
