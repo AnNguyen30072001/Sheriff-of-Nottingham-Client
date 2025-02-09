@@ -86,6 +86,8 @@ void Timer::update()
 
 void Timer::render()
 {
+	if (!m_isRunning) return;
+
 	m_parentWindow->draw(m_timerIcon);
 	m_parentWindow->draw(m_timerText);
 }

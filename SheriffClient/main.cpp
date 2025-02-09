@@ -17,7 +17,7 @@ gameState g_gameState;
 
 int main() 
 {
-	g_gameState = GAME_VIEW;
+	g_gameState = LOGIN_VIEW;
 
 	Login* login = nullptr;
 	Lobby* lobby = nullptr;
@@ -69,15 +69,15 @@ int main()
 		case GAME_VIEW:
 			if (!game) {
 				// For testing only
-				lobby = new Lobby();
-				lobby->addToPlayerList("Sarah", sf::Color::Cyan, true);
-				lobby->addToPlayerList("Josh", sf::Color::Blue, false);
-				lobby->addToPlayerList("Minh", sf::Color::Blue, false);
-				lobby->addToPlayerList("Bob", sf::Color::Blue, false, Lobby::FRONT);
-				lobby->addToPlayerList("Hoang", sf::Color::Blue, false, Lobby::FRONT);
-				Network::getInstance().connect();
-				Network::getInstance().startListening();
-				Network::getInstance().startProcessingMessageQueue();
+				//lobby = new Lobby();
+				//lobby->addToPlayerList("Sarah", sf::Color::Cyan, true);
+				//lobby->addToPlayerList("Josh", sf::Color::Blue, false);
+				//lobby->addToPlayerList("Minh", sf::Color::Blue, false);
+				//lobby->addToPlayerList("Bob", sf::Color::Blue, false, Lobby::FRONT);
+				//lobby->addToPlayerList("Hoang", sf::Color::Blue, false, Lobby::FRONT);
+				//Network::getInstance().connect();
+				//Network::getInstance().startListening();
+				//Network::getInstance().startProcessingMessageQueue();
 				// EoT
 
 				// Real logic code
@@ -92,10 +92,10 @@ int main()
 				Network::getInstance().respondMessage(receivedStartMessage);
 
 				// For testing only
-				playerList[0]->setTurn(true);
-				playerList[2]->setSheriffStatus(true);
-				playerList[0]->setPlayerMoney(99);
-				playerList[2]->setPlayerMoney(9);
+				//playerList[2]->setTurn(true);
+				//playerList[0]->setSheriffStatus(true);
+				//playerList[0]->setPlayerMoney(99);
+				//playerList[2]->setPlayerMoney(9);
 				//game->addToUserHand(Card::APPLE);
 				//game->addToUserHand(Card::CROSSBOW);
 				//game->addToUserHand(Card::CHICKEN);

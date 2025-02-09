@@ -107,6 +107,7 @@ private:
 	int m_MerchantShowingBagIndex;
 	bool m_anyCardSelected;
 	bool m_anyCardDragged;
+	bool m_discardDone;
 	bool m_revealingDone;
 
 	void initVariables(std::vector<Player*> playerList);
