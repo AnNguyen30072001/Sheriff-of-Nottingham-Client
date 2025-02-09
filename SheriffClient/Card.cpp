@@ -14,15 +14,39 @@ const std::unordered_map<Card::CardType, std::string> Card::m_cardNameToString =
 };
 
 const std::unordered_map<std::string, Card::CardType> Card::m_stringToCardName = {
-	{"Apple", Card::APPLE},
-	{"Cheese", Card::CHEESE},
-	{"Bread", Card::BREAD},
-	{"Chicken", Card::CHICKEN},
-	{"Pepper", Card::PEPPER},
-	{"Mead", Card::MEAD},
-	{"Silk", Card::SILK},
-	{"Crossbow", Card::CROSSBOW},
-	{"Unknown", Card::UNKNOWN}
+	{"Apple", APPLE},
+	{"Cheese", CHEESE},
+	{"Bread", BREAD},
+	{"Chicken", CHICKEN},
+	{"Pepper", PEPPER},
+	{"Mead", MEAD},
+	{"Silk", SILK},
+	{"Crossbow", CROSSBOW},
+	{"Unknown", UNKNOWN}
+};
+
+const std::unordered_map<Card::CardType, int> Card::cardTypeToValue = {
+	{APPLE, 2},
+	{CHEESE, 3},
+	{BREAD, 3},
+	{CHICKEN, 4},
+	{PEPPER, 6},
+	{MEAD, 7},
+	{SILK, 8},
+	{CROSSBOW, 9},
+	{UNKNOWN, 0}
+};
+
+const std::unordered_map<Card::CardType, int> Card::cardTypeToPenalty = {
+	{APPLE, 2},
+	{CHEESE, 2},
+	{BREAD, 2},
+	{CHICKEN, 2},
+	{PEPPER, 4},
+	{MEAD, 4},
+	{SILK, 4},
+	{CROSSBOW, 4},
+	{UNKNOWN, 0}
 };
 
 Card::Card(CardType cardType)
@@ -53,7 +77,8 @@ void Card::setCardTexture(CardType cardType)
 	if (!m_cardTexture.loadFromFile(texturePath)) {
 		std::cerr << "Error loading card texture!" << std::endl;
 	}
-	m_card.setTexture(&m_cardTexture);
+	m_card.setTexture(&m_cardTexture, true);
+	m_cardType = cardType;
 }
 
 void Card::setupCardUI(float posX, float posY, sf::Vector2f scale)
@@ -112,4 +137,9 @@ void Card::initVariables()
 	m_isDragging = false;
 	m_staticPos = sf::Vector2f(0.f, 0.f);
 	m_staticScale = sf::Vector2f(1.f, 1.f);
+
+	// If card type is unknown, initially hide the card
+	if (m_cardType == UNKNOWN) {
+		m_card.setScale(0.f, 0.f);
+	}
 }

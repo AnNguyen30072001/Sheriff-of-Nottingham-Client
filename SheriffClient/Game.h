@@ -28,7 +28,8 @@ public:
 		DISCARD,
 		WITHDRAW,
 		PRESENT,
-		SHERIFF_TURN
+		SHERIFF_TURN,
+		REVEAL
 	};
 
 	Game(std::vector<Player*> playerList);
@@ -77,8 +78,9 @@ private:
 	sf::Text m_ButtonRightText;
 	sf::RectangleShape m_moneyIcon;
 	sf::Texture m_moneyIconTexture;
-	sf::Text m_BribeAmountText;
+	sf::Text m_moneyText;
 	sf::Text m_goodsReportText;
+	sf::Text m_infoText;
 
 	// Card stuffs
 	std::vector<Card*> m_userHand;
@@ -87,6 +89,11 @@ private:
 	Deck* m_deck;
 	Tablet* m_tablet;
 	std::vector<Card*> m_dummyCards;		// Dummy cards for animation render and temporary displays
+
+	// Threading
+	std::mutex m_userHandMutex;
+	std::mutex m_selectedCardsMutex;
+	std::mutex m_dummyCardsMutex;
 
 	// Game logic stuff
 	sf::Vector2f m_dragOffset;
@@ -100,6 +107,7 @@ private:
 	int m_MerchantShowingBagIndex;
 	bool m_anyCardSelected;
 	bool m_anyCardDragged;
+	bool m_revealingDone;
 
 	void initVariables(std::vector<Player*> playerList);
 	void initWindow();
@@ -114,6 +122,10 @@ private:
 	void handleDiscardEvent(PileType type, std::string cardName);
 	void handleOpponentWithdrawEvent(PileType type, int playerIndex);
 	void handleOpponentDiscardEvent(PileType type, int playerIndex, Card::CardType cardType);
+	void handleSheriffInspectEvent(const nlohmann::json& jsonMessage);
+	void handleSheriffPassEvent(const nlohmann::json& jsonMessage);
+	void revealCard(Player* sheriff, std::vector<Card::CardType> cardTypes, int revealIndex, const nlohmann::json& jsonMessage);
+	void retrieveCards(const nlohmann::json& jsonMessage);
 };
 
 #endif // !GAME__

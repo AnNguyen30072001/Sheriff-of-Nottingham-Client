@@ -23,6 +23,8 @@ public:
 	};
 	static const std::unordered_map<CardType, std::string> m_cardNameToString;
 	static const std::unordered_map<std::string, CardType> m_stringToCardName;
+	static const std::unordered_map<CardType, int> cardTypeToValue;
+	static const std::unordered_map<CardType, int> cardTypeToPenalty;
 
 	Card(CardType cardType);
 	~Card();

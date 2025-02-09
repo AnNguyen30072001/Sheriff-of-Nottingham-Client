@@ -94,7 +94,8 @@ int main()
 				// For testing only
 				playerList[0]->setTurn(true);
 				playerList[2]->setSheriffStatus(true);
-				playerList[0]->setPlayerMoney(100);
+				playerList[0]->setPlayerMoney(99);
+				playerList[2]->setPlayerMoney(9);
 				//game->addToUserHand(Card::APPLE);
 				//game->addToUserHand(Card::CROSSBOW);
 				//game->addToUserHand(Card::CHICKEN);

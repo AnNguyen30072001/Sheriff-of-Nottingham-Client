@@ -22,6 +22,7 @@ void Game::initVariables(std::vector<Player*> playerList)
 	m_elapsedTime = 0.f;
 	m_anyCardSelected = false;
 	m_anyCardDragged = false;
+	m_revealingDone = false;
 	m_window = nullptr;
 	m_bribeAmount = 0;
 	m_goodsReport = Card::UNKNOWN;
@@ -53,18 +54,18 @@ void Game::initWindow()
 	m_disconnectPopup = new Popup(m_window, 400, 200);
 
 	// For testing only
-	m_deck->getStackLeft().push(new Card(Card::SILK));
-	m_deck->getStackLeft().push(new Card(Card::PEPPER));
-	m_deck->getStackLeft().push(new Card(Card::CHICKEN));
-	m_deck->getStackLeft().push(new Card(Card::APPLE));
-	m_deck->getStackLeft().push(new Card(Card::MEAD));
-	m_deck->getStackLeft().push(new Card(Card::BREAD));
-	m_deck->getStackRight().push(new Card(Card::APPLE));
-	m_deck->getStackRight().push(new Card(Card::APPLE));
-	m_deck->getStackRight().push(new Card(Card::BREAD));
-	m_deck->getStackRight().push(new Card(Card::CROSSBOW));
-	m_deck->setDiscardDeckLeftTexture(m_deck->getStackLeft().top()->getCardType());
-	m_deck->setDiscardDeckRightTexture(m_deck->getStackRight().top()->getCardType());
+	//m_deck->getStackLeft().push(new Card(Card::SILK));
+	//m_deck->getStackLeft().push(new Card(Card::PEPPER));
+	//m_deck->getStackLeft().push(new Card(Card::CHICKEN));
+	//m_deck->getStackLeft().push(new Card(Card::APPLE));
+	//m_deck->getStackLeft().push(new Card(Card::MEAD));
+	//m_deck->getStackLeft().push(new Card(Card::BREAD));
+	//m_deck->getStackRight().push(new Card(Card::APPLE));
+	//m_deck->getStackRight().push(new Card(Card::APPLE));
+	//m_deck->getStackRight().push(new Card(Card::BREAD));
+	//m_deck->getStackRight().push(new Card(Card::CROSSBOW));
+	//m_deck->setDiscardDeckLeftTexture(m_deck->getStackLeft().top()->getCardType());
+	//m_deck->setDiscardDeckRightTexture(m_deck->getStackRight().top()->getCardType());
 	// End of Test
 
 	// Backgrounds
@@ -111,12 +112,17 @@ void Game::initWindow()
 	m_goodsReportText.setFont(m_font);
 	m_goodsReportText.setCharacterSize(48);
 	m_goodsReportText.setFillColor(sf::Color::White);
-	m_BribeAmountText.setFont(m_font);
-	m_BribeAmountText.setCharacterSize(48);
-	m_BribeAmountText.setFillColor(sf::Color::White);
+	m_moneyText.setFont(m_font);
+	m_moneyText.setCharacterSize(48);
+	m_moneyText.setFillColor(sf::Color::White);
 	m_moneyIcon.setSize(sf::Vector2f(100.f, 100.f));
 	m_moneyIcon.setFillColor(sf::Color::White);
 	m_moneyIcon.setTexture(&m_moneyIconTexture);
+
+	// Info text
+	m_infoText.setFont(m_font);
+	m_infoText.setCharacterSize(48);
+	m_infoText.setFillColor(sf::Color::White);
 
 	// Positioning buttons
 	m_ButtonLeft.setPosition(500.f, 905.f);
@@ -129,7 +135,7 @@ void Game::initWindow()
 	// Positioning bribe amount, goods report
 	m_goodsReportText.setPosition(804.f, 215.f);
 	m_moneyIcon.setPosition(910.f, 515.f);
-	m_BribeAmountText.setPosition(1030.f, 534.f);
+	m_moneyText.setPosition(1030.f, 534.f);
 
 	// Initial draw user hand
 	userHandUI();
@@ -432,6 +438,185 @@ void Game::handleOpponentDiscardEvent(PileType type, int playerIndex, Card::Card
 	}
 }
 
+void Game::handleSheriffInspectEvent(const nlohmann::json & jsonMessage)
+{
+	// Setup
+	int revealedIndex = 0;
+	std::vector<Card::CardType> cardTypes;
+	for (auto it = jsonMessage["Bag"].begin(); it != jsonMessage["Bag"].end(); it++) {
+		std::string cardName = *it;
+		cardTypes.push_back(Card::m_stringToCardName.at(cardName));
+	}
+
+	Player* sheriffPlayer = nullptr;
+	for (auto& player : m_playerList) {
+		if (player->getPlayerName() == jsonMessage["PlayerName"]) {
+			sheriffPlayer = player;
+		}
+	}
+	// Add animation Merchant retrieve bribe
+	m_animationPlayer.addAnimation(new Animation(m_moneyText, Animation::Type::MOVE_AND_SCALE, 0.5,
+		m_playerList[m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.f));
+	m_animationPlayer.addAnimation(new Animation(m_moneyIcon, Animation::Type::MOVE_AND_SCALE, 0.5, 
+		m_playerList[m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.f, [this, sheriffPlayer, cardTypes, revealedIndex, jsonMessage]
+	{
+		m_moneyText.setCharacterSize(30);
+		// Recursively reveal cards, until all cards are revealed
+		revealCard(sheriffPlayer, cardTypes, revealedIndex, jsonMessage);
+	}));
+}
+
+void Game::handleSheriffPassEvent(const nlohmann::json & jsonMessage)
+{
+
+}
+
+void Game::revealCard(Player * sheriff, std::vector<Card::CardType> cardTypes, int revealIndex, const nlohmann::json& jsonMessage)
+{
+	// Add animation to reveal a card
+	m_animationPlayer.addAnimation(new Animation(m_dummyCards[revealIndex]->getCard(), Animation::Type::SCALE, 1.2, 0.2, 0.2, [this, cardTypes, sheriff, revealIndex, jsonMessage]
+	{
+		// Reveal the card
+		m_dummyCards[revealIndex]->setCardTexture(cardTypes[revealIndex]);
+		m_animationPlayer.addAnimation(new Animation(m_dummyCards[revealIndex]->getCard(), Animation::Type::SCALE, 1.0, 0.2, 0.f, [this, cardTypes, sheriff, revealIndex, jsonMessage]
+		{
+			// Deposit the cash for players
+			sf::Vector2f posOffset = m_dummyCards[revealIndex]->getCard().getPosition();
+			// If the card is legal, merchant get the cash
+			if (cardTypes[revealIndex] == m_goodsReport) {
+				std::cout << "Legal\n";
+				int depositCash = Card::cardTypeToValue.at(cardTypes[revealIndex]);
+				m_moneyText.setString(std::to_string(depositCash));
+				m_moneyText.setScale(1.f, 1.f);
+				m_moneyText.setFillColor(sf::Color::Green);
+				m_moneyIcon.setScale(0.6, 0.6);
+				m_moneyIcon.setPosition(posOffset + sf::Vector2f(-30.f, 120.f));
+				m_moneyText.setPosition(m_moneyIcon.getPosition() + sf::Vector2f(20.f, 60.f));
+				// Add animation Merchant receive the cash
+				m_animationPlayer.addAnimation(new Animation(m_moneyText, Animation::Type::MOVE, 0.15, 
+					m_moneyText.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+				m_animationPlayer.addAnimation(new Animation(m_moneyIcon, Animation::Type::MOVE, 0.15,
+					m_moneyIcon.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+				m_animationPlayer.addAnimation(new Animation(m_moneyText, Animation::Type::MOVE_AND_SCALE, 0.3,
+					m_playerList[m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5));
+				m_animationPlayer.addAnimation(new Animation(m_moneyIcon, Animation::Type::MOVE_AND_SCALE, 0.3,
+					m_playerList[m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5, [this, cardTypes, sheriff, revealIndex, jsonMessage]
+				{
+					// Update player's catalog
+					m_playerList[m_MerchantShowingBagIndex]->increasePlayerGoodsAmount(cardTypes[revealIndex], 1);
+					m_playerList[m_MerchantShowingBagIndex]->setPlayerMoney(m_playerList[m_MerchantShowingBagIndex]->getPlayerMoney() 
+						+ Card::cardTypeToValue.at(cardTypes[revealIndex]));
+					
+					// Continue revealing until all cards are revealed
+					int nextIndex = revealIndex + 1;
+					if (nextIndex < cardTypes.size()) {
+						revealCard(sheriff, cardTypes, nextIndex, jsonMessage);
+					}
+					else {
+						// Retrieve the cards laid on table
+						retrieveCards(jsonMessage);
+					}
+				}));
+			}
+			// If the card is not legal, sheriff get the cash
+			else {
+				std::cout << "Not legal\n";
+				// Add animation Sheriff receive the cash
+				int depositCash = Card::cardTypeToPenalty.at(cardTypes[revealIndex]);
+				m_moneyText.setString(std::to_string(depositCash));
+				m_moneyText.setScale(1.f, 1.f);
+				m_moneyText.setFillColor(sf::Color::Green);
+				m_moneyIcon.setScale(0.6, 0.6);
+				m_moneyIcon.setPosition(posOffset + sf::Vector2f(-30.f, 120.f));
+				m_moneyText.setPosition(m_moneyIcon.getPosition() + sf::Vector2f(20.f, 60.f));
+
+				m_animationPlayer.addAnimation(new Animation(m_moneyText, Animation::Type::MOVE, 0.15,
+					m_moneyText.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+				m_animationPlayer.addAnimation(new Animation(m_moneyIcon, Animation::Type::MOVE, 0.15,
+					m_moneyIcon.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+				m_animationPlayer.addAnimation(new Animation(m_moneyText, Animation::Type::MOVE_AND_SCALE, 0.2,
+					sheriff->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5));
+				m_animationPlayer.addAnimation(new Animation(m_moneyIcon, Animation::Type::MOVE_AND_SCALE, 0.3,
+					sheriff->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5, [this, cardTypes, sheriff, revealIndex, jsonMessage, posOffset]
+				{
+					// Update player's catalog
+					sheriff->setPlayerMoney(sheriff->getPlayerMoney()
+						+ Card::cardTypeToPenalty.at(cardTypes[revealIndex]));
+
+					// Add animation Merchant got deducted
+					int penalty = Card::cardTypeToPenalty.at(cardTypes[revealIndex]);
+					m_moneyText.setString("-" + std::to_string(penalty));
+					m_moneyText.setScale(1.f, 1.f);
+					m_moneyText.setFillColor(sf::Color::Red);
+					m_moneyIcon.setScale(0.6, 0.6);
+					m_moneyIcon.setPosition(posOffset + sf::Vector2f(-30.f, 120.f));
+					m_moneyText.setPosition(m_moneyIcon.getPosition() + sf::Vector2f(15.f, 60.f));
+
+					m_animationPlayer.addAnimation(new Animation(m_moneyText, Animation::Type::MOVE, 0.15,
+						m_moneyText.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+					m_animationPlayer.addAnimation(new Animation(m_moneyIcon, Animation::Type::MOVE, 0.15,
+						m_moneyIcon.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+					m_animationPlayer.addAnimation(new Animation(m_moneyText, Animation::Type::MOVE_AND_SCALE, 0.3,
+						m_playerList[m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5));
+					m_animationPlayer.addAnimation(new Animation(m_moneyIcon, Animation::Type::MOVE_AND_SCALE, 0.3,
+						m_playerList[m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5, [this, cardTypes, sheriff, revealIndex, jsonMessage]
+					{
+						// Update player's catalog
+						m_playerList[m_MerchantShowingBagIndex]->setPlayerMoney(m_playerList[m_MerchantShowingBagIndex]->getPlayerMoney()
+							- Card::cardTypeToPenalty.at(cardTypes[revealIndex]));
+
+						// Continue revealing until all cards are revealed
+						int nextIndex = revealIndex + 1;
+						if (nextIndex < cardTypes.size()) {
+							revealCard(sheriff, cardTypes, nextIndex, jsonMessage);
+						}
+						else {
+							// Retrieve the cards laid on table
+							retrieveCards(jsonMessage);
+						}
+					}));
+				}));
+			}
+		}));
+	}));
+}
+
+void Game::retrieveCards(const nlohmann::json& jsonMessage)
+{
+	if (m_dummyCards.empty()) return;
+
+	for (int i = 0; i < m_dummyCards.size(); i++) {
+		// If card is legal, hand it to merchant
+		if (m_dummyCards[i]->getCardType() == m_goodsReport) {
+			m_animationPlayer.addAnimation(new Animation(m_dummyCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.4,
+				m_playerList[m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 0.6, [this, i]
+			{
+				//delete m_dummyCards[i];
+			}));
+		}
+		// If card is not legal, shuffle it back to main deck
+		else {
+			m_animationPlayer.addAnimation(new Animation(m_dummyCards[i]->getCard(), Animation::Type::SCALE, 0.f, 0.3, 1.2, [this, i, jsonMessage]
+			{
+				//delete m_dummyCards[i];
+				if (i == m_dummyCards.size() - 1) {
+					// If done process the last card, clear the whole m_dummyCards
+					std::lock_guard<std::mutex> lock(m_dummyCardsMutex);
+					for (auto& card : m_dummyCards) {
+						delete card;
+					}
+					m_dummyCards.clear();
+				}
+
+				// Send response message
+				Network::getInstance().respondMessage(jsonMessage);
+				// Reveal process is complete
+				m_revealingDone = true;
+			}));
+		}
+	}
+}
+
 Game::Game(std::vector<Player*> playerList)
 {
 	initVariables(playerList);
@@ -464,14 +649,15 @@ bool Game::addToUserHand(Card::CardType card)
 {
 	if (m_userHand.size() >= 6U) return false;
 
+	std::lock_guard<std::mutex> lock(m_userHandMutex);
 	m_userHand.push_back(new Card(card));
-	//userHandUI();
 
 	return true;
 }
 
 bool Game::removeFromUserHand(uint8_t index)
 {
+	std::lock_guard<std::mutex> lock(m_userHandMutex);
 	m_userHand.erase(m_userHand.begin() + index);
 
 	return true;
@@ -498,6 +684,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	m_anyCardSelected = false;
 	for (int i = 0; i < m_userHand.size(); i++) {
 		if (m_userHand[i]->getCard().getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY)) && m_gameEvent == DEFAULT) {
+			std::lock_guard<std::mutex> lock(m_userHandMutex);
 			m_userHand[i]->setSelected(!m_userHand[i]->isSelected());
 			std::cout << "Card " + Card::m_cardNameToString.at(m_userHand[i]->getCardType()) + ": " + (m_userHand[i]->isSelected() ? "Selected\n" : "Not selected\n");
 
@@ -516,10 +703,20 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	if (m_anyCardSelected && m_playerList[0]->isInTurn() && !m_playerList[0]->isSheriff() && m_gameEvent == DEFAULT) {
 		// Onclick discard event
 		if (m_ButtonLeft.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
+			// Clear all leftover selected cards
+			for (auto& card : m_selectedCards) {
+				delete card;
+			}
+			m_selectedCardsMutex.lock();
+			m_selectedCards.clear();
+			m_selectedCardsMutex.unlock();
 			// Move presented cards from user hand to discard area
 			for (int i = 0; i < m_userHand.size(); i++) {
 				if (m_userHand[i]->isSelected()) {
+					m_selectedCardsMutex.lock();
 					m_selectedCards.push_back(m_userHand[i]);
+					m_selectedCardsMutex.unlock();
+
 					removeFromUserHand(i);
 					i--;
 				}
@@ -621,6 +818,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 		if (card->getCard().getGlobalBounds().contains(mousePosXY) && m_gameEvent == DISCARD) {
 			// Start the drag and save static position
 			if (!card->isDragging() && !m_anyCardDragged) {
+				std::lock_guard<std::mutex> lock(m_selectedCardsMutex);
 				card->setupCardUI(card->getCard().getPosition().x, card->getCard().getPosition().y, sf::Vector2f(0.72, 0.72));
 				card->getCard().setScale(1, 1);
 				m_dragOffset = card->getCard().getPosition() - mousePosXY;
@@ -637,6 +835,7 @@ bool Game::handleMouseDrag(sf::Vector2f mousePosXY)
 {
 	for (auto& card : m_selectedCards) {
 		if (card->isDragging() && m_gameEvent == DISCARD) {
+			std::lock_guard<std::mutex> lock(m_selectedCardsMutex);
 			card->getCard().setPosition(mousePosXY + m_dragOffset);
 		}
 	}
@@ -680,6 +879,7 @@ bool Game::handleMouseRelease()
 
 			else {
 				// If the dragged card is not placed on anything, reset its UI
+				std::lock_guard<std::mutex> lock(m_selectedCardsMutex);
 				m_selectedCards[i]->setDragging(false);
 				m_anyCardDragged = false;
 				m_selectedCards[i]->resetStaticPosition();
@@ -729,8 +929,16 @@ bool Game::update()
 {
 	float deltaTime = m_clock.restart().asSeconds();
 	// Update animation if needed
+	m_userHandMutex.lock();
+	m_selectedCardsMutex.lock();
+	m_dummyCardsMutex.lock();
+
 	m_animationPlayer.update(deltaTime);
 	updateUserHandAnimation(deltaTime);
+
+	m_userHandMutex.unlock();
+	m_selectedCardsMutex.unlock();
+	m_dummyCardsMutex.unlock();
 
 	// Update the timer if needed
 	m_timer->update();
@@ -826,6 +1034,22 @@ bool Game::update()
 
 		break;
 
+	case Game::REVEAL:
+		if (!m_tablet->isTabletVisible()) {
+			pollEvents();
+		}
+		// If tablet is shown, it is interactable
+		m_tablet->update();
+
+		setupPlayerUI();
+
+		// If done revealing, update game state
+		if (m_revealingDone) {
+			m_revealingDone = false;
+			// Wait for next turn nofification from server
+			m_gameEvent = IDLE;
+		}
+
 	default:
 		break;
 	}
@@ -870,6 +1094,7 @@ bool Game::render()
 	}
 
 	// User hand
+	std::lock_guard<std::mutex> lockUserHand(m_userHandMutex);
 	for (const auto& card : m_userHand) {
 		m_window->draw(card->getCard());
 	}
@@ -887,12 +1112,10 @@ bool Game::render()
 	}
 
 	// Draw Sheriff event objects
-	if (m_gameEvent == SHERIFF_TURN) {
+	if (m_gameEvent == SHERIFF_TURN || m_gameEvent == REVEAL) {
 		// Draw objects
 		m_window->draw(m_SheriffEventMask);
 		m_window->draw(m_goodsReportText);
-		m_window->draw(m_moneyIcon);
-		m_window->draw(m_BribeAmountText);
 
 		// Draw highlighted sheriff and merchant
 		m_window->draw(sheriffPlayer->getAvatar());
@@ -906,21 +1129,32 @@ bool Game::render()
 		m_window->draw(m_playerList[m_MerchantShowingBagIndex]->getBagIcon());
 
 		// If it is user's sheriff turn, highlight buttons
-		if (m_playerList[0]->isInTurn()) {
+		if (m_playerList[0]->isInTurn() && m_gameEvent == SHERIFF_TURN) {
 			m_window->draw(m_ButtonLeft);
 			m_window->draw(m_ButtonLeftText);
 			m_window->draw(m_ButtonRight);
 			m_window->draw(m_ButtonRightText);
 		}
+
+		// If reveal, show info text
+		if (m_gameEvent == REVEAL) {
+			m_window->draw(m_infoText);
+		}
+
+		// Draw money
+		m_window->draw(m_moneyIcon);
+		m_window->draw(m_moneyText);
 	}
 
 	// Draw dummy card animation if needed
+	std::lock_guard<std::mutex> lockDummyCards(m_dummyCardsMutex);
 	for (auto& card : m_dummyCards) {
-		m_window->draw(card->getCard());
+		m_window->draw(card->getCard());			// Race condition
 	}
 
 	// Selected cards, for discard,present...
 	Card* draggedCard = nullptr;
+	std::lock_guard<std::mutex> lockSelectedCards(m_selectedCardsMutex);
 	for (const auto& card : m_selectedCards) {
 		if (!card->isDragging())
 			m_window->draw(card->getCard());
@@ -1036,10 +1270,26 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 		Network::getInstance().respondMessage(jsonMessage);
 	}
 
+	// Infomation of discard piles
+	if (jsonMessage["MessageType"] == "DISCARD_PILES") {
+		// Push left pile to stack
+		for (auto it = jsonMessage["LeftPile"].begin(); it != jsonMessage["LeftPile"].end(); it++) {
+			std::string cardName = *it;
+			m_deck->getStackLeft().push(new Card(Card::m_stringToCardName.at(cardName)));
+			m_deck->setDiscardDeckLeftTexture(m_deck->getStackLeft().top()->getCardType());
+		}
+		// Push right pile to stack
+		for (auto it = jsonMessage["RightPile"].begin(); it != jsonMessage["RightPile"].end(); it++) {
+			std::string cardName = *it;
+			m_deck->getStackRight().push(new Card(Card::m_stringToCardName.at(cardName)));
+			m_deck->setDiscardDeckRightTexture(m_deck->getStackRight().top()->getCardType());
+		}
+		// Send response message
+		Network::getInstance().respondMessage(jsonMessage);
+	}
+
 	// Game Deals Cards
 	if (jsonMessage["MessageType"] == "GAME_DEALS_CARDS" && jsonMessage.contains("Cards")) {
-		std::mutex mutex;
-		std::lock_guard<std::mutex> lock(mutex);
 		int index = 0;
 		// Get all Card types
 		for (auto it = jsonMessage["Cards"].begin(); it != jsonMessage["Cards"].end(); it++) {
@@ -1051,6 +1301,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 			addToUserHand(Card::m_stringToCardName.at(cardName));
 
 			// Add drawing animation of that card from the main deck
+			std::lock_guard<std::mutex> lock(m_userHandMutex);
 			m_userHand[m_userHand.size() - 1]->getCard().setPosition(m_deck->getMainDeck().getPosition() + sf::Vector2f(75, 100));
 			m_userHand[m_userHand.size() - 1]->getCard().setScale(sf::Vector2f(0.f, 0.f));
 			float posX = 520.f + ((m_userHand.size()-1) % 6) * 150.f;
@@ -1058,7 +1309,8 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 			// Add animation, after animation done, send response message
 			if (m_userHand.size() == 6U) {
 				m_animationPlayer.addAnimation(new Animation(m_userHand[m_userHand.size() - 1]->getCard(), Animation::Type::MOVE_AND_SCALE,
-					0.1, sf::Vector2f(posX, 635.f), 1.f, delay, [this, jsonMessage] { Network::getInstance().respondMessage(jsonMessage); }));
+					0.1, sf::Vector2f(posX, 635.f), 1.f, delay, [this, jsonMessage] 
+				{ Network::getInstance().respondMessage(jsonMessage); }));
 			}
 			else {
 				m_userHand[m_userHand.size() - 1]->animationMove(0.1, sf::Vector2f(posX, 635), 1.f, delay);
@@ -1101,13 +1353,19 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 					// Set infomation
 					m_goodsReportText.setString("Report: " + Card::m_cardNameToString.at(m_goodsReport));
 					m_goodsReportText.setPosition((1920.f - m_goodsReportText.getGlobalBounds().width) / 2, 215.f);
-					m_BribeAmountText.setString(std::to_string(m_bribeAmount));
+					m_moneyIcon.setPosition(910.f, 515.f);
+					m_moneyIcon.setScale(1.f, 1.f);
+					m_moneyText.setString(std::to_string(m_bribeAmount));
+					m_moneyText.setFillColor(sf::Color::White);
+					m_moneyText.setCharacterSize(48);
+					m_moneyText.setPosition(1030.f, 534.f);
 
 					// Temporary hide all decks and user cards
 					m_deck->getDiscardDeckLeft().setScale(0.f, 0.f);
 					m_deck->getDiscardDeckRight().setScale(0.f, 0.f);
 					m_deck->getMainDeck().setScale(0.f, 0.f);
 					for (auto& card : m_userHand) {
+						std::lock_guard<std::mutex> lock(m_userHandMutex);
 						card->getCard().setScale(0.f, 0.f);
 					}
 				}
@@ -1116,11 +1374,14 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 					m_dummyCards.clear();
 					m_selectedCards.clear();
 
+					m_gameEvent = DEFAULT;
+
 					// Show decks and user cards again
 					m_deck->getDiscardDeckLeft().setScale(1.f, 1.f);
 					m_deck->getDiscardDeckRight().setScale(1.f, 1.f);
 					m_deck->getMainDeck().setScale(1.f, 1.f);
 					for (auto& card : m_userHand) {
+						std::lock_guard<std::mutex> lock(m_userHandMutex);
 						card->getCard().setScale(1.f, 1.f);
 					}
 				}
@@ -1134,13 +1395,13 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 	if ( jsonMessage["MessageType"] == "MERCHANT_GIVE_BAG_RESPONSE" && 
 		jsonMessage["PlayerName"] == m_playerList[0]->getPlayerName() ) 
 	{
-		std::mutex mutex;
-		std::lock_guard<std::mutex> lock(mutex);
 		if (!m_userHand.empty()) {
 			// Move presented cards from user hand to present bag
 			for (int i = 0; i < m_userHand.size(); i++) {
 				if (m_userHand[i]->isSelected()) {
+					m_selectedCardsMutex.lock();
 					m_selectedCards.push_back(m_userHand[i]);
+					m_selectedCardsMutex.unlock();
 					removeFromUserHand(i);
 					i--;
 					// Push a dummy card to render next Sheriff turn
@@ -1177,8 +1438,6 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 
 	// Server confirm give bag event of opponents
 	if (jsonMessage["MessageType"] == "MERCHANT_GIVE_BAG") {
-		std::mutex mutex;
-		std::lock_guard<std::mutex> lock(mutex);
 		for (int i = 0; i < m_playerList.size(); i++) {
 			if (m_playerList[i]->getPlayerName() == jsonMessage["PlayerName"]) {
 				// Clear dummy cards to store new ones. Just a safety measure
@@ -1197,9 +1456,11 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 				// Add animation put cards to bag
 				for (int j = 0; j < goodsAmount; j++) {
 					m_dummyCards.push_back(new Card(Card::UNKNOWN));
-					m_dummyCards[m_dummyCards.size() - 1]->getCard().setScale(0.4, 0.4);
-					m_dummyCards[m_dummyCards.size() - 1]->getCard().setPosition(m_playerList[i]->getAvatar().getPosition() + sf::Vector2f(30.f, 30.f));
-					m_animationPlayer.addAnimation(new Animation(m_dummyCards[m_dummyCards.size() - 1]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.5,
+				}
+				for (int j = 0; j < m_dummyCards.size(); j++) {
+					m_dummyCards[j]->getCard().setScale(0.4, 0.4);
+					m_dummyCards[j]->getCard().setPosition(m_playerList[i]->getAvatar().getPosition() + sf::Vector2f(30.f, 30.f));
+					m_animationPlayer.addAnimation(new Animation(m_dummyCards[j]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.5,
 						m_playerList[i]->getBagIcon().getPosition() + sf::Vector2f(30.f, 30.f), 0.f));
 				}
 				// Animation highlighting bag
@@ -1220,8 +1481,6 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 
 	// Server confirm player withdrawing
 	if (jsonMessage["MessageType"] == "MERCHANT_WITHDRAW_CARDS_RESPONSE") {
-		std::mutex mutex;
-		std::lock_guard<std::mutex> lock(mutex);
 		// Check if it is user's withdraw
 		if (jsonMessage["PlayerName"] == m_playerList[0]->getPlayerName()) {
 			if (jsonMessage["Pile"] == "LEFT_DISCARD_PILE") {
@@ -1260,8 +1519,6 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 
 	// Server confirm player discarding
 	if (jsonMessage["MessageType"] == "MERCHANT_DISCARD_CARDS_RESPONSE") {
-		std::mutex mutex;
-		std::lock_guard<std::mutex> lock(mutex);
 		// Check if it is user's discard
 		if (jsonMessage["PlayerName"] == m_playerList[0]->getPlayerName()) {
 			std::string cardName = jsonMessage["Card"];
@@ -1293,6 +1550,27 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 		Network::getInstance().respondMessage(jsonMessage);
 	}
 
+	// Server notify Sheriff Check
+	if (jsonMessage["MessageType"] == "SHERIFF_CHECK_RESPONSE") {
+		// Set game state
+		m_gameEvent = REVEAL;
+		// Set info text
+		m_infoText.setString("Sheriff chose to inspect the goods!");
+		m_infoText.setPosition((1920.f - m_infoText.getGlobalBounds().width) / 2, 680.f);
+		// Handle animations
+		handleSheriffInspectEvent(jsonMessage);
+	}
+
+	// Server notify Sheriff Check
+	if (jsonMessage["MessageType"] == "SHERIFF_PASS_RESPONSE") {
+		// Set game state
+		m_gameEvent = REVEAL;
+		// Set info text
+		m_infoText.setString("Sheriff chose to let the goods pass!");
+		m_infoText.setPosition((1920.f - m_infoText.getGlobalBounds().width) / 2, 680.f);
+		// Handle animations
+		handleSheriffPassEvent(jsonMessage);
+	}
 }
 
 
