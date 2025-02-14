@@ -1,6 +1,8 @@
 #include "game.h"
 #include <Windows.h>
 #include <string.h>
+#include <random>
+#include <ctime>
 
 void Game::initVariables(std::vector<Player*> playerList)
 {
@@ -15,6 +17,10 @@ void Game::initVariables(std::vector<Player*> playerList)
 
 	if (!m_font.loadFromFile("arial-font/arial.ttf")) {
 		std::cerr << "Error loading font!\n";
+	}
+
+	if (!m_glowShader.loadFromFile("Shaders/glow.frag", sf::Shader::Fragment)) {
+		std::cerr << "Error loading shader!\n";
 	}
 
 	m_gameEvent = Game::DEFAULT;
@@ -81,6 +87,11 @@ void Game::initWindow()
 	m_SheriffEventMask.setSize(sf::Vector2f(1920.f, 1080.f));
 	m_SheriffEventMask.setFillColor(sf::Color(0, 0, 0, 180));
 
+	// Init shaders
+	m_glowShader.setUniform("isHovered", false);
+	m_glowShader.setUniform("outlineColor", sf::Glsl::Vec4(1.0, 1.0, 1.0, 1.0));
+	m_glowShader.setUniform("glowStrength", 0.35f); // Adjust glow thickness
+
 	// Configure the button left
 	m_ButtonLeft.setSize(sf::Vector2f(170.f, 70.f));
 	m_ButtonLeft.setFillColor(sf::Color::Red);
@@ -124,6 +135,11 @@ void Game::initWindow()
 	m_infoText.setFont(m_font);
 	m_infoText.setCharacterSize(48);
 	m_infoText.setFillColor(sf::Color::White);
+
+	// Guide text
+	m_guideText.setFont(m_font);
+	m_guideText.setCharacterSize(40);
+	m_guideText.setFillColor(sf::Color::White);
 
 	// Positioning buttons
 	m_ButtonLeft.setPosition(500.f, 905.f);
@@ -272,7 +288,8 @@ void Game::handleDiscardEvent(PileType type, std::string cardName)
 	case Game::PileType::LEFT_DISCARD_PILE:
 		for (int i = 0; i < m_selectedCards.size(); i++) {
 			// Look for the right card to insert to pile
-			if (m_selectedCards[i]->isDragging() && m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName)) {
+			if ((m_selectedCards[i]->isDragging() && m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName)) 
+				|| (m_gameEvent == TIMEOUT_DISCARD && m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName))) {
 				m_deck->getStackLeft().push(m_selectedCards[i]);
 				// Animation card fit into deck, callback to function set texture
 				m_animationPlayer.addAnimation(new Animation(m_selectedCards[i]->getCard(), Animation::Type::MOVE,
@@ -280,7 +297,12 @@ void Game::handleDiscardEvent(PileType type, std::string cardName)
 				{this->getDeck()->setDiscardDeckLeftTexture(this->m_deck->getStackLeft().top()->getCardType());}));
 				// Animation card fit into deck, callback to remove from selected cards
 				m_animationPlayer.addAnimation(new Animation(m_selectedCards[i]->getCard(), Animation::Type::SCALE,
-					0.8, 0.2, 0.f, [this, i] {this->getSelectedCards().erase(this->getSelectedCards().begin() + i); this->getGameEvent() = Game::DISCARD; }));
+					0.8, 0.2, 0.f, [this, i] 
+				{
+					this->getSelectedCards().erase(this->getSelectedCards().begin() + i); 
+					if (m_gameEvent == TIMEOUT_DISCARD) m_gameEvent = TIMEOUT_DISCARD;
+					else m_gameEvent = Game::DISCARD;
+				}));
 
 				// Reset status
 				m_anyCardDragged = false;
@@ -294,7 +316,8 @@ void Game::handleDiscardEvent(PileType type, std::string cardName)
 	case Game::PileType::RIGHT_DISCARD_PILE:
 		for (int i = 0; i < m_selectedCards.size(); i++) {
 			// Look for the right card to insert to pile
-			if (m_selectedCards[i]->isDragging() && m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName)) {
+			if ((m_selectedCards[i]->isDragging() && m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName)) 
+				|| (m_gameEvent == TIMEOUT_DISCARD && m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName))) {
 				m_deck->getStackRight().push(m_selectedCards[i]);
 				// Animation card fit into deck, callback to function set texture
 				m_animationPlayer.addAnimation(new Animation(m_selectedCards[i]->getCard(), Animation::Type::MOVE,
@@ -302,7 +325,12 @@ void Game::handleDiscardEvent(PileType type, std::string cardName)
 				{this->getDeck()->setDiscardDeckRightTexture(this->m_deck->getStackRight().top()->getCardType()); }));
 				// Animation card fit into deck, callback to remove from selected cards
 				m_animationPlayer.addAnimation(new Animation(m_selectedCards[i]->getCard(), Animation::Type::SCALE,
-					0.8, 0.2, 0.f, [this, i] {this->getSelectedCards().erase(this->getSelectedCards().begin() + i); this->getGameEvent() = Game::DISCARD; }));
+					0.8, 0.2, 0.f, [this, i] 
+				{
+					this->getSelectedCards().erase(this->getSelectedCards().begin() + i); 
+					if (m_gameEvent == TIMEOUT_DISCARD) m_gameEvent = TIMEOUT_DISCARD;
+					else m_gameEvent = Game::DISCARD;
+				}));
 
 				// Reset status
 				m_anyCardDragged = false;
@@ -661,6 +689,48 @@ void Game::retrieveCards(const nlohmann::json& jsonMessage)
 	}
 }
 
+void Game::handleTimeoutWithdraw()
+{
+	m_gameEvent = TIMEOUT_WITHDRAW;
+	//int leftPileCardsNumber = m_deck->getStackLeft().size();
+	//int rightPileCardsNumber = m_deck->getStackRight().size();
+	//int leftDrawCount = 0;
+	//int rightDrawCount = 0;
+	//int middleDrawCount = 0;
+	int cardsToDraw = 6 - m_userHand.size();
+	for (int i = 0; i < cardsToDraw; i++) {
+		json message;
+		message["MessageType"] = "MERCHANT_WITHDRAW_CARDS_TIMEOUT";
+		message["PlayerName"] = m_playerList[0]->getPlayerName();
+		message["Pile"] = "MAIN_DECK";
+		std::string messageString = message.dump();
+		Network::getInstance().sendMessage(messageString);
+	}
+}
+
+void Game::handleTimeoutDiscard()
+{
+	m_gameEvent = TIMEOUT_DISCARD;
+	static std::mt19937 generator(static_cast<unsigned int>(std::time(nullptr)));
+	std::uniform_int_distribution<int> distribution(0, 1);
+	// Prepare message
+	json message;
+	message["MessageType"] = "MERCHANT_DISCARD_CARDS_TIMEOUT";
+	message["PlayerName"] = m_playerList[0]->getPlayerName();
+	for (auto& card : m_selectedCards) {
+		message["Card"] = Card::m_cardNameToString.at(card->getCardType());
+		int randomNum = distribution(generator);
+		if (randomNum == 0) {
+			message["Pile"] = "LEFT_DISCARD_PILE";
+		}
+		else if (randomNum == 1) {
+			message["Pile"] = "RIGHT_DISCARD_PILE";
+		}
+		std::string messageString = message.dump();
+		Network::getInstance().sendMessage(messageString);
+	}
+}
+
 Game::Game(std::vector<Player*> playerList)
 {
 	initVariables(playerList);
@@ -773,6 +843,13 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 			}
 			// Re-arrange userhand
 			userHandUI();
+
+			// Position guide text
+			m_textMutex.lock();
+			m_guideText.setString("Draw new cards from any deck");
+			m_guideText.setPosition(668.f, 180.f);
+			m_textMutex.unlock();
+
 			// Change state machine
 			m_gameEvent = WITHDRAW;
 		}
@@ -887,6 +964,18 @@ bool Game::handleMouseDrag(sf::Vector2f mousePosXY)
 	return true;
 }
 
+bool Game::handleMouseHover(sf::Vector2f mousePosXY)
+{
+	if (m_ButtonLeft.getGlobalBounds().contains(mousePosXY) && m_playerList[0]->isInTurn() && m_gameEvent == DEFAULT && !m_discardDone) {
+		m_glowShader.setUniform("isHovered", true);
+	}
+	else {
+		m_glowShader.setUniform("isHovered", false);
+	}
+
+	return true;
+}
+
 bool Game::handleMouseRelease()
 {
 	for (int i = 0; i < m_selectedCards.size(); i++) {
@@ -945,15 +1034,19 @@ bool Game::pollEvents()
 			break;
 
 		case sf::Event::MouseButtonPressed:
-			if (m_ev.mouseButton.button == sf::Mouse::Left) {
+			if (m_ev.mouseButton.button == sf::Mouse::Left && m_gameEvent != IDLE) {
 				handleMouseClick(mousePosXY);
 			}
 			break;
 
 		case sf::Event::MouseMoved:
-			if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && m_gameEvent != IDLE) {
 				handleMouseDrag(mousePosXY);
 			}
+			else {
+				handleMouseHover(mousePosXY);
+			}
+
 			break;
 
 		case sf::Event::MouseButtonReleased:
@@ -1006,7 +1099,9 @@ bool Game::update()
 		break;
 
 	case Game::IDLE:
-		// Do nothing
+		if (!m_tablet->isTabletVisible()) {
+			pollEvents();
+		}
 		break;
 
 	case Game::DEFAULT:
@@ -1047,6 +1142,12 @@ bool Game::update()
 
 		// If done withdrawing, change game state
 		if (m_userHand.size() == 6U) {
+			// Position guide text
+			m_textMutex.lock();
+			m_guideText.setString("Drag discarded cards to left or right pile");
+			m_guideText.setPosition(586.f, 180.f);
+			m_textMutex.unlock();
+
 			m_gameEvent = DISCARD;
 		}
 
@@ -1094,6 +1195,34 @@ bool Game::update()
 			m_gameEvent = IDLE;
 		}
 
+	case Game::TIMEOUT_WITHDRAW:
+		if (!m_tablet->isTabletVisible()) {
+			pollEvents();
+		}
+
+		if (m_userHand.size() == 6U) {
+			handleTimeoutDiscard();
+			m_gameEvent = TIMEOUT_DISCARD;
+		}
+
+		break;
+
+	case Game::TIMEOUT_DISCARD:
+		if (!m_tablet->isTabletVisible()) {
+			pollEvents();
+		}
+
+		if (m_selectedCards.empty()) {
+			m_gameEvent = IDLE;
+			// Restructure server's timeout message type
+			json serverMessage;
+			serverMessage["MessageType"] = "PLAYER_TIMEOUT";
+			// Respond message
+			Network::getInstance().respondMessage(serverMessage);
+		}
+
+		break;
+
 	default:
 		break;
 	}
@@ -1127,14 +1256,16 @@ bool Game::render()
 	}
 
 	// Buttons
-	m_window->draw(m_ButtonLeft);
+	m_window->draw(m_ButtonLeft, &m_glowShader);
 	m_window->draw(m_ButtonLeftText);
 	m_window->draw(m_ButtonRight);
 	m_window->draw(m_ButtonRightText);
 
 	// A mask to focus on withdraw event, filter out avatars, buttons,...
+	std::lock_guard<std::mutex> lockText(m_textMutex);
 	if (m_gameEvent == WITHDRAW) {
 		m_window->draw(m_withdrawEventMask);
+		m_window->draw(m_guideText);
 	}
 
 	// User hand
@@ -1150,6 +1281,7 @@ bool Game::render()
 		// A mask to focus on discard event, filter out the main deck
 		if (m_gameEvent == DISCARD || (m_gameEvent == IDLE && !m_tablet->isTabletVisible())) {
 			m_window->draw(m_discardEventMask);
+			m_window->draw(m_guideText);
 		}
 		m_window->draw(m_deck->getDiscardDeckLeft());
 		m_window->draw(m_deck->getDiscardDeckRight());
@@ -1372,6 +1504,9 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 			m_playerList[i]->setTurn(false);
 			// Handle logic if find player's turn
 			if (m_playerList[i]->getPlayerName() == playerName) {
+				// Hide tablet if needed
+				m_tablet->hideTablet();
+
 				m_playerList[i]->setTurn(true);
 
 				// Start the timer if user player
@@ -1397,7 +1532,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 					}
 
 					// Set infomation
-					m_userHandMutex.lock();
+					m_textMutex.lock();
 					m_goodsReportText.setString("Report: " + Card::m_cardNameToString.at(m_goodsReport));
 					m_goodsReportText.setPosition((1920.f - m_goodsReportText.getGlobalBounds().width) / 2, 215.f);
 					m_moneyIcon.setPosition(910.f, 515.f);
@@ -1407,7 +1542,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 					m_moneyText.setCharacterSize(48);
 					m_moneyText.setScale(1.f, 1.f);
 					m_moneyText.setPosition(1030.f, 534.f);
-					m_userHandMutex.unlock();
+					m_textMutex.unlock();
 
 					// Temporary hide all decks and user cards
 					m_deck->getDiscardDeckLeft().setScale(0.f, 0.f);
@@ -1420,6 +1555,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 				}
 				// If it is a merchant's turn, reset all previous stored goods infomation, for safety measure
 				else {
+					m_tablet->resetOptions();
 					m_dummyCards.clear();
 					m_selectedCards.clear();
 
@@ -1605,10 +1741,10 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 		// Set game state
 		m_gameEvent = REVEAL;
 		// Set info text
-		m_userHandMutex.lock();
+		m_textMutex.lock();
 		m_infoText.setString("Sheriff chose to inspect the goods!");
 		m_infoText.setPosition((1920.f - m_infoText.getGlobalBounds().width) / 2, 680.f);
-		m_userHandMutex.unlock();
+		m_textMutex.unlock();
 		// Handle animations
 		handleSheriffInspectEvent(jsonMessage);
 	}
@@ -1620,12 +1756,31 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 		// If the timer is running, turn it off
 		m_timer->stop();
 		// Set info text
-		m_userHandMutex.lock();
+		m_textMutex.lock();
 		m_infoText.setString("Sheriff chose to let the goods pass!");
 		m_infoText.setPosition((1920.f - m_infoText.getGlobalBounds().width) / 2, 680.f);
-		m_userHandMutex.unlock();
+		m_textMutex.unlock();
 		// Handle animations
 		handleSheriffPassEvent(jsonMessage);
+	}
+
+	// Server notify timeout
+	if (jsonMessage["MessageType"] == "PLAYER_TIMEOUT" && jsonMessage["PlayerName"] == m_playerList[0]->getPlayerName()) {
+		// Stop the timer
+		m_timer->stop();
+
+		// If player is in the middle of withdraw/discard event, randomize what's left
+		if (m_gameEvent == WITHDRAW) {
+			handleTimeoutWithdraw();
+		}
+		else if (m_gameEvent == DISCARD) {
+			handleTimeoutDiscard();
+		}
+		// If not, send response message and wait for new turn
+		else {
+			m_gameEvent = TIMEOUT_DISCARD;
+			Network::getInstance().respondMessage(jsonMessage);
+		}
 	}
 }
 

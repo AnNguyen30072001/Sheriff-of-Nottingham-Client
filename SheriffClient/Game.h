@@ -29,7 +29,9 @@ public:
 		WITHDRAW,
 		PRESENT,
 		SHERIFF_TURN,
-		REVEAL
+		REVEAL,
+		TIMEOUT_WITHDRAW,
+		TIMEOUT_DISCARD
 	};
 
 	Game(std::vector<Player*> playerList);
@@ -81,6 +83,10 @@ private:
 	sf::Text m_moneyText;
 	sf::Text m_goodsReportText;
 	sf::Text m_infoText;
+	sf::Text m_guideText;
+
+	// Shaders
+	sf::Shader m_glowShader;
 
 	// Card stuffs
 	std::vector<Card*> m_userHand;
@@ -94,6 +100,7 @@ private:
 	std::mutex m_userHandMutex;
 	std::mutex m_selectedCardsMutex;
 	std::mutex m_dummyCardsMutex;
+	std::mutex m_textMutex;
 
 	// Game logic stuff
 	sf::Vector2f m_dragOffset;
@@ -117,6 +124,7 @@ private:
 
 	bool handleMouseClick(sf::Vector2f mousePosXY);
 	bool handleMouseDrag(sf::Vector2f mousePosXY);
+	bool handleMouseHover(sf::Vector2f mousePosXY);
 	bool handleMouseRelease();
 	void handlePresentEvent();
 	void handleWithdrawEvent(PileType type);
@@ -127,6 +135,8 @@ private:
 	void handleSheriffPassEvent(const nlohmann::json& jsonMessage);
 	void revealCard(Player* sheriff, std::vector<Card::CardType> cardTypes, int revealIndex, const nlohmann::json& jsonMessage);
 	void retrieveCards(const nlohmann::json& jsonMessage);
+	void handleTimeoutWithdraw();
+	void handleTimeoutDiscard();
 };
 
 #endif // !GAME__

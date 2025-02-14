@@ -30,6 +30,12 @@ bool Login::initWindow()
 		std::cerr << "Error loading background texture!";
 		return false;
 	}
+
+	// Shader
+	if (!m_glowShader.loadFromFile("Shaders/glow.frag", sf::Shader::Fragment)) {
+		std::cerr << "Error loading shader!\n";
+	}
+
 	m_background.setPosition(sf::Vector2f(0.f, 0.f));
 	m_background.setFillColor(sf::Color::White);
 	m_background.setSize(sf::Vector2f(1920.f, 1080.f));
@@ -76,6 +82,13 @@ bool Login::initWindow()
 		m_loginButton.getPosition().y + (m_loginButton.getSize().y - m_loginButtonText.getLocalBounds().height) / 2 - 5
 	);
 
+	// Init shaders
+	//m_glowShader.setUniform("glowColor", sf::Glsl::Vec4(1.0, 1.0, 1.0, 1.0));
+	//m_glowShader.setUniform("glowIntensity", 0.0f); // Default no glow
+	m_glowShader.setUniform("isHovered", false);
+	m_glowShader.setUniform("outlineColor", sf::Glsl::Vec4(1.0, 1.0, 1.0, 1.0));
+	m_glowShader.setUniform("glowStrength", 0.35f); // Adjust glow thickness
+
 	return true;
 }
 
@@ -103,18 +116,29 @@ std::string Login::getUsername() const
 bool Login::pollEvents()
 {
 	while (m_window->pollEvent(m_ev)) {
+		sf::Vector2i mousePosXYLocal = sf::Mouse::getPosition(*m_window);
+		sf::Vector2f mousePosXY = m_window->mapPixelToCoords(mousePosXYLocal);
 		switch (m_ev.type) {
 		// Case close window
 		case sf::Event::Closed:
 			m_window->close();
 			break;
 
+		// Case hover
+		case sf::Event::MouseMoved:
+			if (m_loginButton.getGlobalBounds().contains(mousePosXY)) {
+				m_glowShader.setUniform("isHovered", true);
+			}
+			else {
+				m_glowShader.setUniform("isHovered", false);
+			}
+
+			break;
+
 		// Case left click
 		case sf::Event::MouseButtonPressed:
 			m_mousePressedPos = INVALID;
 			if (m_ev.mouseButton.button == sf::Mouse::Left) {
-				sf::Vector2i mousePosXYLocal = sf::Mouse::getPosition(*m_window);
-				sf::Vector2f mousePosXY = m_window->mapPixelToCoords(mousePosXYLocal);
 				if (m_loginButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
 					m_mousePressedPos = LOGIN_BUTTON;
 				}
@@ -235,7 +259,7 @@ bool Login::render()
 	m_window->draw(m_usernameDisplay);
 	//m_window->draw(m_IPDisplay);
 
-	m_window->draw(m_loginButton);
+	m_window->draw(m_loginButton, &m_glowShader);
 	m_window->draw(m_loginButtonText);
 
 	// Render Popup if showed

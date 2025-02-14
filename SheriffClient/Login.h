@@ -43,6 +43,8 @@ private:
 	sf::RectangleShape m_background;
 	sf::Texture m_backgroundTexture;
 
+	sf::Shader m_glowShader;
+
 	sf::Font m_font;
 	sf::Text m_usernameLabel;
 	//sf::Text m_IPLabel;
