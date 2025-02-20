@@ -54,6 +54,7 @@ std::vector<Player*> Lobby::getPlayerList() const
 
 bool Lobby::addToPlayerList(std::string name, sf::Color playerColor, bool isUserPlayer, Lobby::insertPos insertPos)
 {
+	std::lock_guard<std::mutex> lock(m_PlayerMutex);
 	if (insertPos == TAIL) {
 		m_playerList.push_back(new Player(name, playerColor, isUserPlayer));
 	}
@@ -69,6 +70,7 @@ bool Lobby::removeFromPlayerList(std::string name)
 {
 	for (int i = 0; i < m_playerList.size(); i++) {
 		if (m_playerList[i]->getPlayerName() == name) {
+			std::lock_guard<std::mutex> lock(m_PlayerMutex);
 			m_playerList.erase(m_playerList.begin() + i);
 			return true;
 		}
@@ -79,6 +81,7 @@ bool Lobby::removeFromPlayerList(std::string name)
 
 bool Lobby::setupPlayerUI()
 {
+	std::lock_guard<std::mutex> lock(m_PlayerMutex);
 	for (int i = 0; i < m_playerList.size(); i++) {
 		if (m_playerList[i]->isUserPlayer()) {
 			continue;
@@ -149,6 +152,7 @@ bool Lobby::render()
 	m_window->clear();
 
 	m_window->draw(m_background);
+	std::lock_guard<std::mutex> lock(m_PlayerMutex);
 	for (const auto& player : m_playerList) {
 		m_window->draw(player->getAvatar());	
 		m_window->draw(player->getReadyButton());

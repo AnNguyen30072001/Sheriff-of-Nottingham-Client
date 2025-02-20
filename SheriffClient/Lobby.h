@@ -18,6 +18,9 @@ private:
 	std::vector<Player*> m_playerList;
 	uint8_t m_newPlayerIdx;
 
+	// Threading
+	std::mutex m_PlayerMutex;
+
 	bool initVariable();
 	bool initWindow();
 
