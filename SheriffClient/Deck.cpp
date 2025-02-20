@@ -82,7 +82,7 @@ bool Deck::setDiscardDeckRightOutOfStockTexture()
 
 bool Deck::initDeckUI()
 {
-	if (!m_mainDeckTexture.loadFromFile("Images/MainDeck_2.png")) {
+	if (!m_mainDeckTexture.loadFromFile("Images/MainDeck.png")) {
 		std::cerr << "Error loading deck texture!" << std::endl;
 	}
 	if (!m_outOfStockTexture.loadFromFile("Images/OutOfStock.png")) {
@@ -91,19 +91,19 @@ bool Deck::initDeckUI()
 
 	m_mainDeck.setSize(sf::Vector2f(150.f, 200.f));
 	m_mainDeck.setFillColor(sf::Color::White);
-	m_mainDeck.setOutlineThickness(1.f);
-	m_mainDeck.setOutlineColor(sf::Color::Black);
 	m_mainDeck.setTexture(&m_mainDeckTexture);
 
 	m_discardDeckLeft.setSize(sf::Vector2f(108.f, 156.f));
 	m_discardDeckLeft.setFillColor(sf::Color::White);
 	m_discardDeckLeft.setOutlineThickness(2.f);
 	m_discardDeckLeft.setOutlineColor(sf::Color::Black);
+	m_discardDeckLeft.setTexture(&m_outOfStockTexture);
 
 	m_discardDeckRight.setSize(sf::Vector2f(108.f, 156.f));
 	m_discardDeckRight.setFillColor(sf::Color::White);
 	m_discardDeckRight.setOutlineThickness(2.f);
 	m_discardDeckRight.setOutlineColor(sf::Color::Black);
+	m_discardDeckRight.setTexture(&m_outOfStockTexture);
 
 	// Positioning
 	m_mainDeck.setPosition(885.f, 280.f);

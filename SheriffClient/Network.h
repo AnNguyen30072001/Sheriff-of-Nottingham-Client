@@ -58,6 +58,8 @@ public:
 
 	bool isConnected() const;
 
+	void setUserPlayerName(const std::string name);
+	std::string getUserPlayerName() const;
 
 private:
 	// Private constructor and destructor for Singleton
@@ -76,6 +78,8 @@ private:
 	bool m_connected;
 	bool m_listening;
 	bool m_processing;
+
+	std::string m_userPlayerName;
 
 	void listenToServer();
 

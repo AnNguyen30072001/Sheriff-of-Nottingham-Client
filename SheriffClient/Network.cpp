@@ -7,7 +7,8 @@ Network::Network(const std::string & serverAddress, unsigned short serverPort) :
 	m_listening(false),
 	m_connected(false),
 	m_listenerThread(&Network::listenToServer, this),
-	m_processing(false)
+	m_processing(false),
+	m_userPlayerName("")
 {
 
 }
@@ -69,6 +70,7 @@ bool Network::respondMessage(const nlohmann::json & jsonMessage)
 	json messageResponse;
 	messageResponse["MessageType"] = "PLAYER_RESPONSE";
 	messageResponse["ReasonType"] = jsonMessage["MessageType"];
+	messageResponse["PlayerName"] = getUserPlayerName();
 	std::string messageResponseString = messageResponse.dump();
 
 	return send(messageResponseString);
@@ -98,6 +100,16 @@ void Network::stopListening()
 bool Network::isConnected() const
 {
 	return m_connected;
+}
+
+void Network::setUserPlayerName(const std::string name)
+{
+	m_userPlayerName = name;
+}
+
+std::string Network::getUserPlayerName() const
+{
+	return m_userPlayerName;
 }
 
 void Network::listenToServer()

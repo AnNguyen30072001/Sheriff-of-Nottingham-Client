@@ -305,6 +305,7 @@ void Login::onMessageReceived(const nlohmann::json& jsonMessage)
 	else if (jsonMessage["MessageType"] == "GAME_ACCEPT_PLAYER") {
 		// Move on to Lobby screen
 		m_usernameText = jsonMessage["PlayerName"];
+		Network::getInstance().setUserPlayerName(m_usernameText);
 		g_gameState = LOBBY_VIEW;
 	}
 
