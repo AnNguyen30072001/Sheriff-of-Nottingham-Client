@@ -5,6 +5,7 @@ Tablet::Tablet(sf::RenderWindow* parentWindow)
 {
 	m_bribeAmount = 0;
 	m_playerMoney = 0;
+	m_playerScore = 0;
 	m_selectedGoods = Card::INVALID;
 	m_parentWindow = parentWindow;
 	m_isTabletVisible = false;
@@ -16,7 +17,8 @@ Tablet::Tablet(sf::RenderWindow* parentWindow)
 
 	if (!m_goldMedalTexture.loadFromFile("Images/GoldToken.png") || 
 		!m_silverMedalTexture.loadFromFile("Images/SilverToken.png") || 
-		!m_moneyIconTexture.loadFromFile("Images/MoneyIcon.png")) {
+		!m_moneyIconTexture.loadFromFile("Images/MoneyIcon.png") || 
+		!m_scoreIconTexture.loadFromFile("Images/ScoreIcon.png")) {
 		std::cerr << "Error loading tablet texture!" << std::endl;
 	}
 
@@ -242,6 +244,7 @@ void Tablet::render()
 		m_parentWindow->draw(m_okButtonText);
 
 		break;
+
 	case Tablet::Type::INFO:
 		m_parentWindow->draw(m_tabletInfo);
 
@@ -260,6 +263,9 @@ void Tablet::render()
 
 		m_parentWindow->draw(m_moneyIcon);
 		m_parentWindow->draw(m_moneyText);
+
+		m_parentWindow->draw(m_scoreIcon);
+		m_parentWindow->draw(m_scoreText);
 
 		break;
 
@@ -382,6 +388,9 @@ void Tablet::setupGiveBagUI()
 
 void Tablet::setupInfoUI(Player * player)
 {
+	// Test
+	std::cout << "Player money: " << player->getPlayerMoney() << std::endl;
+
 	// Tablet background
 	m_tabletInfo.setSize(sf::Vector2f(1110.f, 1158.f));
 	m_tabletInfo.setFillColor(sf::Color::White);
@@ -397,20 +406,32 @@ void Tablet::setupInfoUI(Player * player)
 		(player->isUserPlayer() ? sf::Vector2f(0.f, 150.f) : sf::Vector2f(0.f, 130.f)));
 
 	// Player money
-	m_moneyIcon.setSize(sf::Vector2f(100.f, 100.f));
+	m_moneyIcon.setSize(sf::Vector2f(70.f, 70.f));
 	m_moneyIcon.setFillColor(sf::Color::White);
 	m_moneyIcon.setTexture(&m_moneyIconTexture);
 	m_moneyIcon.setPosition(1045.f, 154.f);
 	m_moneyText.setFont(m_font);
 	m_moneyText.setFillColor(sf::Color::Black);
 	m_moneyText.setString(std::to_string(m_playerMoney));
-	m_moneyText.setCharacterSize(60);
-	m_moneyText.setPosition(1170.f, 167.f);
+	m_moneyText.setCharacterSize(42);
+	m_moneyText.setPosition(1140.f, 167.f);
 
+	// Player score
+	m_playerScore = player->getPlayerScore();
+	m_scoreIcon.setSize(sf::Vector2f(70.f, 70.f));
+	m_scoreIcon.setFillColor(sf::Color::White);
+	m_scoreIcon.setTexture(&m_scoreIconTexture);
+	m_scoreIcon.setPosition(1045.f, 245.f);
+	m_scoreText.setFont(m_font);
+	m_scoreText.setFillColor(sf::Color::Black);
+	m_scoreText.setString(std::to_string(m_playerScore));
+	m_scoreText.setCharacterSize(42);
+	m_scoreText.setPosition(1140.f, 255.f);
+	
 	// Goods
 	std::string texturePathsHighlight[8] = 
 	{ "AppleReportHighlight.png", "BreadReportHighlight.png", "CheeseReportHighlight.png", "ChickenReportHighlight.png", 
-		"CrossbowReportHighlight.png", "MeadReportHighlight.png", "PepperReportHighlight.png", "SilkReportHighlight.png"};
+		"PepperReportHighlight.png", "MeadReportHighlight.png", "SilkReportHighlight.png", "CrossbowReportHighlight.png"};
 	for (int i = 0; i < 8; ++i) {
 		m_goodsButtonTexturesHighLight[i].loadFromFile("Images/" + texturePathsHighlight[i]);
 		m_goodsButtons[i].setSize(sf::Vector2f(100.f, 100.f));

@@ -181,8 +181,12 @@ void Lobby::onMessageReceived(const nlohmann::json& jsonMessage)
 		}
 
 		// Append to player list
-		for (std::string& playerName : playerNames) {
-			this->addToPlayerList(playerName, sf::Color::Blue, false);
+		for (int i = 0; i < playerNames.size(); i++) {
+			this->addToPlayerList(playerNames[i], sf::Color::Blue, false);
+			//if (jsonMessage.contains("PlayersState")) {
+			//	bool isReady = jsonMessage["PlayersState"][i].get<std::string>() == "PLAYER_READY" ? true : false;
+			//	m_playerList[m_playerList.size() - 1]->setPlayerReady(isReady);
+			//}
 		}
 	}
 
@@ -232,6 +236,7 @@ void Lobby::onMessageReceived(const nlohmann::json& jsonMessage)
 		std::cout << "Message received but could not decode meaningful data.\n";
 	}
 
+	// Send response message if not GAME_START event
 	if (jsonMessage["MessageType"] != "GAME_START") {
 		// Send a response message
 		Network::getInstance().respondMessage(jsonMessage);

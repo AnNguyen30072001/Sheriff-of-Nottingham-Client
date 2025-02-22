@@ -6,38 +6,13 @@
 #pragma once
 class Player
 {
-private:
-	sf::Font m_font;
-	sf::CircleShape m_avatar;  
-	sf::Texture m_avatarTexture;
-	sf::Color m_playerColor;
-	sf::Text m_nameText;       
-
-	sf::RectangleShape m_readyButton; 
-	sf::Text m_readyText;  
-
-	sf::RectangleShape m_sheriffBadge;
-	sf::Texture m_sheriffBadgeTexture;
-
-	sf::RectangleShape m_infoTabIcon;
-	sf::Texture m_infoTabIconTexture;
-
-	sf::RectangleShape m_bagIcon;
-	sf::Texture m_bagIconTexture;
-
-	sf::Text m_turnIndicator;
-
-	bool m_isReady;             
-	bool m_isUserPlayer;
-
-	// Game logic and stuff
-	bool m_isSheriff;
-	bool m_isInTurn;
-
-	int m_goods[8];
-	int m_money;
-
 public:
+	enum class MedalStatus {
+		NONE,
+		GOLD,
+		SILVER
+	};
+
 	Player(std::string name, sf::Color playerColor, bool isUserPlayer);
 	~Player();
 
@@ -76,6 +51,46 @@ public:
 
 	int getPlayerMoney() const;
 	void setPlayerMoney(int value);
+
+	MedalStatus getPlayerMedalStatus(int cardType);
+	void setPlayerMedalStatus(int cardType, MedalStatus status);
+
+	int getPlayerScore() const;
+	void setPlayerScore(int value);
+
+private:
+	sf::Font m_font;
+	sf::CircleShape m_avatar;
+	sf::Texture m_avatarTexture;
+	sf::Color m_playerColor;
+	sf::Text m_nameText;
+
+	sf::RectangleShape m_readyButton;
+	sf::Text m_readyText;
+
+	sf::RectangleShape m_sheriffBadge;
+	sf::Texture m_sheriffBadgeTexture;
+
+	sf::RectangleShape m_infoTabIcon;
+	sf::Texture m_infoTabIconTexture;
+
+	sf::RectangleShape m_bagIcon;
+	sf::Texture m_bagIconTexture;
+
+	sf::Text m_turnIndicator;
+
+	bool m_isReady;
+	bool m_isUserPlayer;
+
+	// Game logic and stuff
+	bool m_isSheriff;
+	bool m_isInTurn;
+
+	int m_goods[8];
+	int m_money;
+
+	MedalStatus m_medalStatus[4];
+	int m_score;
 };
 
 #endif // !PLAYER__

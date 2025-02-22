@@ -158,6 +158,83 @@ void Game::initWindow()
 	userHandUI();
 }
 
+void Game::updatePlayersMedalStatus()
+{
+	//// Find out each good amount to be considered gold or silver
+	int goldMedalAmount[4] = {0, 0, 0, 0};
+	int silverMedalAmount[4] = {0, 0, 0, 0};
+	int playerGoodAmount = 0;
+	for (auto& player : m_playerList) {
+		for (int i = 0; i < 4; i++) {
+			playerGoodAmount = player->getPlayerGoodsAmount(i + 1);
+			if (playerGoodAmount > goldMedalAmount[i]) {
+				silverMedalAmount[i] = goldMedalAmount[i];
+				goldMedalAmount[i] = playerGoodAmount;
+			}
+		}
+	}
+
+	// Test
+	//std::cout << "\nGold: ";
+	//for (int amount : goldMedalAmount) {
+	//	std::cout << amount << " ";
+	//}
+	//std::cout << "\nSilver: ";
+	//for (int amount : silverMedalAmount) {
+	//	std::cout << amount << " ";
+	//}
+
+	//// Give medal to players according to good amount
+	for (auto& player : m_playerList) {
+		for (int i = 0; i < 4; i++) {
+			playerGoodAmount = player->getPlayerGoodsAmount(i + 1);
+			if (playerGoodAmount == goldMedalAmount[i] && goldMedalAmount[i] != 0) {
+				player->setPlayerMedalStatus(i + 1, Player::MedalStatus::GOLD);
+			}
+			else if (playerGoodAmount == silverMedalAmount[i] && silverMedalAmount[i] != 0) {
+				player->setPlayerMedalStatus(i + 1, Player::MedalStatus::SILVER);
+			}
+			else {
+				player->setPlayerMedalStatus(i + 1, Player::MedalStatus::NONE);
+			}
+		}
+	}
+}
+
+void Game::updatePlayerScore(Player * player)
+{
+	int finalScore = 0;
+
+	// Convert money to score
+	finalScore += player->getPlayerMoney();
+
+	// Convert goods value to score
+	for (int i = 0; i < 8; i++) {
+		int goodAmount = player->getPlayerGoodsAmount(i + 1);
+		// Multiply amount with value of card type, then add to score
+		finalScore += goodAmount * Card::cardTypeToValue.at(static_cast<Card::CardType>(i + 1));
+		// If player own equal or more than 3 of a contraband type, add black market bonus
+		if (i >= 4 && goodAmount >= 3) {
+			finalScore += Card::cardTypeToContrabandBonus.at(static_cast<Card::CardType>(i + 1));
+		}
+	}
+
+	// Convert medals to score
+	for (int i = 0; i < 4; i++) {
+		// Gold bonus
+		if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::GOLD) {
+			finalScore += Card::cardTypeToGoldBonus.at(static_cast<Card::CardType>(i + 1));
+		}
+		// Silver bonus
+		else if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::SILVER) {
+			finalScore += Card::cardTypeToSilverBonus.at(static_cast<Card::CardType>(i + 1));
+		}
+	}
+
+	// Set player score
+	player->setPlayerScore(finalScore);
+}
+
 bool Game::attemptReconnect(float deltaTime)
 {
 	m_elapsedTime += deltaTime;
@@ -544,38 +621,63 @@ void Game::revealCard(Player * sheriff, std::vector<Card::CardType> cardTypes, i
 			// If the card is legal or sheriff chose to Pass, merchant get the cash
 			if (cardTypes[revealIndex] == m_goodsReport || jsonMessage["MessageType"] == "SHERIFF_PASS_RESPONSE") {
 				std::cout << "Legal\n";
-				int depositCash = Card::cardTypeToValue.at(cardTypes[revealIndex]);
-				m_moneyText.setString(std::to_string(depositCash));
-				m_moneyText.setScale(1.f, 1.f);
-				m_moneyText.setFillColor(sf::Color::Green);
-				m_moneyIcon.setScale(0.6, 0.6);
-				m_moneyIcon.setPosition(posOffset + sf::Vector2f(-30.f, 120.f));
-				m_moneyText.setPosition(m_moneyIcon.getPosition() + sf::Vector2f(20.f, 60.f));
-				// Add animation Merchant receive the cash
-				m_animationPlayer.addAnimation(new Animation(m_moneyText, Animation::Type::MOVE, 0.15, 
-					m_moneyText.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
-				m_animationPlayer.addAnimation(new Animation(m_moneyIcon, Animation::Type::MOVE, 0.15,
-					m_moneyIcon.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
-				m_animationPlayer.addAnimation(new Animation(m_moneyText, Animation::Type::MOVE_AND_SCALE, 0.3,
-					m_playerList[m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5));
-				m_animationPlayer.addAnimation(new Animation(m_moneyIcon, Animation::Type::MOVE_AND_SCALE, 0.3,
-					m_playerList[m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5, [this, cardTypes, sheriff, revealIndex, jsonMessage]
-				{
-					// Update player's catalog
-					m_playerList[m_MerchantShowingBagIndex]->increasePlayerGoodsAmount(cardTypes[revealIndex], 1);
-					m_playerList[m_MerchantShowingBagIndex]->setPlayerMoney(m_playerList[m_MerchantShowingBagIndex]->getPlayerMoney() 
-						+ Card::cardTypeToValue.at(cardTypes[revealIndex]));
+				// Consider adding animation give points to merchant
+
+				//int depositCash = Card::cardTypeToValue.at(cardTypes[revealIndex]);
+				//m_moneyText.setString(std::to_string(depositCash));
+				//m_moneyText.setScale(1.f, 1.f);
+				//m_moneyText.setFillColor(sf::Color::Green);
+				//m_moneyIcon.setScale(0.6, 0.6);
+				//m_moneyIcon.setPosition(posOffset + sf::Vector2f(-30.f, 120.f));
+				//m_moneyText.setPosition(m_moneyIcon.getPosition() + sf::Vector2f(20.f, 60.f));
+				//// Add animation Merchant receive the cash
+				//m_animationPlayer.addAnimation(new Animation(m_moneyText, Animation::Type::MOVE, 0.15, 
+				//	m_moneyText.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+				//m_animationPlayer.addAnimation(new Animation(m_moneyIcon, Animation::Type::MOVE, 0.15,
+				//	m_moneyIcon.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+				//m_animationPlayer.addAnimation(new Animation(m_moneyText, Animation::Type::MOVE_AND_SCALE, 0.3,
+				//	m_playerList[m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5));
+				//m_animationPlayer.addAnimation(new Animation(m_moneyIcon, Animation::Type::MOVE_AND_SCALE, 0.3,
+				//	m_playerList[m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5, [this, cardTypes, sheriff, revealIndex, jsonMessage]
+				//{
+				//	// Update player's catalog
+				//	m_playerList[m_MerchantShowingBagIndex]->increasePlayerGoodsAmount(cardTypes[revealIndex], 1);
+				//	m_playerList[m_MerchantShowingBagIndex]->setPlayerMoney(m_playerList[m_MerchantShowingBagIndex]->getPlayerMoney() 
+				//		+ Card::cardTypeToValue.at(cardTypes[revealIndex]));
+				//	
+				//	// Continue revealing until all cards are revealed
+				//	int nextIndex = revealIndex + 1;
+				//	if (nextIndex < cardTypes.size()) {
+				//		revealCard(sheriff, cardTypes, nextIndex, jsonMessage);
+				//	}
+				//	else {
+				//		// Retrieve the cards laid on table
+				//		retrieveCards(jsonMessage);
+				//	}
+				//}));
+
+				// Update player's catalog
+				m_playerList[m_MerchantShowingBagIndex]->increasePlayerGoodsAmount(cardTypes[revealIndex], 1);
 					
-					// Continue revealing until all cards are revealed
-					int nextIndex = revealIndex + 1;
-					if (nextIndex < cardTypes.size()) {
-						revealCard(sheriff, cardTypes, nextIndex, jsonMessage);
+				// Continue revealing until all cards are revealed
+				int nextIndex = revealIndex + 1;
+				if (nextIndex < cardTypes.size()) {
+					revealCard(sheriff, cardTypes, nextIndex, jsonMessage);
+				}
+				else {
+					// Update players medal status
+					updatePlayersMedalStatus();
+
+					// Update players score
+					m_textMutex.lock();
+					for (auto& player : m_playerList) {
+						updatePlayerScore(player);
 					}
-					else {
-						// Retrieve the cards laid on table
-						retrieveCards(jsonMessage);
-					}
-				}));
+					m_textMutex.unlock();
+
+					// Retrieve the cards laid on table
+					retrieveCards(jsonMessage);
+				}
 			}
 			// If the card is not legal, sheriff get the cash
 			else {
@@ -630,6 +732,16 @@ void Game::revealCard(Player * sheriff, std::vector<Card::CardType> cardTypes, i
 							revealCard(sheriff, cardTypes, nextIndex, jsonMessage);
 						}
 						else {
+							// Update players medal status
+							updatePlayersMedalStatus();
+
+							// Update players score
+							m_textMutex.lock();
+							for (auto& player : m_playerList) {
+								updatePlayerScore(player);
+							}
+							m_textMutex.unlock();
+
 							// Retrieve the cards laid on table
 							retrieveCards(jsonMessage);
 						}
@@ -1079,6 +1191,15 @@ bool Game::update()
 
 	// Update the timer if needed
 	m_timer->update();
+
+	//// Test
+	//updatePlayersMedalStatus();
+	//m_textMutex.lock();
+	//for (auto& player : m_playerList) {
+	//	updatePlayerScore(player);
+	//}
+	//m_textMutex.unlock();
+	//// EoT
 
 	switch (m_gameEvent)
 	{

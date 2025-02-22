@@ -9,7 +9,8 @@ Player::Player(std::string name, sf::Color playerColor, bool isUserPlayer)
 	m_isReady = false;
 	m_isSheriff = false;
 	m_isInTurn = false;
-	m_money = 0;
+	m_money = 50;
+	m_score = 50;
 	m_readyButton.setFillColor(sf::Color(128, 128, 128)); // Gray by default
 
 	initFontAndTexture();
@@ -19,6 +20,10 @@ Player::Player(std::string name, sf::Color playerColor, bool isUserPlayer)
 
 	for (auto& good : m_goods) {
 		good = 0;
+	}
+
+	for (auto& status : m_medalStatus) {
+		status = MedalStatus::NONE;
 	}
 }
 
@@ -302,4 +307,24 @@ int Player::getPlayerMoney() const
 void Player::setPlayerMoney(int value)
 {
 	m_money = value;
+}
+
+Player::MedalStatus Player::getPlayerMedalStatus(int cardType)
+{
+	return m_medalStatus[cardType - 1];
+}
+
+void Player::setPlayerMedalStatus(int cardType, MedalStatus status)
+{
+	m_medalStatus[cardType - 1] = status;
+}
+
+int Player::getPlayerScore() const
+{
+	return m_score;
+}
+
+void Player::setPlayerScore(int value)
+{
+	m_score = value;
 }

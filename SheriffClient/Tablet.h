@@ -51,6 +51,9 @@ private:
 	sf::RectangleShape	m_moneyIcon;					// Money icon
 	sf::Texture			m_moneyIconTexture;
 	sf::Text			m_moneyText;
+	sf::RectangleShape	m_scoreIcon;					// Score icon
+	sf::Texture			m_scoreIconTexture;
+	sf::Text			m_scoreText;
 	sf::RectangleShape	m_goldMedals[4];				// Gold medals for legal goods
 	sf::Texture			m_goldMedalTexture;
 	sf::RectangleShape	m_silverMedals[4];				// Silver medals for legal goods
@@ -70,6 +73,7 @@ private:
 
 	Card::CardType m_selectedGoods; // The goods that merchant reports
 	int m_playerMoney;
+	int m_playerScore;
 	unsigned int m_bribeAmount; // Selected bribe amount
 
 	bool m_isTabletVisible; // To toggle tablet visibility

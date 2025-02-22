@@ -120,6 +120,10 @@ private:
 	void initVariables(std::vector<Player*> playerList);
 	void initWindow();
 
+	// Private function
+	void updatePlayersMedalStatus();
+	void updatePlayerScore(Player* player);
+
 	bool attemptReconnect(float deltaTime);
 
 	bool handleMouseClick(sf::Vector2f mousePosXY);

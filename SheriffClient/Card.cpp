@@ -49,6 +49,30 @@ const std::unordered_map<Card::CardType, int> Card::cardTypeToPenalty = {
 	{UNKNOWN, 0}
 };
 
+const std::unordered_map<Card::CardType, int> Card::cardTypeToGoldBonus = {
+	{APPLE, 20},
+	{CHEESE, 15},
+	{BREAD, 15},
+	{CHICKEN, 10},
+	{UNKNOWN, 0}
+};
+
+const std::unordered_map<Card::CardType, int> Card::cardTypeToSilverBonus = {
+	{APPLE, 10},
+	{CHEESE, 10},
+	{BREAD, 10},
+	{CHICKEN, 5},
+	{UNKNOWN, 0}
+};
+
+const std::unordered_map<Card::CardType, int> Card::cardTypeToContrabandBonus = {
+	{PEPPER, 30},
+	{MEAD, 32},
+	{SILK, 34},
+	{CROSSBOW, 0},
+	{UNKNOWN, 0}
+};
+
 Card::Card(CardType cardType)
 {
 	m_cardType = cardType;

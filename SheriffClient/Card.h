@@ -12,19 +12,22 @@ public:
 	enum CardType {
 		INVALID,
 		APPLE,
-		BREAD,
 		CHEESE,
+		BREAD,
 		CHICKEN,
-		CROSSBOW,
-		MEAD,
 		PEPPER,
+		MEAD,
 		SILK,
+		CROSSBOW,
 		UNKNOWN
 	};
 	static const std::unordered_map<CardType, std::string> m_cardNameToString;
 	static const std::unordered_map<std::string, CardType> m_stringToCardName;
 	static const std::unordered_map<CardType, int> cardTypeToValue;
 	static const std::unordered_map<CardType, int> cardTypeToPenalty;
+	static const std::unordered_map<CardType, int> cardTypeToGoldBonus;
+	static const std::unordered_map<CardType, int> cardTypeToSilverBonus;
+	static const std::unordered_map<CardType, int> cardTypeToContrabandBonus;
 
 	Card(CardType cardType);
 	~Card();
