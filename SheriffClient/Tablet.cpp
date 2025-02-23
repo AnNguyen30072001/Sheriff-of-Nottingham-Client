@@ -17,6 +17,7 @@ Tablet::Tablet(sf::RenderWindow* parentWindow)
 
 	if (!m_goldMedalTexture.loadFromFile("Images/GoldToken.png") || 
 		!m_silverMedalTexture.loadFromFile("Images/SilverToken.png") || 
+		!m_blackMarketMedalTexture.loadFromFile("Images/BlackMarketToken.png") ||
 		!m_moneyIconTexture.loadFromFile("Images/MoneyIcon.png") || 
 		!m_scoreIconTexture.loadFromFile("Images/ScoreIcon.png")) {
 		std::cerr << "Error loading tablet texture!" << std::endl;
@@ -259,6 +260,7 @@ void Tablet::render()
 		for (int i = 0; i < 4; i++) {
 			m_parentWindow->draw(m_goldMedals[i]);
 			m_parentWindow->draw(m_silverMedals[i]);
+			m_parentWindow->draw(m_blackMarketMedals[i]);
 		}
 
 		m_parentWindow->draw(m_moneyIcon);
@@ -389,7 +391,7 @@ void Tablet::setupGiveBagUI()
 void Tablet::setupInfoUI(Player * player)
 {
 	// Test
-	std::cout << "Player money: " << player->getPlayerMoney() << std::endl;
+	//std::cout << "Player money: " << player->getPlayerMoney() << std::endl;
 
 	// Tablet background
 	m_tabletInfo.setSize(sf::Vector2f(1110.f, 1158.f));
@@ -449,25 +451,53 @@ void Tablet::setupInfoUI(Player * player)
 		std::string amount = std::to_string(goodAmount);
 		m_goodsAmountText[i].setString(amount);
 		m_goodsAmountText[i].setCharacterSize(48);
-		m_goodsAmountText[i].setPosition(posX + (goodAmount < 10 ? 35.f : 20.f), posY + (i < 4 ? 164.f : 116.f));
+		m_goodsAmountText[i].setPosition(posX + (goodAmount < 10 ? 35.f : 20.f), posY + 116.f);
 	}
 
 	// Gold medals
 	for (int i = 0; i < 4; i++) {
 		m_goldMedals[i].setSize(sf::Vector2f(70.f, 70.f));
-		m_goldMedals[i].setFillColor(sf::Color(255, 255, 255, 180));
 		m_goldMedals[i].setTexture(&m_goldMedalTexture);
 		m_goldMedals[i].setPosition(m_goodsButtons[i].getPosition() + sf::Vector2f(50.f, -50.f));
+
+		// Only show if player gain that medal
+		if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::GOLD) {
+			m_goldMedals[i].setFillColor(sf::Color(255, 255, 255, 255));
+		}
+		else {
+			m_goldMedals[i].setFillColor(sf::Color(255, 255, 255, 0));
+		}
 	}
 
 	// Silver medals
 	for (int i = 0; i < 4; i++) {
 		m_silverMedals[i].setSize(sf::Vector2f(70.f, 70.f));
-		m_silverMedals[i].setFillColor(sf::Color(255, 255, 255, 180));
 		m_silverMedals[i].setTexture(&m_silverMedalTexture);
-		m_silverMedals[i].setPosition(m_goodsButtons[i].getPosition() + sf::Vector2f(50.f, 80.f));
+		m_silverMedals[i].setPosition(m_goodsButtons[i].getPosition() + sf::Vector2f(50.f, -50.f));
+
+		// Only show if player gain that medal
+		if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::SILVER) {
+			m_silverMedals[i].setFillColor(sf::Color(255, 255, 255, 220));
+		}
+		else {
+			m_silverMedals[i].setFillColor(sf::Color(255, 255, 255, 0));
+		}
 	}
 
+	// Black market medals
+	for (int i = 0; i < 4; i++) {
+		m_blackMarketMedals[i].setSize(sf::Vector2f(70.f, 70.f));
+		m_blackMarketMedals[i].setTexture(&m_blackMarketMedalTexture);
+		m_blackMarketMedals[i].setPosition(m_goodsButtons[i + 4].getPosition() + sf::Vector2f(50.f, -50.f));
+
+		// Only show if player gain that medal
+		if (player->getPlayerMedalStatus(i + 5) == Player::MedalStatus::BLACK_MARKET) {
+			m_blackMarketMedals[i].setFillColor(sf::Color(255, 255, 255, 255));
+		}
+		else {
+			m_blackMarketMedals[i].setFillColor(sf::Color(255, 255, 255, 0));
+		}
+	}
 }
 
 bool Tablet::confirmSelection()

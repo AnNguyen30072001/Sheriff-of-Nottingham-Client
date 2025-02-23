@@ -171,6 +171,9 @@ void Game::updatePlayersMedalStatus()
 				silverMedalAmount[i] = goldMedalAmount[i];
 				goldMedalAmount[i] = playerGoodAmount;
 			}
+			else if (playerGoodAmount < goldMedalAmount[i] && playerGoodAmount > silverMedalAmount[i]) {
+				silverMedalAmount[i] = playerGoodAmount;
+			}
 		}
 	}
 
@@ -198,6 +201,13 @@ void Game::updatePlayersMedalStatus()
 				player->setPlayerMedalStatus(i + 1, Player::MedalStatus::NONE);
 			}
 		}
+
+		for (int j = 4; j < 8; j++) {
+			playerGoodAmount = player->getPlayerGoodsAmount(j + 1);
+			if (playerGoodAmount >= 3) {
+				player->setPlayerMedalStatus(j + 1, Player::MedalStatus::BLACK_MARKET);
+			}
+		}
 	}
 }
 
@@ -213,14 +223,10 @@ void Game::updatePlayerScore(Player * player)
 		int goodAmount = player->getPlayerGoodsAmount(i + 1);
 		// Multiply amount with value of card type, then add to score
 		finalScore += goodAmount * Card::cardTypeToValue.at(static_cast<Card::CardType>(i + 1));
-		// If player own equal or more than 3 of a contraband type, add black market bonus
-		if (i >= 4 && goodAmount >= 3) {
-			finalScore += Card::cardTypeToContrabandBonus.at(static_cast<Card::CardType>(i + 1));
-		}
 	}
 
 	// Convert medals to score
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 8; i++) {
 		// Gold bonus
 		if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::GOLD) {
 			finalScore += Card::cardTypeToGoldBonus.at(static_cast<Card::CardType>(i + 1));
@@ -228,6 +234,10 @@ void Game::updatePlayerScore(Player * player)
 		// Silver bonus
 		else if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::SILVER) {
 			finalScore += Card::cardTypeToSilverBonus.at(static_cast<Card::CardType>(i + 1));
+		}
+		// Black market bonus
+		else if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::BLACK_MARKET) {
+			finalScore += Card::cardTypeToContrabandBonus.at(static_cast<Card::CardType>(i + 1));
 		}
 	}
 
@@ -618,12 +628,39 @@ void Game::revealCard(Player * sheriff, std::vector<Card::CardType> cardTypes, i
 		{
 			sf::Vector2f posOffset = m_dummyCards[revealIndex]->getCard().getPosition();
 
-			// If the card is legal or sheriff chose to Pass, merchant get the cash
-			if (cardTypes[revealIndex] == m_goodsReport || jsonMessage["MessageType"] == "SHERIFF_PASS_RESPONSE") {
+			// If Sheriff chose to Pass, merchant get the goods
+			if (jsonMessage["MessageType"] == "SHERIFF_PASS_RESPONSE") {
 				std::cout << "Legal\n";
-				// Consider adding animation give points to merchant
 
-				//int depositCash = Card::cardTypeToValue.at(cardTypes[revealIndex]);
+				// Update player's catalog
+				m_playerList[m_MerchantShowingBagIndex]->increasePlayerGoodsAmount(cardTypes[revealIndex], 1);
+					
+				// Continue revealing until all cards are revealed
+				int nextIndex = revealIndex + 1;
+				if (nextIndex < cardTypes.size()) {
+					revealCard(sheriff, cardTypes, nextIndex, jsonMessage);
+				}
+				else {
+					// Update players medal status
+					updatePlayersMedalStatus();
+
+					// Update players score
+					m_textMutex.lock();
+					for (auto& player : m_playerList) {
+						updatePlayerScore(player);
+					}
+					m_textMutex.unlock();
+
+					// Retrieve the cards laid on table
+					retrieveCards(jsonMessage);
+				}
+			}
+
+			// If Sheriff inspect and the card is legal, merchant get the cash
+			else if (cardTypes[revealIndex] == m_goodsReport) {
+				std::cout << "Legal\n";
+
+				//int depositCash = Card::cardTypeToPenalty.at(cardTypes[revealIndex]);
 				//m_moneyText.setString(std::to_string(depositCash));
 				//m_moneyText.setScale(1.f, 1.f);
 				//m_moneyText.setFillColor(sf::Color::Green);
@@ -656,30 +693,75 @@ void Game::revealCard(Player * sheriff, std::vector<Card::CardType> cardTypes, i
 				//	}
 				//}));
 
-				// Update player's catalog
-				m_playerList[m_MerchantShowingBagIndex]->increasePlayerGoodsAmount(cardTypes[revealIndex], 1);
-					
-				// Continue revealing until all cards are revealed
-				int nextIndex = revealIndex + 1;
-				if (nextIndex < cardTypes.size()) {
-					revealCard(sheriff, cardTypes, nextIndex, jsonMessage);
-				}
-				else {
-					// Update players medal status
-					updatePlayersMedalStatus();
+				// Add animation Merchant receive the cash
+				int depositCash = Card::cardTypeToPenalty.at(cardTypes[revealIndex]);
+				m_moneyText.setString(std::to_string(depositCash));
+				m_moneyText.setScale(1.f, 1.f);
+				m_moneyText.setFillColor(sf::Color::Green);
+				m_moneyIcon.setScale(0.6, 0.6);
+				m_moneyIcon.setPosition(posOffset + sf::Vector2f(-30.f, 120.f));
+				m_moneyText.setPosition(m_moneyIcon.getPosition() + sf::Vector2f(20.f, 60.f));
 
-					// Update players score
-					m_textMutex.lock();
-					for (auto& player : m_playerList) {
-						updatePlayerScore(player);
-					}
-					m_textMutex.unlock();
+				m_animationPlayer.addAnimation(new Animation(m_moneyText, Animation::Type::MOVE, 0.15,
+					m_moneyText.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+				m_animationPlayer.addAnimation(new Animation(m_moneyIcon, Animation::Type::MOVE, 0.15,
+					m_moneyIcon.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+				m_animationPlayer.addAnimation(new Animation(m_moneyText, Animation::Type::MOVE_AND_SCALE, 0.2,
+					m_playerList[m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5));
+				m_animationPlayer.addAnimation(new Animation(m_moneyIcon, Animation::Type::MOVE_AND_SCALE, 0.3,
+					m_playerList[m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5, [this, cardTypes, sheriff, revealIndex, jsonMessage, posOffset]
+				{
+					// Update player's catalog
+					m_playerList[m_MerchantShowingBagIndex]->increasePlayerGoodsAmount(cardTypes[revealIndex], 1);
+					m_playerList[m_MerchantShowingBagIndex]->setPlayerMoney(m_playerList[m_MerchantShowingBagIndex]->getPlayerMoney()
+						+ Card::cardTypeToPenalty.at(cardTypes[revealIndex]));
 
-					// Retrieve the cards laid on table
-					retrieveCards(jsonMessage);
-				}
+					// Add animation Sheriff got deducted
+					int penalty = Card::cardTypeToPenalty.at(cardTypes[revealIndex]);
+					m_moneyText.setString("-" + std::to_string(penalty));
+					m_moneyText.setScale(1.f, 1.f);
+					m_moneyText.setFillColor(sf::Color::Red);
+					m_moneyIcon.setScale(0.6, 0.6);
+					m_moneyIcon.setPosition(posOffset + sf::Vector2f(-30.f, 120.f));
+					m_moneyText.setPosition(m_moneyIcon.getPosition() + sf::Vector2f(15.f, 60.f));
+
+					m_animationPlayer.addAnimation(new Animation(m_moneyText, Animation::Type::MOVE, 0.15,
+						m_moneyText.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+					m_animationPlayer.addAnimation(new Animation(m_moneyIcon, Animation::Type::MOVE, 0.15,
+						m_moneyIcon.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+					m_animationPlayer.addAnimation(new Animation(m_moneyText, Animation::Type::MOVE_AND_SCALE, 0.3,
+						sheriff->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5));
+					m_animationPlayer.addAnimation(new Animation(m_moneyIcon, Animation::Type::MOVE_AND_SCALE, 0.3,
+						sheriff->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5, [this, cardTypes, sheriff, revealIndex, jsonMessage]
+					{
+						// Update player's catalog
+						sheriff->setPlayerMoney(m_playerList[m_MerchantShowingBagIndex]->getPlayerMoney()
+							- Card::cardTypeToPenalty.at(cardTypes[revealIndex]));
+
+						// Continue revealing until all cards are revealed
+						int nextIndex = revealIndex + 1;
+						if (nextIndex < cardTypes.size()) {
+							revealCard(sheriff, cardTypes, nextIndex, jsonMessage);
+						}
+						else {
+							// Update players medal status
+							updatePlayersMedalStatus();
+
+							// Update players score
+							m_textMutex.lock();
+							for (auto& player : m_playerList) {
+								updatePlayerScore(player);
+							}
+							m_textMutex.unlock();
+
+							// Retrieve the cards laid on table
+							retrieveCards(jsonMessage);
+						}
+					}));
+				}));
 			}
-			// If the card is not legal, sheriff get the cash
+
+			// If Sheriff inspect and the card is not legal, sheriff get the cash
 			else {
 				std::cout << "Not legal\n";
 				// Add animation Sheriff receive the cash
@@ -1003,6 +1085,14 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	// If a player's catalog is clicked, show that player's info
 	for (auto& player : m_playerList) {
 		if (player->getInfoTabIcon().getGlobalBounds().contains(mousePosXY) && m_gameEvent != DISCONNECTED) {
+			// Update scores
+			updatePlayersMedalStatus();
+			m_textMutex.lock();
+			for (auto& player : m_playerList) {
+				updatePlayerScore(player);
+			}
+			m_textMutex.unlock();
+			// Show tablet
 			m_tablet->showTablet(Tablet::Type::INFO, player->getPlayerMoney(), player);
 		}
 	}

@@ -93,6 +93,10 @@ int main()
 				// For testing only
 				//playerList[0]->setTurn(true);
 				//playerList[2]->setSheriffStatus(true);
+				//playerList[2]->increasePlayerGoodsAmount(Card::APPLE, 2);
+				//playerList[2]->increasePlayerGoodsAmount(Card::PEPPER, 3);
+				//playerList[2]->increasePlayerGoodsAmount(Card::SILK, 3);
+				//playerList[0]->increasePlayerGoodsAmount(Card::APPLE, 1);
 				//game->addToUserHand(Card::APPLE);
 				//game->addToUserHand(Card::APPLE);
 				//game->addToUserHand(Card::CHICKEN);
@@ -100,6 +104,7 @@ int main()
 				//game->addToUserHand(Card::CHICKEN);
 				//game->addToUserHand(Card::CROSSBOW);
 				//game->userHandUI();
+				// EoT
 
 			}
 			game->update();

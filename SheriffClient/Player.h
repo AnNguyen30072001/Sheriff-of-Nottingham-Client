@@ -10,7 +10,8 @@ public:
 	enum class MedalStatus {
 		NONE,
 		GOLD,
-		SILVER
+		SILVER,
+		BLACK_MARKET
 	};
 
 	Player(std::string name, sf::Color playerColor, bool isUserPlayer);
@@ -89,7 +90,7 @@ private:
 	int m_goods[8];
 	int m_money;
 
-	MedalStatus m_medalStatus[4];
+	MedalStatus m_medalStatus[8];
 	int m_score;
 };
 
