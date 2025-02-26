@@ -12,7 +12,8 @@
 #include "Timer.h"
 #include "Popup.h"
 
-#pragma once
+class GameLogic;
+
 class Game : public Observer
 {
 public:
@@ -34,8 +35,9 @@ public:
 		TIMEOUT_DISCARD
 	};
 
+	Game() = default;
 	Game(std::vector<Player*> playerList);
-	~Game();
+	virtual ~Game();
 
 	// Accessors
 	const bool running() const;
@@ -57,8 +59,10 @@ public:
 
 	void onMessageReceived(const nlohmann::json& jsonMessage);
 
-private:
-	// Initial stuffs
+	friend class GameLogic;
+
+protected:
+	// Init
 	sf::RenderWindow* m_window;
 	sf::VideoMode m_videoMode;
 	sf::Event m_ev;
@@ -66,14 +70,14 @@ private:
 	sf::Clock m_clock;
 	Popup* m_disconnectPopup;
 
-	// Background static stuffs
+	// Background
 	sf::RectangleShape m_background;
 	sf::Texture m_backgroundTexture;
 	sf::RectangleShape m_withdrawEventMask;
 	sf::RectangleShape m_discardEventMask;
 	sf::RectangleShape m_SheriffEventMask;
 
-	// Objects
+	// Render Objects
 	sf::RectangleShape m_ButtonLeft;
 	sf::RectangleShape m_ButtonRight;
 	sf::Text m_ButtonLeftText;
@@ -88,7 +92,7 @@ private:
 	// Shaders
 	sf::Shader m_glowShader;
 
-	// Card stuffs
+	// Players and Cards
 	std::vector<Card*> m_userHand;
 	std::vector<Card*> m_selectedCards;
 	std::vector<Player*> m_playerList;
@@ -102,45 +106,34 @@ private:
 	std::mutex m_dummyCardsMutex;
 	std::mutex m_textMutex;
 
-	// Game logic stuff
-	sf::Vector2f m_dragOffset;
+	// Game Event
 	Game::GameEvent m_gameEvent;
 	Game::GameEvent m_lastUpdatedGameEvent;
-	AnimationManager m_animationPlayer;
+	
+	// Animation and Timer
 	Timer* m_timer;
-	Card::CardType m_goodsReport;
+	AnimationManager m_animationPlayer;
 	float m_elapsedTime;
-	int	m_bribeAmount;
+
+	// Game Logic
 	int m_MerchantShowingBagIndex;
 	bool m_anyCardSelected;
+	sf::Vector2f m_dragOffset;
 	bool m_anyCardDragged;
 	bool m_discardDone;
 	bool m_revealingDone;
 
+private:
+	std::unique_ptr<GameLogic> m_gameLogic;
+
 	void initVariables(std::vector<Player*> playerList);
 	void initWindow();
-
-	// Private function
-	void updatePlayersMedalStatus();
-	void updatePlayerScore(Player* player);
-
-	bool attemptReconnect(float deltaTime);
 
 	bool handleMouseClick(sf::Vector2f mousePosXY);
 	bool handleMouseDrag(sf::Vector2f mousePosXY);
 	bool handleMouseHover(sf::Vector2f mousePosXY);
 	bool handleMouseRelease();
-	void handlePresentEvent();
-	void handleWithdrawEvent(PileType type);
-	void handleDiscardEvent(PileType type, std::string cardName);
-	void handleOpponentWithdrawEvent(PileType type, int playerIndex);
-	void handleOpponentDiscardEvent(PileType type, int playerIndex, Card::CardType cardType);
-	void handleSheriffInspectEvent(const nlohmann::json& jsonMessage);
-	void handleSheriffPassEvent(const nlohmann::json& jsonMessage);
-	void revealCard(Player* sheriff, std::vector<Card::CardType> cardTypes, int revealIndex, const nlohmann::json& jsonMessage);
-	void retrieveCards(const nlohmann::json& jsonMessage);
-	void handleTimeoutWithdraw();
-	void handleTimeoutDiscard();
+
 };
 
 #endif // !GAME__
