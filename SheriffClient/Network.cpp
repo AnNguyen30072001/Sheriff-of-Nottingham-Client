@@ -73,6 +73,9 @@ bool Network::respondMessage(const nlohmann::json & jsonMessage)
 	messageResponse["PlayerName"] = getUserPlayerName();
 	std::string messageResponseString = messageResponse.dump();
 
+	// Test
+	std::cout << "Respond: " << messageResponseString << std::endl;
+
 	return send(messageResponseString);
 }
 
