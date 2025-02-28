@@ -230,23 +230,29 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 void GameLogic::handlePresentEvent()
 {
 	// Get infomation
-	std::map<std::string, int> cardCount;
-	for (auto& userCard : m_game->m_userHand) {
-		if (userCard->isSelected()) {
-			cardCount[Card::m_cardNameToString.at(userCard->getCardType())]++;
-		}
-	}
+	//std::map<std::string, int> cardCount;
+	//for (auto& userCard : m_game->m_userHand) {
+	//	if (userCard->isSelected()) {
+	//		cardCount[Card::m_cardNameToString.at(userCard->getCardType())]++;
+	//	}
+	//}
+
+	//for (auto it = cardCount.begin(); it != cardCount.end(); ++it) {
+	//	message["Bag"][it->first] = it->second;
+	//}
 
 	// Prepare JSON message
 	json message;
 	message["MessageType"] = "MERCHANT_GIVE_BAG";
 	message["PlayerName"] = m_game->m_playerList[0]->getPlayerName();
-	// Add "Bag" section with card counts
-	for (auto it = cardCount.begin(); it != cardCount.end(); ++it) {
-		message["Bag"][it->first] = it->second;
-	}
 	message["Report"] = Card::m_cardNameToString.at(m_game->m_tablet->getPresentedGoods());
 	message["Fee"] = m_game->m_tablet->getBribeAmount();
+
+	for (auto& userCard : m_game->m_userHand) {
+		if (userCard->isSelected()) {
+			message["Bag"].push_back(Card::m_cardNameToString.at(userCard->getCardType()));
+		}
+	}
 
 	// Convert message and send
 	std::string messageString = message.dump();
@@ -343,6 +349,40 @@ void GameLogic::handleOpponentGiveBagEvent(const nlohmann::json & jsonMessage)
 			break;
 		}
 	}
+}
+
+void GameLogic::setupDiscardEvent()
+{
+	// Move presented cards from user hand to discard area
+	for (int i = 0; i < m_game->m_userHand.size(); i++) {
+		if (m_game->m_userHand[i]->isSelected()) {
+			m_game->m_selectedCardsMutex.lock();
+			m_game->m_selectedCards.push_back(m_game->m_userHand[i]);
+			m_game->m_selectedCardsMutex.unlock();
+
+			m_game->removeFromUserHand(i);
+			i--;
+		}
+	}
+
+	// Move the selected cards to temporary slots
+	for (int i = 0; i < m_game->m_selectedCards.size(); i++) {
+		float posX = 78.f + (i % 3) * 105.f;
+		float posY = i < 3 ? 350.f : 505.f;
+		m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_selectedCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE,
+			0.5, sf::Vector2f(posX, posY), 0.72));
+	}
+	// Re-arrange userhand
+	m_game->userHandUI();
+
+	// Position guide text
+	m_game->m_textMutex.lock();
+	m_game->m_guideText.setString("Draw new cards from any deck");
+	m_game->m_guideText.setPosition(668.f, 180.f);
+	m_game->m_textMutex.unlock();
+
+	// Change state machine
+	m_game->m_gameEvent = WITHDRAW;
 }
 
 void GameLogic::handleWithdrawEvent(PileType type)

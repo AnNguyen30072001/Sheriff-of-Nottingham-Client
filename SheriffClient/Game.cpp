@@ -3,12 +3,16 @@
 #include <Windows.h>
 #include <string.h>
 
+#define USER_PLAYER_INDEX	0U
+
 void Game::initVariables(std::vector<Player*> playerList)
 {
-	if (!m_backgroundTexture.loadFromFile("Images/Background.png")) {
+	if (!m_backgroundTexture.loadFromFile("Images/Background.png") || 
+		!m_cardsHolderTexture.loadFromFile("Images/CardsHolder.png")) {
 		std::cerr << "Error loading background texture!";
 	}
 	m_backgroundTexture.setSmooth(true);
+	m_cardsHolderTexture.setSmooth(true);
 
 	if (!m_moneyIconTexture.loadFromFile("Images/MoneyIcon.png")) {
 		std::cerr << "Error loading game texture!";
@@ -79,6 +83,10 @@ void Game::initWindow()
 	m_background.setFillColor(sf::Color::White);
 	m_background.setSize(sf::Vector2f(1920.f, 1080.f));
 	m_background.setTexture(&m_backgroundTexture);
+	m_cardsHolder.setPosition(sf::Vector2f(0.f, 0.f));
+	m_cardsHolder.setFillColor(sf::Color::White);
+	m_cardsHolder.setSize(sf::Vector2f(1920.f, 1080.f));
+	m_cardsHolder.setTexture(&m_cardsHolderTexture);
 	m_withdrawEventMask.setSize(sf::Vector2f(1920.f, 1080.f));
 	m_withdrawEventMask.setFillColor(sf::Color(0, 0, 0, 180));
 	m_discardEventMask.setSize(sf::Vector2f(1920.f, 1080.f));
@@ -241,7 +249,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	}
 
 	// If any card is selected and it is user's merchant turn, the Discard and Present buttons are interactable
-	if (m_anyCardSelected && m_playerList[0]->isInTurn() && !m_playerList[0]->isSheriff() && m_gameEvent == DEFAULT) {
+	if (m_anyCardSelected && m_playerList[USER_PLAYER_INDEX]->isInTurn() && !m_playerList[USER_PLAYER_INDEX]->isSheriff() && m_gameEvent == DEFAULT) {
 		// Onclick discard event
 		if (m_ButtonLeft.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY)) && !m_discardDone) {
 			// Clear all leftover selected cards
@@ -251,51 +259,41 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 			m_selectedCardsMutex.lock();
 			m_selectedCards.clear();
 			m_selectedCardsMutex.unlock();
-			// Move presented cards from user hand to discard area
+
+			// Count number of selected cards
+			int numberOfSelectedCards = 0;
 			for (int i = 0; i < m_userHand.size(); i++) {
 				if (m_userHand[i]->isSelected()) {
-					m_selectedCardsMutex.lock();
-					m_selectedCards.push_back(m_userHand[i]);
-					m_selectedCardsMutex.unlock();
-
-					removeFromUserHand(i);
-					i--;
+					numberOfSelectedCards++;
 				}
 			}
-			for (int i = 0; i < m_selectedCards.size(); i++) {
-				float posX = 78.f + (i % 3) * 105.f;
-				float posY = i < 3 ? 350.f : 505.f;
-				m_animationPlayer.addAnimation(new Animation(m_selectedCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE, 
-					0.5, sf::Vector2f(posX, posY), 0.72));
-			}
-			// Re-arrange userhand
-			userHandUI();
 
-			// Position guide text
-			m_textMutex.lock();
-			m_guideText.setString("Draw new cards from any deck");
-			m_guideText.setPosition(668.f, 180.f);
-			m_textMutex.unlock();
+			// Send message to request discard
+			json message;
+			message["MessageType"] = "MERCHANT_DISCARD_REQUEST";
+			message["NumberOfCards"] = numberOfSelectedCards;
+			message["PlayerName"] = m_playerList[USER_PLAYER_INDEX]->getPlayerName();
+			std::string messageString = message.dump();
+			Network::getInstance().sendMessage(messageString);
 
-			// Change state machine
-			m_gameEvent = WITHDRAW;
+			m_gameEvent = IDLE;
 		}
 
 		// Onclick present event
 		if (m_ButtonRight.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
-			m_tablet->showTablet(Tablet::Type::GIVE_BAG, m_playerList[0]->getPlayerMoney());
+			m_tablet->showTablet(Tablet::Type::GIVE_BAG, m_playerList[USER_PLAYER_INDEX]->getPlayerMoney());
 			m_gameEvent = Game::PRESENT;
 		}
 	}
 
 	// If it is user's sheriff turn, the Inspect and Pass button are interactable
-	if (m_playerList[0]->isSheriff() && m_playerList[0]->isInTurn() && m_gameEvent == SHERIFF_TURN) {
+	if (m_playerList[USER_PLAYER_INDEX]->isSheriff() && m_playerList[USER_PLAYER_INDEX]->isInTurn() && m_gameEvent == SHERIFF_TURN) {
 		// If player press "Inspect" button
 		if (m_ButtonLeft.getGlobalBounds().contains(mousePosXY)) {
 			// Send message to server
 			json message;
 			message["MessageType"] = "SHERIFF_CHECK";
-			message["PlayerName"] = m_playerList[0]->getPlayerName();
+			message["PlayerName"] = m_playerList[USER_PLAYER_INDEX]->getPlayerName();
 			std::string messageString = message.dump();
 			Network::getInstance().sendMessage(messageString);
 			// Wait for server confirmation
@@ -307,7 +305,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 			// Send message to server
 			json message;
 			message["MessageType"] = "SHERIFF_PASS";
-			message["PlayerName"] = m_playerList[0]->getPlayerName();
+			message["PlayerName"] = m_playerList[USER_PLAYER_INDEX]->getPlayerName();
 			std::string messageString = message.dump();
 			Network::getInstance().sendMessage(messageString);
 			// Wait for server confirmation
@@ -337,7 +335,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 
 		json message;
 		message["MessageType"] = "MERCHANT_WITHDRAW_CARDS";
-		message["PlayerName"] = m_playerList[0]->getPlayerName();
+		message["PlayerName"] = m_playerList[USER_PLAYER_INDEX]->getPlayerName();
 		message["Pile"] = "LEFT_DISCARD_DECK";
 
 		std::string messageString = message.dump();
@@ -351,7 +349,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 
 		json message;
 		message["MessageType"] = "MERCHANT_WITHDRAW_CARDS";
-		message["PlayerName"] = m_playerList[0]->getPlayerName();
+		message["PlayerName"] = m_playerList[USER_PLAYER_INDEX]->getPlayerName();
 		message["Pile"] = "RIGHT_DISCARD_DECK";
 
 		std::string messageString = message.dump();
@@ -362,7 +360,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	if (m_deck->getMainDeck().getGlobalBounds().contains(mousePosXY) && m_gameEvent == WITHDRAW) {
 		json message;
 		message["MessageType"] = "MERCHANT_WITHDRAW_CARDS";
-		message["PlayerName"] = m_playerList[0]->getPlayerName();
+		message["PlayerName"] = m_playerList[USER_PLAYER_INDEX]->getPlayerName();
 		message["Pile"] = "MAIN_DECK";
 
 		std::string messageString = message.dump();
@@ -401,7 +399,7 @@ bool Game::handleMouseDrag(sf::Vector2f mousePosXY)
 
 bool Game::handleMouseHover(sf::Vector2f mousePosXY)
 {
-	if (m_ButtonLeft.getGlobalBounds().contains(mousePosXY) && m_playerList[0]->isInTurn() && m_gameEvent == DEFAULT && !m_discardDone) {
+	if (m_ButtonLeft.getGlobalBounds().contains(mousePosXY) && m_playerList[USER_PLAYER_INDEX]->isInTurn() && m_gameEvent == DEFAULT && !m_discardDone) {
 		m_glowShader.setUniform("isHovered", true);
 	}
 	else {
@@ -420,7 +418,7 @@ bool Game::handleMouseRelease()
 				// Notify server
 				json message;
 				message["MessageType"] = "MERCHANT_DISCARD_CARDS";
-				message["PlayerName"] = m_playerList[0]->getPlayerName();
+				message["PlayerName"] = m_playerList[USER_PLAYER_INDEX]->getPlayerName();
 				message["Pile"] = "LEFT_DISCARD_PILE";
 				message["Card"] = Card::m_cardNameToString.at(m_selectedCards[i]->getCardType());
 				std::string messageString = message.dump();
@@ -435,7 +433,7 @@ bool Game::handleMouseRelease()
 				// Notify server
 				json message;
 				message["MessageType"] = "MERCHANT_DISCARD_CARDS";
-				message["PlayerName"] = m_playerList[0]->getPlayerName();
+				message["PlayerName"] = m_playerList[USER_PLAYER_INDEX]->getPlayerName();
 				message["Pile"] = "RIGHT_DISCARD_PILE";
 				message["Card"] = Card::m_cardNameToString.at(m_selectedCards[i]->getCardType());
 				std::string messageString = message.dump();
@@ -680,6 +678,7 @@ bool Game::render()
 
 	// Background
 	m_window->draw(m_background);
+	m_window->draw(m_cardsHolder);
 
 	// Player avatar and stuff
 	Player* sheriffPlayer = nullptr;
@@ -749,7 +748,7 @@ bool Game::render()
 		m_window->draw(m_playerList[m_MerchantShowingBagIndex]->getBagIcon());
 
 		// If it is user's sheriff turn, highlight buttons
-		if (m_playerList[0]->isInTurn() && m_gameEvent == SHERIFF_TURN) {
+		if (m_playerList[USER_PLAYER_INDEX]->isInTurn() && m_gameEvent == SHERIFF_TURN) {
 			m_window->draw(m_ButtonLeft);
 			m_window->draw(m_ButtonLeftText);
 			m_window->draw(m_ButtonRight);
@@ -933,7 +932,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 
 	// Server confirm GiveBag event of user
 	else if ( jsonMessage["MessageType"] == "MERCHANT_GIVE_BAG_RESPONSE" &&
-		jsonMessage["PlayerName"] == m_playerList[0]->getPlayerName() ) 
+		jsonMessage["PlayerName"] == m_playerList[USER_PLAYER_INDEX]->getPlayerName() ) 
 	{
 		if (!m_userHand.empty()) {
 			m_gameLogic->handleGiveBagEvent(jsonMessage);
@@ -945,10 +944,18 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 		m_gameLogic->handleOpponentGiveBagEvent(jsonMessage);
 	}
 
+	// Server accept discard request
+	else if (jsonMessage["MessageType"] == "MERCHANT_DISCARD_REQUEST_RESPONSE") {
+		if (jsonMessage["PlayerName"] == m_playerList[USER_PLAYER_INDEX]->getPlayerName()) {
+			m_gameLogic->setupDiscardEvent();
+			Network::getInstance().respondMessage(jsonMessage);
+		}
+	}
+
 	// Server confirm player withdrawing
 	else if (jsonMessage["MessageType"] == "MERCHANT_WITHDRAW_CARDS_RESPONSE") {
 		// Check if it is user's withdraw
-		if (jsonMessage["PlayerName"] == m_playerList[0]->getPlayerName()) {
+		if (jsonMessage["PlayerName"] == m_playerList[USER_PLAYER_INDEX]->getPlayerName()) {
 			if (jsonMessage["Pile"] == "LEFT_DISCARD_PILE") {
 				m_gameLogic->handleWithdrawEvent(Game::PileType::LEFT_DISCARD_PILE);
 			}
@@ -986,7 +993,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 	// Server confirm player discarding
 	else if (jsonMessage["MessageType"] == "MERCHANT_DISCARD_CARDS_RESPONSE") {
 		// Check if it is user's discard
-		if (jsonMessage["PlayerName"] == m_playerList[0]->getPlayerName()) {
+		if (jsonMessage["PlayerName"] == m_playerList[USER_PLAYER_INDEX]->getPlayerName()) {
 			std::string cardName = jsonMessage["Card"];
 			if (jsonMessage["Pile"] == "LEFT_DISCARD_PILE") {
 				m_gameLogic->handleDiscardEvent(Game::PileType::LEFT_DISCARD_PILE, cardName);
@@ -1045,7 +1052,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 	}
 
 	// Server notify timeout
-	else if (jsonMessage["MessageType"] == "PLAYER_TIMEOUT" && jsonMessage["PlayerName"] == m_playerList[0]->getPlayerName()) {
+	else if (jsonMessage["MessageType"] == "PLAYER_TIMEOUT" && jsonMessage["PlayerName"] == m_playerList[USER_PLAYER_INDEX]->getPlayerName()) {
 		// Stop the timer
 		m_timer->stop();
 
