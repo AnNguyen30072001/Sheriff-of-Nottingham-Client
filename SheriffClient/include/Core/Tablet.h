@@ -2,8 +2,8 @@
 #define _TABLET__
 
 #include <SFML/Graphics.hpp>
-#include "Card.h"
-#include "Player.h"
+#include "../include/Entities/Card.h"
+#include "../include/Entities/Player.h"
 
 class Tablet {
 public:

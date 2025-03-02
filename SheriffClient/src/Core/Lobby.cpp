@@ -1,6 +1,6 @@
 #include <iostream>
-#include "lobby.h"
-#include "GameState.h"
+#include "../include/Core/Lobby.h"
+#include "../include/Core/GameState.h"
 #include <Windows.h>
 
 bool Lobby::initVariable()

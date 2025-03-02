@@ -3,14 +3,14 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
-#include "Player.h"
-#include "Card.h"
-#include "Deck.h"
-#include "Tablet.h"
-#include "Network.h"
-#include "Animation.h"
-#include "Timer.h"
-#include "Popup.h"
+#include "../include/Entities/Player.h"
+#include "../include/Entities/Deck.h"
+#include "../include/Entities/Card.h"
+#include "../include/Core/Tablet.h"
+#include "../include/Network/Network.h"
+#include "../include/Utils/Animation.h"
+#include "../include/Entities/Timer.h"
+#include "../include/Entities/Popup.h"
 
 class GameLogic;
 

@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Popup.h"
+#include "../include/Entities/Popup.h"
 
 Popup::Popup(sf::RenderWindow* parentWindow, float width, float height)
 {

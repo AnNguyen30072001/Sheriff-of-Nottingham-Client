@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <stack>
 #include <SFML/Graphics.hpp>
-#include "Card.h"
+#include "../include/Entities/Card.h"
 
 class Deck
 {

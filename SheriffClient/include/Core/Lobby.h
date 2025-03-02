@@ -2,8 +2,8 @@
 #define LOBBY__
 
 #include <SFML/Graphics.hpp>
-#include "Player.h"
-#include "Network.h"
+#include "../include/Entities/Player.h"
+#include "../include/Network/Network.h"
 
 #pragma once
 class Lobby : public Observer

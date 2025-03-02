@@ -2,7 +2,7 @@
 #ifndef _GAME_LOGIC__
 #define _GAME_LOGIC__
 
-#include "Game.h"
+#include "../include/Core/Game.h"
 
 class GameLogic : public Game
 {

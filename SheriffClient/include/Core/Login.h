@@ -3,9 +3,9 @@
 
 #include <iostream>
 #include <unordered_map>
-#include "ColorMap.h"
-#include "Network.h"
-#include "Popup.h"
+#include "../include/Utils/ColorMap.h"
+#include "../include/Network/Network.h"
+#include "../include/Entities/Popup.h"
 #include <SFML/Graphics.hpp>
 
 class Login : public Observer

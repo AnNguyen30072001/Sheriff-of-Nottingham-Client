@@ -1,4 +1,4 @@
-#include "Animation.h"
+#include "../include/Utils/Animation.h"
 #include <iostream>
 
 Animation::Animation(sf::Transformable& target, Type type, float durationSeconds, sf::Vector2f posEndValue, float scaleEndValue, float delay, Callback callback)

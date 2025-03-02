@@ -1,4 +1,4 @@
-#include "Tablet.h"
+#include "../include/Core/Tablet.h"
 #include <iostream>
 
 Tablet::Tablet(sf::RenderWindow* parentWindow)

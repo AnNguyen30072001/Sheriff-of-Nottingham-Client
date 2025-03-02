@@ -1,5 +1,5 @@
-#include "Game.h"
-#include "GameLogic.h"
+#include "../include/Core/Game.h"
+#include "../include/Core/GameLogic.h"
 #include <Windows.h>
 #include <string.h>
 
@@ -233,13 +233,15 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	m_anyCardSelected = false;
 	for (int i = 0; i < m_userHand.size(); i++) {
 		if (m_userHand[i]->getCard().getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY)) && m_gameEvent == DEFAULT) {
+			m_userHand[i]->getAnimationPlayer().cancel();
 			std::lock_guard<std::mutex> lock(m_userHandMutex);
 			m_userHand[i]->setSelected(!m_userHand[i]->isSelected());
 			std::cout << "Card " + Card::m_cardNameToString.at(m_userHand[i]->getCardType()) + ": " + (m_userHand[i]->isSelected() ? "Selected\n" : "Not selected\n");
 
 			float posX = 520.f + (i % 6) * 150.f;
-			m_userHand[i]->animationMove(0.1,
-				sf::Vector2f(posX, m_userHand[i]->isSelected() ? 600.f : 635.f));
+			float posY = 635.f;
+			m_userHand[i]->animationMove(0.15,
+				sf::Vector2f(posX, m_userHand[i]->isSelected() ? (posY - 35.f) : posY));
 		}
 		
 		// Check if any card is selected for other interactions
@@ -399,6 +401,24 @@ bool Game::handleMouseDrag(sf::Vector2f mousePosXY)
 
 bool Game::handleMouseHover(sf::Vector2f mousePosXY)
 {
+	for (int i = 0; i < m_userHand.size(); i++) {
+		float posX = 520.f + (i % 6) * 150.f;
+		if (m_userHand[i]->getCard().getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY)) && m_gameEvent == DEFAULT
+			&& !m_userHand[i]->isSelected()) {
+			if (!m_userHand[i]->isHovered()) {
+				m_userHand[i]->animationMove(0.1, sf::Vector2f(posX - 3.f, 630.f), 1.05f);
+				m_userHand[i]->setHovering(true);
+			}
+
+		}
+		else {
+			if (m_userHand[i]->isHovered() && !m_userHand[i]->isSelected()) {
+				m_userHand[i]->animationMove(0.1, sf::Vector2f(posX, 635.f), 1.f, 0.1);
+				m_userHand[i]->setHovering(false);
+			}
+		}
+	}
+
 	if (m_ButtonLeft.getGlobalBounds().contains(mousePosXY) && m_playerList[USER_PLAYER_INDEX]->isInTurn() && m_gameEvent == DEFAULT && !m_discardDone) {
 		m_glowShader.setUniform("isHovered", true);
 	}

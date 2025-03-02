@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Card.h"
+#include "../include/Entities/Card.h"
 
 const std::unordered_map<Card::CardType, std::string> Card::m_cardNameToString = {
 	{APPLE, "Apple"},
@@ -137,6 +137,16 @@ bool Card::isDragging() const
 	return m_isDragging;
 }
 
+void Card::setHovering(const bool status)
+{
+	m_isHovered = status;
+}
+
+bool Card::isHovered() const
+{
+	return m_isHovered;
+}
+
 void Card::resetStaticPosition()
 {
 	m_card.setPosition(m_staticPos);
@@ -159,6 +169,7 @@ void Card::initVariables()
 
 	m_isSelected = false;
 	m_isDragging = false;
+	m_isHovered = false;
 	m_staticPos = sf::Vector2f(0.f, 0.f);
 	m_staticScale = sf::Vector2f(1.f, 1.f);
 

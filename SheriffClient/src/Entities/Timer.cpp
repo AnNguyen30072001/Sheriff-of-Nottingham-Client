@@ -1,4 +1,4 @@
-#include "Timer.h"
+#include "../include/Entities/Timer.h"
 
 Timer::Timer(sf::RenderWindow* parentWindow) : m_parentWindow(parentWindow)
 {

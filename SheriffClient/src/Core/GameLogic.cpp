@@ -1,4 +1,4 @@
-#include "GameLogic.h"
+#include "../include/Core/GameLogic.h"
 #include <random>
 #include <ctime>
 

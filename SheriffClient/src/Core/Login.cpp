@@ -1,5 +1,5 @@
-#include "login.h"
-#include "GameState.h"
+#include "../include/Core/Login.h"
+#include "../include/Core/GameState.h"
 
 bool Login::initVariables()
 {

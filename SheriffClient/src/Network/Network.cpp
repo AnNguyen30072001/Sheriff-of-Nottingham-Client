@@ -1,4 +1,4 @@
-#include "Network.h"
+#include "../include/Network/Network.h"
 #include <string>
 
 Network::Network(const std::string & serverAddress, unsigned short serverPort) : 

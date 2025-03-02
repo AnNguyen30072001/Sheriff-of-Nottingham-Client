@@ -87,7 +87,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\External\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\External\include;$(ProjectDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -129,35 +129,37 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Animation.cpp" />
-    <ClCompile Include="Card.cpp" />
-    <ClCompile Include="Deck.cpp" />
-    <ClCompile Include="Game.cpp" />
-    <ClCompile Include="GameLogic.cpp" />
-    <ClCompile Include="Lobby.cpp" />
-    <ClCompile Include="Login.cpp" />
+    <ClCompile Include="src/Utils/Animation.cpp" />
+    <ClCompile Include="src/Entities/Card.cpp" />
+    <ClCompile Include="src/Entities/Deck.cpp" />
+    <ClCompile Include="src/Core/Game.cpp" />
+    <ClCompile Include="src/Core/GameLogic.cpp" />
+    <ClCompile Include="src/Core/Lobby.cpp" />
+    <ClCompile Include="src/Core/Login.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Network.cpp" />
-    <ClCompile Include="Player.cpp" />
-    <ClCompile Include="Popup.cpp" />
-    <ClCompile Include="Tablet.cpp" />
-    <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="src/Network/Network.cpp" />
+    <ClCompile Include="src/Entities/Player.cpp" />
+    <ClCompile Include="src/Entities/Popup.cpp" />
+    <ClCompile Include="src/Audio/Sound.cpp" />
+    <ClCompile Include="src/Core/Tablet.cpp" />
+    <ClCompile Include="src/Entities/Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Animation.h" />
-    <ClInclude Include="Card.h" />
-    <ClInclude Include="ColorMap.h" />
-    <ClInclude Include="Deck.h" />
-    <ClInclude Include="Game.h" />
-    <ClInclude Include="GameLogic.h" />
-    <ClInclude Include="GameState.h" />
-    <ClInclude Include="Lobby.h" />
-    <ClInclude Include="Login.h" />
-    <ClInclude Include="Network.h" />
-    <ClInclude Include="Player.h" />
-    <ClInclude Include="Popup.h" />
-    <ClInclude Include="Tablet.h" />
-    <ClInclude Include="Timer.h" />
+    <ClInclude Include="include/Utils/Animation.h" />
+    <ClInclude Include="include/Entities/Card.h" />
+    <ClInclude Include="include/Utils/ColorMap.h" />
+    <ClInclude Include="include/Entities/Deck.h" />
+    <ClInclude Include="include/Core/Game.h" />
+    <ClInclude Include="include/Core/GameLogic.h" />
+    <ClInclude Include="include/Core/GameState.h" />
+    <ClInclude Include="include/Core/Lobby.h" />
+    <ClInclude Include="include/Core/Login.h" />
+    <ClInclude Include="include/Network/Network.h" />
+    <ClInclude Include="include/Entities/Player.h" />
+    <ClInclude Include="include/Entities/Popup.h" />
+    <ClInclude Include="include/Audio/Sound.h" />
+    <ClInclude Include="include/Core/Tablet.h" />
+    <ClInclude Include="include/Entities/Timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

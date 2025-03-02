@@ -3,7 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <unordered_map>
-#include "Animation.h"
+#include "../include/Utils/Animation.h"
 
 class Card
 {
@@ -21,6 +21,7 @@ public:
 		CROSSBOW,
 		UNKNOWN
 	};
+
 	static const std::unordered_map<CardType, std::string> m_cardNameToString;
 	static const std::unordered_map<std::string, CardType> m_stringToCardName;
 	static const std::unordered_map<CardType, int> cardTypeToValue;
@@ -44,6 +45,9 @@ public:
 	void setDragging(const bool status);
 	bool isDragging() const;
 
+	void setHovering(const bool status);
+	bool isHovered() const;
+
 	void resetStaticPosition();
 
 	bool animationMove(float durationSeconds, sf::Vector2f posEndValue, float scaleEndValue = 1.f, float delay = 0.f, Callback callback = nullptr);
@@ -57,6 +61,7 @@ private:
 
 	bool m_isDragging;
 	bool m_isSelected;
+	bool m_isHovered;
 	AnimationManager m_animationPlayer;
 
 	void initVariables();

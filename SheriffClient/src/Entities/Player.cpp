@@ -1,4 +1,4 @@
-#include "Player.h"
+#include "../include/Entities/Player.h"
 #include <iostream>
 
 Player::Player(std::string name, sf::Color playerColor, bool isUserPlayer)
