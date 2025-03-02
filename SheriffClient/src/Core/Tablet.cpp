@@ -11,23 +11,23 @@ Tablet::Tablet(sf::RenderWindow* parentWindow)
 	m_isTabletVisible = false;
 	m_confirm = false;
 
-	if (!m_font.loadFromFile("arial-font/arial.ttf")) {
+	if (!m_font.loadFromFile("assets/arial-font/arial.ttf")) {
 		std::cerr << "Error loading tablet font!" << std::endl;
 	}
 
-	if (!m_goldMedalTexture.loadFromFile("Images/GoldToken.png") || 
-		!m_silverMedalTexture.loadFromFile("Images/SilverToken.png") || 
-		!m_blackMarketMedalTexture.loadFromFile("Images/BlackMarketToken.png") ||
-		!m_moneyIconTexture.loadFromFile("Images/MoneyIcon.png") || 
-		!m_scoreIconTexture.loadFromFile("Images/ScoreIcon.png")) {
+	if (!m_goldMedalTexture.loadFromFile("assets/Images/GoldToken.png") || 
+		!m_silverMedalTexture.loadFromFile("assets/Images/SilverToken.png") || 
+		!m_blackMarketMedalTexture.loadFromFile("assets/Images/BlackMarketToken.png") ||
+		!m_moneyIconTexture.loadFromFile("assets/Images/MoneyIcon.png") || 
+		!m_scoreIconTexture.loadFromFile("assets/Images/ScoreIcon.png")) {
 		std::cerr << "Error loading tablet texture!" << std::endl;
 	}
 
-	if (!m_tabletTextureGiveBag.loadFromFile("Images/ReportBackground.png")) {
+	if (!m_tabletTextureGiveBag.loadFromFile("assets/Images/ReportBackground.png")) {
 		std::cerr << "Error loading tablet background!" << std::endl;
 	}
 
-	if (!m_tabletTextureInfo.loadFromFile("Images/ReportBackground_2.png")) {
+	if (!m_tabletTextureInfo.loadFromFile("assets/Images/ReportBackground_2.png")) {
 		std::cerr << "Error loading tablet background!" << std::endl;
 	}
 
@@ -331,8 +331,8 @@ void Tablet::setupGiveBagUI()
 	std::string texturePaths[4] = { "AppleReport.png", "BreadReport.png", "CheeseReport.png", "ChickenReport.png" };
 	std::string texturePathsHighlight[4] = { "AppleReportHighlight.png", "BreadReportHighlight.png", "CheeseReportHighlight.png", "ChickenReportHighlight.png" };
 	for (int i = 0; i < 4; ++i) {
-		m_goodsButtonTextures[i].loadFromFile("Images/" + texturePaths[i]);
-		m_goodsButtonTexturesHighLight[i].loadFromFile("Images/" + texturePathsHighlight[i]);
+		m_goodsButtonTextures[i].loadFromFile("assets/Images/" + texturePaths[i]);
+		m_goodsButtonTexturesHighLight[i].loadFromFile("assets/Images/" + texturePathsHighlight[i]);
 		m_goodsButtons[i].setSize(sf::Vector2f(100, 100));
 		m_goodsButtons[i].setFillColor(sf::Color::White);
 		m_goodsButtons[i].setTexture(&m_goodsButtonTextures[i]);
@@ -435,7 +435,7 @@ void Tablet::setupInfoUI(Player * player)
 	{ "AppleReportHighlight.png", "BreadReportHighlight.png", "CheeseReportHighlight.png", "ChickenReportHighlight.png", 
 		"PepperReportHighlight.png", "MeadReportHighlight.png", "SilkReportHighlight.png", "CrossbowReportHighlight.png"};
 	for (int i = 0; i < 8; ++i) {
-		m_goodsButtonTexturesHighLight[i].loadFromFile("Images/" + texturePathsHighlight[i]);
+		m_goodsButtonTexturesHighLight[i].loadFromFile("assets/Images/" + texturePathsHighlight[i]);
 		m_goodsButtons[i].setSize(sf::Vector2f(100.f, 100.f));
 		m_goodsButtons[i].setFillColor(sf::Color::White);
 		m_goodsButtons[i].setTexture(&m_goodsButtonTexturesHighLight[i]);

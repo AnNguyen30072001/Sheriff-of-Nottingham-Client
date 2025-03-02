@@ -38,7 +38,7 @@ std::stack<Card*>& Deck::getStackRight()
 
 bool Deck::setDiscardDeckLeftTexture(Card::CardType card)
 {
-	std::string texturePath = "Images/" + Card::m_cardNameToString.at(card) + ".png";
+	std::string texturePath = "assets/Images/" + Card::m_cardNameToString.at(card) + ".png";
 	if (!m_discardDeckLeftTexture.loadFromFile(texturePath)) {
 		std::cerr << "Error loading deck texture!" << std::endl;
 		return false;
@@ -53,7 +53,7 @@ bool Deck::setDiscardDeckLeftTexture(Card::CardType card)
 
 bool Deck::setDiscardDeckRightTexture(Card::CardType card)
 {
-	std::string texturePath = "Images/" + Card::m_cardNameToString.at(card) + ".png";
+	std::string texturePath = "assets/Images/" + Card::m_cardNameToString.at(card) + ".png";
 	if (!m_discardDeckRightTexture.loadFromFile(texturePath)) {
 		std::cerr << "Error loading deck texture!" << std::endl;
 		return false;
@@ -82,10 +82,10 @@ bool Deck::setDiscardDeckRightOutOfStockTexture()
 
 bool Deck::initDeckUI()
 {
-	if (!m_mainDeckTexture.loadFromFile("Images/MainDeck.png")) {
+	if (!m_mainDeckTexture.loadFromFile("assets/Images/MainDeck.png")) {
 		std::cerr << "Error loading deck texture!" << std::endl;
 	}
-	if (!m_outOfStockTexture.loadFromFile("Images/OutOfStock.png")) {
+	if (!m_outOfStockTexture.loadFromFile("assets/Images/OutOfStock.png")) {
 		std::cerr << "Error loading deck texture!" << std::endl;
 	}
 

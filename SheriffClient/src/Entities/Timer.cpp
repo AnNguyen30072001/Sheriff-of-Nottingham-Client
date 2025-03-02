@@ -2,10 +2,10 @@
 
 Timer::Timer(sf::RenderWindow* parentWindow) : m_parentWindow(parentWindow)
 {
-	if (!m_font.loadFromFile("arial-font/arial.ttf")) {
+	if (!m_font.loadFromFile("assets/arial-font/arial.ttf")) {
 		std::cerr << "Error loading timer font!\n";
 	}
-	if (!m_timerIconTexture.loadFromFile("Images/TimerIcon.png")) {
+	if (!m_timerIconTexture.loadFromFile("assets/Images/TimerIcon.png")) {
 		std::cerr << "Error loading timer icon!\n";
 	}
 

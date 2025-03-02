@@ -7,22 +7,22 @@
 
 void Game::initVariables(std::vector<Player*> playerList)
 {
-	if (!m_backgroundTexture.loadFromFile("Images/Background.png") || 
-		!m_cardsHolderTexture.loadFromFile("Images/CardsHolder.png")) {
+	if (!m_backgroundTexture.loadFromFile("assets/Images/Background.png") || 
+		!m_cardsHolderTexture.loadFromFile("assets/Images/CardsHolder.png")) {
 		std::cerr << "Error loading background texture!";
 	}
 	m_backgroundTexture.setSmooth(true);
 	m_cardsHolderTexture.setSmooth(true);
 
-	if (!m_moneyIconTexture.loadFromFile("Images/MoneyIcon.png")) {
+	if (!m_moneyIconTexture.loadFromFile("assets/Images/MoneyIcon.png")) {
 		std::cerr << "Error loading game texture!";
 	}
 
-	if (!m_font.loadFromFile("arial-font/arial.ttf")) {
+	if (!m_font.loadFromFile("assets/arial-font/arial.ttf")) {
 		std::cerr << "Error loading font!\n";
 	}
 
-	if (!m_glowShader.loadFromFile("Shaders/glow.frag", sf::Shader::Fragment)) {
+	if (!m_glowShader.loadFromFile("assets/Shaders/glow.frag", sf::Shader::Fragment)) {
 		std::cerr << "Error loading shader!\n";
 	}
 

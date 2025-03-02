@@ -34,23 +34,23 @@ Player::~Player()
 
 bool Player::initFontAndTexture()
 {
-	if (!m_font.loadFromFile("arial-font/arial.ttf")) {
+	if (!m_font.loadFromFile("assets/arial-font/arial.ttf")) {
 		std::cerr << "Error loading font!\n";
 		return false;
 	}
-	if (!m_avatarTexture.loadFromFile("Images/PlayerAvatar.png")) {
+	if (!m_avatarTexture.loadFromFile("assets/Images/PlayerAvatar.png")) {
 		std::cerr << "Error loading texture!\n";
 		return false;
 	}
-	if (!m_sheriffBadgeTexture.loadFromFile("Images/SheriffBadge.png")) {
+	if (!m_sheriffBadgeTexture.loadFromFile("assets/Images/SheriffBadge.png")) {
 		std::cerr << "Error loading texture!\n";
 		return false;
 	}
-	if (!m_infoTabIconTexture.loadFromFile("Images/InfoTab.png")) {
+	if (!m_infoTabIconTexture.loadFromFile("assets/Images/InfoTab.png")) {
 		std::cerr << "Error loading texture!\n";
 		return false;
 	}
-	if (!m_bagIconTexture.loadFromFile("Images/MerchantBag.png")) {
+	if (!m_bagIconTexture.loadFromFile("assets/Images/MerchantBag.png")) {
 		std::cerr << "Error loading texture!\n";
 		return false;
 	}

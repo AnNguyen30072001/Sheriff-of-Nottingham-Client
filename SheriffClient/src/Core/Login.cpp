@@ -20,19 +20,19 @@ bool Login::initWindow()
 
 	// Create UI for login screen
 	// Font
-	if (!m_font.loadFromFile("arial-font/arial.ttf")) {
+	if (!m_font.loadFromFile("assets/arial-font/arial.ttf")) {
 		std::cerr << "Error loading font!\n";
 		return false;
 	}
 
 	// Background
-	if (!m_backgroundTexture.loadFromFile("Images/LoginBackground.png")) {
+	if (!m_backgroundTexture.loadFromFile("assets/Images/LoginBackground.png")) {
 		std::cerr << "Error loading background texture!";
 		return false;
 	}
 
 	// Shader
-	if (!m_glowShader.loadFromFile("Shaders/glow.frag", sf::Shader::Fragment)) {
+	if (!m_glowShader.loadFromFile("assets/Shaders/glow.frag", sf::Shader::Fragment)) {
 		std::cerr << "Error loading shader!\n";
 	}
 

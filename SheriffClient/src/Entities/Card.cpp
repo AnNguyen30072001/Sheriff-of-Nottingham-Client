@@ -97,7 +97,7 @@ Card::CardType Card::getCardType() const
 
 void Card::setCardTexture(CardType cardType)
 {
-	std::string texturePath = "Images/" + m_cardNameToString.at(cardType) + ".png";
+	std::string texturePath = "assets/Images/" + m_cardNameToString.at(cardType) + ".png";
 	if (!m_cardTexture.loadFromFile(texturePath)) {
 		std::cerr << "Error loading card texture!" << std::endl;
 	}

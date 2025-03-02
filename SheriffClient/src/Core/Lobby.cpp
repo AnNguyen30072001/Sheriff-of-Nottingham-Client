@@ -7,7 +7,7 @@ bool Lobby::initVariable()
 {
 	m_newPlayerIdx = 1;
 	m_window = nullptr;
-	if (!m_backgroundTexture.loadFromFile("Images/Background.png")) {
+	if (!m_backgroundTexture.loadFromFile("assets/Images/Background.png")) {
 		std::cerr << "Error loading background texture!";
 		return false;
 	}

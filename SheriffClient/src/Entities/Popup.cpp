@@ -6,7 +6,7 @@ Popup::Popup(sf::RenderWindow* parentWindow, float width, float height)
 	m_parentWindow = parentWindow;
 
 	// Load font
-	if (!m_font.loadFromFile("arial-font/arial.ttf")) {
+	if (!m_font.loadFromFile("assets/arial-font/arial.ttf")) {
 		std::cerr << "Error loading font!\n";
 	}
 
