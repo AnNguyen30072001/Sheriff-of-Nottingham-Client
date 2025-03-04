@@ -9,13 +9,19 @@ void Game::initVariables(std::vector<Player*> playerList)
 {
 	if (!m_backgroundTexture.loadFromFile("assets/Images/Background.png") || 
 		!m_cardsHolderTexture.loadFromFile("assets/Images/CardsHolder.png")) {
-		std::cerr << "Error loading background texture!";
+		std::cerr << "Error loading background texture!\n";
 	}
 	m_backgroundTexture.setSmooth(true);
 	m_cardsHolderTexture.setSmooth(true);
 
+	if (!m_backgroundMusic.openFromFile("assets/Sound/IngameBackgroundMusic.wav")) {
+		std::cerr << "Error loading background music!\n";
+	}
+	m_backgroundMusic.setVolume(70);
+	m_backgroundMusic.setLoop(true);
+
 	if (!m_moneyIconTexture.loadFromFile("assets/Images/MoneyIcon.png")) {
-		std::cerr << "Error loading game texture!";
+		std::cerr << "Error loading game texture!\n";
 	}
 
 	if (!m_font.loadFromFile("assets/arial-font/arial.ttf")) {
@@ -51,6 +57,8 @@ void Game::initWindow()
 	m_videoMode.height = 1080;
 	m_window = new sf::RenderWindow(m_videoMode, "Sheriff of Nottingham", sf::Style::Default);
 	m_window->setVerticalSyncEnabled(true);
+
+	m_backgroundMusic.play();
 
 	for (int i = 1; i < m_playerList.size(); i++) {
 		// Positioning players
@@ -250,6 +258,23 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 		}
 	}
 
+	// If a player's catalog is clicked, show that player's info
+	for (auto& player : m_playerList) {
+		if (player->getInfoTabIcon().getGlobalBounds().contains(mousePosXY) && m_gameEvent != DISCONNECTED) {
+			// Update scores
+			m_gameLogic->updatePlayersMedalStatus();
+			m_textMutex.lock();
+			for (auto& player : m_playerList) {
+				m_gameLogic->updatePlayerScore(player);
+			}
+			m_textMutex.unlock();
+			// Show tablet
+			m_tablet->showTablet(Tablet::Type::INFO, player->getPlayerMoney(), player);
+
+			return true;
+		}
+	}
+
 	// If any card is selected and it is user's merchant turn, the Discard and Present buttons are interactable
 	if (m_anyCardSelected && m_playerList[USER_PLAYER_INDEX]->isInTurn() && !m_playerList[USER_PLAYER_INDEX]->isSheriff() && m_gameEvent == DEFAULT) {
 		// Onclick discard event
@@ -279,12 +304,14 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 			Network::getInstance().sendMessage(messageString);
 
 			m_gameEvent = IDLE;
+			return true;
 		}
 
 		// Onclick present event
-		if (m_ButtonRight.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
+		else if (m_ButtonRight.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
 			m_tablet->showTablet(Tablet::Type::GIVE_BAG, m_playerList[USER_PLAYER_INDEX]->getPlayerMoney());
 			m_gameEvent = Game::PRESENT;
+			return true;
 		}
 	}
 
@@ -300,6 +327,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 			Network::getInstance().sendMessage(messageString);
 			// Wait for server confirmation
 			m_gameEvent = IDLE;
+			return true;
 		}
 
 		// If player press "Pass" button
@@ -312,21 +340,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 			Network::getInstance().sendMessage(messageString);
 			// Wait for server confirmation
 			m_gameEvent = IDLE;
-		}
-	}
-
-	// If a player's catalog is clicked, show that player's info
-	for (auto& player : m_playerList) {
-		if (player->getInfoTabIcon().getGlobalBounds().contains(mousePosXY) && m_gameEvent != DISCONNECTED) {
-			// Update scores
-			m_gameLogic->updatePlayersMedalStatus();
-			m_textMutex.lock();
-			for (auto& player : m_playerList) {
-				m_gameLogic->updatePlayerScore(player);
-			}
-			m_textMutex.unlock();
-			// Show tablet
-			m_tablet->showTablet(Tablet::Type::INFO, player->getPlayerMoney(), player);
+			return true;
 		}
 	}
 
@@ -338,10 +352,11 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 		json message;
 		message["MessageType"] = "MERCHANT_WITHDRAW_CARDS";
 		message["PlayerName"] = m_playerList[USER_PLAYER_INDEX]->getPlayerName();
-		message["Pile"] = "LEFT_DISCARD_DECK";
+		message["Pile"] = "LEFT_DISCARD_PILE";
 
 		std::string messageString = message.dump();
 		Network::sendMessage(messageString);
+		return true;
 	}
 
 	// Right deck is clicked when withdrawing
@@ -352,10 +367,11 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 		json message;
 		message["MessageType"] = "MERCHANT_WITHDRAW_CARDS";
 		message["PlayerName"] = m_playerList[USER_PLAYER_INDEX]->getPlayerName();
-		message["Pile"] = "RIGHT_DISCARD_DECK";
+		message["Pile"] = "RIGHT_DISCARD_PILE";
 
 		std::string messageString = message.dump();
 		Network::sendMessage(messageString);
+		return true;
 	}
 
 	// Main deck is clicked when withdrawing
@@ -367,6 +383,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 
 		std::string messageString = message.dump();
 		Network::sendMessage(messageString);
+		return true;
 	}
 
 	// A selected card is clicked when discarding
@@ -380,11 +397,12 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 				m_dragOffset = card->getCard().getPosition() - mousePosXY;
 				m_anyCardDragged = true;
 				card->setDragging(true);
+				return true;
 			}
 		}
 	}
 
-	return true;
+	return false;
 }
 
 bool Game::handleMouseDrag(sf::Vector2f mousePosXY)
@@ -396,7 +414,7 @@ bool Game::handleMouseDrag(sf::Vector2f mousePosXY)
 		}
 	}
 
-	return true;
+	return false;
 }
 
 bool Game::handleMouseHover(sf::Vector2f mousePosXY)
@@ -432,7 +450,7 @@ bool Game::handleMouseHover(sf::Vector2f mousePosXY)
 bool Game::handleMouseRelease()
 {
 	for (int i = 0; i < m_selectedCards.size(); i++) {
-		if (m_selectedCards[i]->isDragging()) {
+		if (m_selectedCards[i]->isDragging() && m_gameEvent != IDLE) {
 			// If the dragged card is placed on top of left discard pile
 			if (m_selectedCards[i]->getCard().getGlobalBounds().intersects(m_deck->getDiscardDeckLeft().getGlobalBounds())) {
 				// Notify server
@@ -1085,7 +1103,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 		}
 		// If not, send response message and wait for new turn
 		else {
-			m_gameEvent = TIMEOUT_DISCARD;
+			m_gameEvent = IDLE;
 			Network::getInstance().respondMessage(jsonMessage);
 		}
 	}

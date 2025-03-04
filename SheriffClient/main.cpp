@@ -97,13 +97,13 @@ int main()
 				playerList[2]->increasePlayerGoodsAmount(Card::PEPPER, 3);
 				playerList[2]->increasePlayerGoodsAmount(Card::SILK, 3);
 				playerList[0]->increasePlayerGoodsAmount(Card::APPLE, 1);
-				game->addToUserHand(Card::APPLE);
-				game->addToUserHand(Card::APPLE);
-				game->addToUserHand(Card::CHICKEN);
-				game->addToUserHand(Card::APPLE);
-				game->addToUserHand(Card::CHICKEN);
-				game->addToUserHand(Card::CROSSBOW);
-				game->userHandUI();
+				//game->addToUserHand(Card::APPLE);
+				//game->addToUserHand(Card::APPLE);
+				//game->addToUserHand(Card::CHICKEN);
+				//game->addToUserHand(Card::APPLE);
+				//game->addToUserHand(Card::CHICKEN);
+				//game->addToUserHand(Card::CROSSBOW);
+				//game->userHandUI();
 				// EoT
 
 			}

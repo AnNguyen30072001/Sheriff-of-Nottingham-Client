@@ -46,6 +46,7 @@ public:
 
 	static bool sendMessage(const std::string& msg)
 	{
+		std::cout << "Send: " << msg << std::endl;
 		return getInstance().send(msg);
 	}
 

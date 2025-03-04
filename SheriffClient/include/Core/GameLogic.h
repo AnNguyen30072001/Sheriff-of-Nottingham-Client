@@ -4,7 +4,7 @@
 
 #include "../include/Core/Game.h"
 
-class GameLogic : public Game
+class GameLogic
 {
 public:
 	GameLogic(Game* game);

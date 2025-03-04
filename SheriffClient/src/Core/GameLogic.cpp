@@ -170,7 +170,7 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 			// If it is sheriff's turn, setup animations and UI of giving bag
 			if (m_game->m_playerList[i]->isSheriff() && !m_game->m_dummyCards.empty()) {
 				// Change game state
-				m_game->m_gameEvent = SHERIFF_TURN;
+				m_game->m_gameEvent = Game::SHERIFF_TURN;
 				// Setup initial position to make sure the cards are centered
 				float totalWidth = m_game->m_dummyCards.size() * 135.f + (m_game->m_dummyCards.size() - 1) * 15.f;
 				float posXOffset = ((1920 - totalWidth) / 2.f) + 67.5;
@@ -185,8 +185,8 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 
 				// Set infomation
 				m_game->m_textMutex.lock();
-				m_goodsReportText.setString("Report: " + Card::m_cardNameToString.at(m_goodsReport));
-				m_goodsReportText.setPosition((1920.f - m_goodsReportText.getGlobalBounds().width) / 2, 215.f);
+				m_game->m_goodsReportText.setString("Report: " + Card::m_cardNameToString.at(m_goodsReport));
+				m_game->m_goodsReportText.setPosition((1920.f - m_game->m_goodsReportText.getGlobalBounds().width) / 2, 215.f);
 				m_game->m_moneyIcon.setPosition(910.f, 515.f);
 				m_game->m_moneyIcon.setScale(1.f, 1.f);
 				m_game->m_moneyText.setString(std::to_string(m_bribeAmount));
@@ -212,7 +212,7 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 				m_game->m_selectedCards.clear();
 
 				m_game->m_discardDone = false;
-				m_game->m_gameEvent = DEFAULT;
+				m_game->m_gameEvent = Game::DEFAULT;
 
 				// Show decks and user cards again
 				m_game->m_deck->getDiscardDeckLeft().setScale(1.f, 1.f);
@@ -304,8 +304,8 @@ void GameLogic::handleGiveBagEvent(const nlohmann::json & jsonMessage)
 	// Hide tablet
 	m_game->m_tablet->hideTablet();
 	// Re-arrange userhand
-	userHandUI();
-	m_game->m_gameEvent = DEFAULT;
+	m_game->userHandUI();
+	m_game->m_gameEvent = Game::DEFAULT;
 }
 
 void GameLogic::handleOpponentGiveBagEvent(const nlohmann::json & jsonMessage)
@@ -382,10 +382,10 @@ void GameLogic::setupDiscardEvent()
 	m_game->m_textMutex.unlock();
 
 	// Change state machine
-	m_game->m_gameEvent = WITHDRAW;
+	m_game->m_gameEvent = Game::WITHDRAW;
 }
 
-void GameLogic::handleWithdrawEvent(PileType type)
+void GameLogic::handleWithdrawEvent(Game::PileType type)
 {
 	Card* topCard = nullptr;
 	float posX = 0.f;
@@ -396,7 +396,7 @@ void GameLogic::handleWithdrawEvent(PileType type)
 
 		topCard = m_game->m_deck->getStackLeft().top();
 		// Add new card to user hand and start animation
-		addToUserHand(topCard->getCardType());
+		m_game->addToUserHand(topCard->getCardType());
 		m_game->m_userHand[m_game->m_userHand.size() - 1]->getCard().setScale(0.8, 0.8);
 		m_game->m_userHand[m_game->m_userHand.size() - 1]->getCard().setPosition(sf::Vector2f(650.f, 324.f));
 		posX = 520.f + ((m_game->m_userHand.size() - 1) % 6) * 150.f;
@@ -419,7 +419,7 @@ void GameLogic::handleWithdrawEvent(PileType type)
 
 		topCard = m_game->m_deck->getStackRight().top();
 		// Add new card to user hand and start animation
-		addToUserHand(topCard->getCardType());
+		m_game->addToUserHand(topCard->getCardType());
 		m_game->m_userHand[m_game->m_userHand.size() - 1]->getCard().setScale(0.8, 0.8);
 		m_game->m_userHand[m_game->m_userHand.size() - 1]->getCard().setPosition(sf::Vector2f(1162.f, 324.f));
 		posX = 520.f + ((m_game->m_userHand.size() - 1) % 6) * 150.f;
@@ -450,7 +450,7 @@ void GameLogic::handleWithdrawEvent(PileType type)
 	}
 }
 
-void GameLogic::handleDiscardEvent(PileType type, std::string cardName)
+void GameLogic::handleDiscardEvent(Game::PileType type, std::string cardName)
 {
 	// Only discard once per turn
 	m_game->m_discardDone = true;
@@ -461,7 +461,7 @@ void GameLogic::handleDiscardEvent(PileType type, std::string cardName)
 		for (int i = 0; i < m_game->m_selectedCards.size(); i++) {
 			// Look for the right card to insert to pile
 			if ((m_game->m_selectedCards[i]->isDragging() && m_game->m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName))
-				|| (m_game->m_gameEvent == TIMEOUT_DISCARD && m_game->m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName))) {
+				|| (m_game->m_gameEvent == Game::TIMEOUT_DISCARD && m_game->m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName))) {
 				m_game->m_deck->getStackLeft().push(m_game->m_selectedCards[i]);
 				// Animation card fit into deck, callback to function set texture
 				m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_selectedCards[i]->getCard(), Animation::Type::MOVE,
@@ -472,7 +472,7 @@ void GameLogic::handleDiscardEvent(PileType type, std::string cardName)
 					0.8, 0.2, 0.f, [this, i]
 				{
 					m_game->getSelectedCards().erase(m_game->getSelectedCards().begin() + i);
-					if (m_game->m_gameEvent == TIMEOUT_DISCARD) m_game->m_gameEvent = TIMEOUT_DISCARD;
+					if (m_game->m_gameEvent == Game::TIMEOUT_DISCARD) m_game->m_gameEvent = Game::TIMEOUT_DISCARD;
 					else m_game->m_gameEvent = Game::DISCARD;
 				}));
 
@@ -489,7 +489,7 @@ void GameLogic::handleDiscardEvent(PileType type, std::string cardName)
 		for (int i = 0; i < m_game->m_selectedCards.size(); i++) {
 			// Look for the right card to insert to pile
 			if ((m_game->m_selectedCards[i]->isDragging() && m_game->m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName))
-				|| (m_game->m_gameEvent == TIMEOUT_DISCARD && m_game->m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName))) {
+				|| (m_game->m_gameEvent == Game::TIMEOUT_DISCARD && m_game->m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName))) {
 				m_game->m_deck->getStackRight().push(m_game->m_selectedCards[i]);
 				// Animation card fit into deck, callback to function set texture
 				m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_selectedCards[i]->getCard(), Animation::Type::MOVE,
@@ -500,7 +500,7 @@ void GameLogic::handleDiscardEvent(PileType type, std::string cardName)
 					0.8, 0.2, 0.f, [this, i]
 				{
 					m_game->getSelectedCards().erase(m_game->getSelectedCards().begin() + i);
-					if (m_game->m_gameEvent == TIMEOUT_DISCARD) m_game->m_gameEvent = TIMEOUT_DISCARD;
+					if (m_game->m_gameEvent == Game::TIMEOUT_DISCARD) m_game->m_gameEvent = Game::TIMEOUT_DISCARD;
 					else m_game->m_gameEvent = Game::DISCARD;
 				}));
 
@@ -518,7 +518,7 @@ void GameLogic::handleDiscardEvent(PileType type, std::string cardName)
 	}
 }
 
-void GameLogic::handleOpponentWithdrawEvent(PileType type, int playerIndex)
+void GameLogic::handleOpponentWithdrawEvent(Game::PileType type, int playerIndex)
 {
 	Card* dummyCard = nullptr;
 	sf::Vector2f endPos = m_game->m_playerList[playerIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f);
@@ -593,7 +593,7 @@ void GameLogic::handleOpponentWithdrawEvent(PileType type, int playerIndex)
 	}
 }
 
-void GameLogic::handleOpponentDiscardEvent(PileType type, int playerIndex, Card::CardType cardType)
+void GameLogic::handleOpponentDiscardEvent(Game::PileType type, int playerIndex, Card::CardType cardType)
 {
 	sf::Vector2f startPos = m_game->m_playerList[playerIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f);
 	sf::Vector2f startScale = sf::Vector2f(0.3, 0.3);
@@ -937,7 +937,7 @@ void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 
 void GameLogic::handleTimeoutWithdraw()
 {
-	m_game->m_gameEvent = TIMEOUT_WITHDRAW;
+	m_game->m_gameEvent = Game::TIMEOUT_WITHDRAW;
 	//int leftPileCardsNumber = m_game->m_deck->getStackLeft().size();
 	//int rightPileCardsNumber = m_game->m_deck->getStackRight().size();
 	//int leftDrawCount = 0;
@@ -956,7 +956,7 @@ void GameLogic::handleTimeoutWithdraw()
 
 void GameLogic::handleTimeoutDiscard()
 {
-	m_game->m_gameEvent = TIMEOUT_DISCARD;
+	m_game->m_gameEvent = Game::TIMEOUT_DISCARD;
 	static std::mt19937 generator(static_cast<unsigned int>(std::time(nullptr)));
 	std::uniform_int_distribution<int> distribution(0, 1);
 	// Prepare message

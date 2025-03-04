@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
+#include <SFML/Audio.hpp>
 #include "../include/Entities/Player.h"
 #include "../include/Entities/Deck.h"
 #include "../include/Entities/Card.h"
@@ -78,6 +79,7 @@ protected:
 	sf::RectangleShape m_withdrawEventMask;
 	sf::RectangleShape m_discardEventMask;
 	sf::RectangleShape m_SheriffEventMask;
+	sf::Music m_backgroundMusic;
 
 	// Render Objects
 	sf::RectangleShape m_ButtonLeft;
