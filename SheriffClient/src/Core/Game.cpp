@@ -675,6 +675,8 @@ bool Game::update()
 			m_gameEvent = IDLE;
 		}
 
+		break;
+
 	case Game::TIMEOUT_WITHDRAW:
 		if (!m_tablet->isTabletVisible()) {
 			pollEvents();
@@ -995,9 +997,13 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 		// Check if it is user's withdraw
 		if (jsonMessage["PlayerName"] == m_playerList[USER_PLAYER_INDEX]->getPlayerName()) {
 			if (jsonMessage["Pile"] == "LEFT_DISCARD_PILE") {
+				// Add new card to user hand and start animation
+				addToUserHand(Card::m_stringToCardName.at(jsonMessage["Card"]));
 				m_gameLogic->handleWithdrawEvent(Game::PileType::LEFT_DISCARD_PILE);
 			}
 			else if (jsonMessage["Pile"] == "RIGHT_DISCARD_PILE") {
+				// Add new card to user hand and start animation
+				addToUserHand(Card::m_stringToCardName.at(jsonMessage["Card"]));
 				m_gameLogic->handleWithdrawEvent(Game::PileType::RIGHT_DISCARD_PILE);
 			}
 			else if (jsonMessage["Pile"] == "MAIN_DECK") {

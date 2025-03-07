@@ -320,10 +320,12 @@ void GameLogic::handleOpponentGiveBagEvent(const nlohmann::json & jsonMessage)
 
 			// Store data to render the next Sheriff turn
 			m_goodsReport = Card::m_stringToCardName.at(jsonMessage["Report"]);
-			m_bribeAmount = jsonMessage["Fee"];
+			std::string bribe = jsonMessage["Fee"];
+			m_bribeAmount = std::stoi(bribe);
 			std::string amount = jsonMessage["Amount"];
 			int goodsAmount = std::stoi(amount);
 			m_game->m_MerchantShowingBagIndex = i;
+			std::cout << "Merchant idx: " << m_game->m_MerchantShowingBagIndex << std::endl;
 
 			// Add animation put cards to bag
 			for (int j = 0; j < goodsAmount; j++) {
@@ -396,7 +398,7 @@ void GameLogic::handleWithdrawEvent(Game::PileType type)
 
 		topCard = m_game->m_deck->getStackLeft().top();
 		// Add new card to user hand and start animation
-		m_game->addToUserHand(topCard->getCardType());
+		//m_game->addToUserHand(topCard->getCardType());
 		m_game->m_userHand[m_game->m_userHand.size() - 1]->getCard().setScale(0.8, 0.8);
 		m_game->m_userHand[m_game->m_userHand.size() - 1]->getCard().setPosition(sf::Vector2f(650.f, 324.f));
 		posX = 520.f + ((m_game->m_userHand.size() - 1) % 6) * 150.f;
@@ -419,7 +421,7 @@ void GameLogic::handleWithdrawEvent(Game::PileType type)
 
 		topCard = m_game->m_deck->getStackRight().top();
 		// Add new card to user hand and start animation
-		m_game->addToUserHand(topCard->getCardType());
+		//m_game->addToUserHand(topCard->getCardType());
 		m_game->m_userHand[m_game->m_userHand.size() - 1]->getCard().setScale(0.8, 0.8);
 		m_game->m_userHand[m_game->m_userHand.size() - 1]->getCard().setPosition(sf::Vector2f(1162.f, 324.f));
 		posX = 520.f + ((m_game->m_userHand.size() - 1) % 6) * 150.f;
@@ -644,6 +646,7 @@ void GameLogic::handleOpponentDiscardEvent(Game::PileType type, int playerIndex,
 
 void GameLogic::handleSheriffInspectEvent(const nlohmann::json & jsonMessage)
 {
+	m_game->m_gameEvent = Game::REVEAL;
 	// Setup
 	int revealedIndex = 0;
 	std::vector<Card::CardType> cardTypes;
@@ -666,12 +669,14 @@ void GameLogic::handleSheriffInspectEvent(const nlohmann::json & jsonMessage)
 	{
 		m_game->m_moneyText.setCharacterSize(30);
 		// Recursively reveal cards, until all cards are revealed
+		std::cout << "Game Event: " << m_game->getGameEvent() << std::endl;
 		revealCard(sheriffPlayer, cardTypes, revealedIndex, jsonMessage);
 	}));
 }
 
 void GameLogic::handleSheriffPassEvent(const nlohmann::json & jsonMessage)
 {
+	m_game->m_gameEvent = Game::REVEAL;
 	// Setup
 	int revealedIndex = 0;
 	std::vector<Card::CardType> cardTypes;
@@ -697,6 +702,7 @@ void GameLogic::handleSheriffPassEvent(const nlohmann::json & jsonMessage)
 		// Update sheriff and merchant catalog
 		m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->setPlayerMoney(m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getPlayerMoney() - m_bribeAmount);
 		sheriffPlayer->setPlayerMoney(sheriffPlayer->getPlayerMoney() + m_bribeAmount);
+		std::cout << "Game Event: " << m_game->getGameEvent() << std::endl;
 		// Recursively reveal cards, until all cards are revealed
 		revealCard(sheriffPlayer, cardTypes, revealedIndex, jsonMessage);
 	}));
