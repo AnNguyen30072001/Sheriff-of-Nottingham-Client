@@ -7,7 +7,7 @@
 
 void Game::initVariables(std::vector<Player*> playerList)
 {
-	if (!m_backgroundTexture.loadFromFile("assets/Images/Background.png") || 
+	if (!m_backgroundTexture.loadFromFile("assets/Images/Background.png") ||
 		!m_cardsHolderTexture.loadFromFile("assets/Images/CardsHolder.png")) {
 		std::cerr << "Error loading background texture!\n";
 	}
@@ -20,7 +20,22 @@ void Game::initVariables(std::vector<Player*> playerList)
 	m_backgroundMusic.setVolume(70);
 	m_backgroundMusic.setLoop(true);
 
-	if (!m_moneyIconTexture.loadFromFile("assets/Images/MoneyIcon.png")) {
+	if (!m_moneyIconTexture.loadFromFile("assets/Images/MoneyIcon.png") ||
+		!m_soundIconTexture.loadFromFile("assets/Images/SoundIndicator.png") ||
+		!m_noSoundIconTexture.loadFromFile("assets/Images/NoSoundIndicator.png") ||
+		!m_discardButtonGrayTexture.loadFromFile("assets/Images/Buttons/ButtonDiscardGray.png") ||
+		!m_discardButtonHighlightTexture.loadFromFile("assets/Images/Buttons/ButtonDiscardHighLight.png") ||
+		!m_discardButtonTexture.loadFromFile("assets/Images/Buttons/ButtonDiscard.png") || 
+		!m_presentButtonGrayTexture.loadFromFile("assets/Images/Buttons/ButtonPresentGray.png") || 
+		!m_presentButtonHighLightTexture.loadFromFile("assets/Images/Buttons/ButtonPresentHighLight.png") || 
+		!m_presentButtonTexture.loadFromFile("assets/Images/Buttons/ButtonPresent.png") ||
+		!m_InspectButtonGrayTexture.loadFromFile("assets/Images/Buttons/ButtonDiscardGray.png") ||
+		!m_InspectButtonHighlightTexture.loadFromFile("assets/Images/Buttons/ButtonDiscardHighLight.png") ||
+		!m_InspectButtonTexture.loadFromFile("assets/Images/Buttons/ButtonDiscard.png") || 
+		!m_PassButtonGrayTexture.loadFromFile("assets/Images/Buttons/ButtonPresentGray.png") ||
+		!m_PassButtonHighlightTexture.loadFromFile("assets/Images/Buttons/ButtonPresentHighLight.png") ||
+		!m_PassButtonTexture.loadFromFile("assets/Images/Buttons/ButtonPresent.png") )
+	{	
 		std::cerr << "Error loading game texture!\n";
 	}
 
@@ -28,9 +43,9 @@ void Game::initVariables(std::vector<Player*> playerList)
 		std::cerr << "Error loading font!\n";
 	}
 
-	if (!m_glowShader.loadFromFile("assets/Shaders/glow.frag", sf::Shader::Fragment)) {
-		std::cerr << "Error loading shader!\n";
-	}
+	//if (!m_glowShader.loadFromFile("assets/Shaders/glow.frag", sf::Shader::Fragment)) {
+	//	std::cerr << "Error loading shader!\n";
+	//}
 
 	m_gameEvent = Game::DEFAULT;
 	m_lastUpdatedGameEvent = DEFAULT;
@@ -103,37 +118,39 @@ void Game::initWindow()
 	m_SheriffEventMask.setFillColor(sf::Color(0, 0, 0, 180));
 
 	// Init shaders
-	m_glowShader.setUniform("isHovered", false);
-	m_glowShader.setUniform("outlineColor", sf::Glsl::Vec4(1.0, 1.0, 1.0, 1.0));
-	m_glowShader.setUniform("glowStrength", 0.35f); // Adjust glow thickness
+	//m_glowShader.setUniform("isHovered", false);
+	//m_glowShader.setUniform("outlineColor", sf::Glsl::Vec4(1.0, 1.0, 1.0, 1.0));
+	//m_glowShader.setUniform("glowStrength", 0.35f); // Adjust glow thickness
 
 	// Configure the button left
 	m_ButtonLeft.setSize(sf::Vector2f(170.f, 70.f));
-	m_ButtonLeft.setFillColor(sf::Color::Red);
-	m_ButtonLeft.setOutlineColor(sf::Color(30, 30, 30)); // Dark Gray
-	m_ButtonLeft.setOutlineThickness(3.f);
-	// Configure the text
-	m_ButtonLeftText.setFont(m_font);
-	m_ButtonLeftText.setString("Discard");
-	m_ButtonLeftText.setCharacterSize(28); 
-	m_ButtonLeftText.setFillColor(sf::Color::White);
-	// Center the text within the button
-	sf::FloatRect textBoundsLeft = m_ButtonLeftText.getLocalBounds();
-	m_ButtonLeftText.setOrigin(textBoundsLeft.left + textBoundsLeft.width / 2, textBoundsLeft.top + textBoundsLeft.height / 2);
+	m_ButtonLeft.setFillColor(sf::Color::White);
+	//// Configure the text
+	//m_ButtonLeftText.setFont(m_font);
+	//m_ButtonLeftText.setString("Discard");
+	//m_ButtonLeftText.setCharacterSize(28); 
+	//m_ButtonLeftText.setFillColor(sf::Color::White);
+	//// Center the text within the button
+	//sf::FloatRect textBoundsLeft = m_ButtonLeftText.getLocalBounds();
+	//m_ButtonLeftText.setOrigin(textBoundsLeft.left + textBoundsLeft.width / 2, textBoundsLeft.top + textBoundsLeft.height / 2);
 
 	// Configure the button right
 	m_ButtonRight.setSize(sf::Vector2f(170.f, 70.f));
-	m_ButtonRight.setFillColor(sf::Color(100, 149, 237)); // Cornflower Blue
-	m_ButtonRight.setOutlineColor(sf::Color(30, 30, 30)); // Dark Gray
-	m_ButtonRight.setOutlineThickness(3.f);
-	// Configure the text
-	m_ButtonRightText.setFont(m_font);
-	m_ButtonRightText.setString("Present");
-	m_ButtonRightText.setCharacterSize(28);
-	m_ButtonRightText.setFillColor(sf::Color::White);
-	// Center the text within the button
-	sf::FloatRect textBoundsRight = m_ButtonRightText.getLocalBounds();
-	m_ButtonRightText.setOrigin(textBoundsRight.left + textBoundsRight.width / 2, textBoundsRight.top + textBoundsRight.height / 2);
+	m_ButtonRight.setFillColor(sf::Color::White);
+	//// Configure the text
+	//m_ButtonRightText.setFont(m_font);
+	//m_ButtonRightText.setString("Present");
+	//m_ButtonRightText.setCharacterSize(28);
+	//m_ButtonRightText.setFillColor(sf::Color::White);
+	//// Center the text within the button
+	//sf::FloatRect textBoundsRight = m_ButtonRightText.getLocalBounds();
+	//m_ButtonRightText.setOrigin(textBoundsRight.left + textBoundsRight.width / 2, textBoundsRight.top + textBoundsRight.height / 2);
+
+	// Configure Sound indicator
+	m_soundIcon.setSize(sf::Vector2f(80.f, 80.f));
+	m_soundIcon.setFillColor(sf::Color::White);
+	m_soundIcon.setTexture(&m_soundIconTexture);
+	m_soundIcon.setPosition(sf::Vector2f(70.f, 940.f));
 
 	// Setup bribe amount, goods report
 	m_goodsReportText.setFont(m_font);
@@ -159,10 +176,10 @@ void Game::initWindow()
 	// Positioning buttons
 	m_ButtonLeft.setPosition(500.f, 905.f);
 	m_ButtonRight.setPosition(1245.f, 905.f);
-	m_ButtonLeftText.setPosition(m_ButtonLeft.getPosition().x + m_ButtonLeft.getSize().x / 2,
-		m_ButtonLeft.getPosition().y + m_ButtonLeft.getSize().y / 2);
-	m_ButtonRightText.setPosition(m_ButtonRight.getPosition().x + m_ButtonRight.getSize().x / 2,
-		m_ButtonRight.getPosition().y + m_ButtonRight.getSize().y / 2);
+	//m_ButtonLeftText.setPosition(m_ButtonLeft.getPosition().x + m_ButtonLeft.getSize().x / 2,
+	//	m_ButtonLeft.getPosition().y + m_ButtonLeft.getSize().y / 2);
+	//m_ButtonRightText.setPosition(m_ButtonRight.getPosition().x + m_ButtonRight.getSize().x / 2,
+	//	m_ButtonRight.getPosition().y + m_ButtonRight.getSize().y / 2);
 
 	// Positioning bribe amount, goods report
 	m_goodsReportText.setPosition(804.f, 215.f);
@@ -248,7 +265,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 
 			float posX = 520.f + (i % 6) * 150.f;
 			float posY = 635.f;
-			m_userHand[i]->animationMove(0.15,
+			m_userHand[i]->animationMove(0.1,
 				sf::Vector2f(posX, m_userHand[i]->isSelected() ? (posY - 35.f) : posY));
 		}
 		
@@ -402,6 +419,19 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 		}
 	}
 
+	// If clicked on sound icon, toggle play/stop background music
+	if (m_soundIcon.getGlobalBounds().contains(mousePosXY)) {
+		if (m_backgroundMusic.getStatus() == sf::SoundSource::Status::Playing) {
+			m_backgroundMusic.stop();
+			m_soundIcon.setTexture(&m_noSoundIconTexture);
+		}
+		else {
+			m_backgroundMusic.play();
+			m_soundIcon.setTexture(&m_soundIconTexture);
+		}
+		return true;
+	}
+
 	return false;
 }
 
@@ -419,6 +449,7 @@ bool Game::handleMouseDrag(sf::Vector2f mousePosXY)
 
 bool Game::handleMouseHover(sf::Vector2f mousePosXY)
 {
+	// Highlight hovered card
 	for (int i = 0; i < m_userHand.size(); i++) {
 		float posX = 520.f + (i % 6) * 150.f;
 		if (m_userHand[i]->getCard().getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY)) && m_gameEvent == DEFAULT
@@ -437,11 +468,27 @@ bool Game::handleMouseHover(sf::Vector2f mousePosXY)
 		}
 	}
 
-	if (m_ButtonLeft.getGlobalBounds().contains(mousePosXY) && m_playerList[USER_PLAYER_INDEX]->isInTurn() && m_gameEvent == DEFAULT && !m_discardDone) {
-		m_glowShader.setUniform("isHovered", true);
+	// Highlight hovered button
+	if (m_ButtonLeft.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY)) && m_playerList[USER_PLAYER_INDEX]->isInTurn()) {
+		if (m_playerList[USER_PLAYER_INDEX]->isSheriff() && m_gameEvent == SHERIFF_TURN) {
+			m_ButtonLeft.setTexture(&m_InspectButtonHighlightTexture, true);
+		}
+		else if ((!m_discardDone) && m_gameEvent == DEFAULT) {
+			m_ButtonLeft.setTexture(&m_discardButtonHighlightTexture, true);
+		}
 	}
+
+	else if (m_ButtonRight.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY)) && m_playerList[USER_PLAYER_INDEX]->isInTurn()) {
+		if (m_playerList[USER_PLAYER_INDEX]->isSheriff() && m_gameEvent == SHERIFF_TURN) {
+			m_ButtonRight.setTexture(&m_PassButtonHighlightTexture, true);
+		}
+		else if (m_gameEvent == DEFAULT){
+			m_ButtonRight.setTexture(&m_presentButtonHighLightTexture, true);
+		}
+	}
+
 	else {
-		m_glowShader.setUniform("isHovered", false);
+		setupPlayerUI();
 	}
 
 	return true;
@@ -588,7 +635,7 @@ bool Game::update()
 		if (!m_tablet->isTabletVisible()) {
 			pollEvents();
 		}
-		setupPlayerUI();
+		//setupPlayerUI();
 
 		// If tablet is shown, it is interactable
 		m_tablet->update();
@@ -602,7 +649,7 @@ bool Game::update()
 		// If tablet is shown, it is interactable
 		m_tablet->update();
 
-		setupPlayerUI();
+		//setupPlayerUI();
 
 		// If all cards are discarded, change game state
 		if (m_selectedCards.empty()) {
@@ -618,7 +665,7 @@ bool Game::update()
 		// If tablet is shown, it is interactable
 		m_tablet->update();
 
-		setupPlayerUI();
+		//setupPlayerUI();
 
 		// If done withdrawing, change game state
 		if (m_userHand.size() == 6U) {
@@ -655,7 +702,7 @@ bool Game::update()
 		// If tablet is shown, it is interactable
 		m_tablet->update();
 
-		setupPlayerUI();
+		//setupPlayerUI();
 
 		break;
 
@@ -666,7 +713,7 @@ bool Game::update()
 		// If tablet is shown, it is interactable
 		m_tablet->update();
 
-		setupPlayerUI();
+		//setupPlayerUI();
 
 		// If done revealing, update game state
 		if (m_revealingDone) {
@@ -739,10 +786,10 @@ bool Game::render()
 	}
 
 	// Buttons
-	m_window->draw(m_ButtonLeft, &m_glowShader);
-	m_window->draw(m_ButtonLeftText);
+	m_window->draw(m_ButtonLeft);
+	//m_window->draw(m_ButtonLeftText);
 	m_window->draw(m_ButtonRight);
-	m_window->draw(m_ButtonRightText);
+	//m_window->draw(m_ButtonRightText);
 
 	// A mask to focus on withdraw event, filter out avatars, buttons,...
 	std::lock_guard<std::mutex> lockText(m_textMutex);
@@ -790,9 +837,9 @@ bool Game::render()
 		// If it is user's sheriff turn, highlight buttons
 		if (m_playerList[USER_PLAYER_INDEX]->isInTurn() && m_gameEvent == SHERIFF_TURN) {
 			m_window->draw(m_ButtonLeft);
-			m_window->draw(m_ButtonLeftText);
+			//m_window->draw(m_ButtonLeftText);
 			m_window->draw(m_ButtonRight);
-			m_window->draw(m_ButtonRightText);
+			//m_window->draw(m_ButtonRightText);
 		}
 
 		// If reveal, show info text
@@ -831,6 +878,9 @@ bool Game::render()
 		m_tablet->render();
 	}
 
+	// Render to sound icon
+	m_window->draw(m_soundIcon);
+
 	// Render the timer if running
 	if (m_timer->isRunning()) {
 		m_timer->render();
@@ -848,23 +898,38 @@ bool Game::render()
 
 bool Game::setupPlayerUI()
 {
-	for (int i = 0; i < m_playerList.size(); i++) {
-		if (m_playerList[i]->isUserPlayer()) {
-			// The buttons are colored only when it is user's turn
-			m_ButtonLeft.setFillColor(m_playerList[i]->isInTurn() && (!m_discardDone) ? sf::Color::Red : sf::Color(128, 128, 128));
-			m_ButtonRight.setFillColor(m_playerList[i]->isInTurn() ? sf::Color(100, 149, 237) : sf::Color(128, 128, 128));
+	//for (int i = 0; i < m_playerList.size(); i++) {
+	//	if (m_playerList[i]->isUserPlayer()) {
+	//		// The buttons are colored only when it is user's turn
+	//		m_ButtonLeft.setFillColor(m_playerList[i]->isInTurn() && (!m_discardDone) ? sf::Color::Red : sf::Color(128, 128, 128));
+	//		m_ButtonRight.setFillColor(m_playerList[i]->isInTurn() ? sf::Color(100, 149, 237) : sf::Color(128, 128, 128));
 
-			// Render button texts based on user player role
-			m_ButtonLeftText.setString(m_playerList[i]->isSheriff() ? "Inspect" : "Discard");
-			m_ButtonRightText.setString(m_playerList[i]->isSheriff() ? "Pass" : "Present");
-			// Center the text within the button
-			sf::FloatRect textBoundsLeft = m_ButtonLeftText.getLocalBounds();
-			sf::FloatRect textBoundsRight = m_ButtonRightText.getLocalBounds();
-			m_ButtonLeftText.setOrigin(textBoundsLeft.left + textBoundsLeft.width / 2, textBoundsLeft.top + textBoundsLeft.height / 2);
-			m_ButtonRightText.setOrigin(textBoundsRight.left + textBoundsRight.width / 2, textBoundsRight.top + textBoundsRight.height / 2);
+	//		//// Render button type based on user player role
+	//		m_ButtonLeftText.setString(m_playerList[i]->isSheriff() ? "Inspect" : "Discard");
+	//		m_ButtonRightText.setString(m_playerList[i]->isSheriff() ? "Pass" : "Present");
 
-			continue;
-		}
+
+	//		//// Center the text within the button
+	//		sf::FloatRect textBoundsLeft = m_ButtonLeftText.getLocalBounds();
+	//		sf::FloatRect textBoundsRight = m_ButtonRightText.getLocalBounds();
+	//		m_ButtonLeftText.setOrigin(textBoundsLeft.left + textBoundsLeft.width / 2, textBoundsLeft.top + textBoundsLeft.height / 2);
+	//		m_ButtonRightText.setOrigin(textBoundsRight.left + textBoundsRight.width / 2, textBoundsRight.top + textBoundsRight.height / 2);
+
+	//		continue;
+	//	}
+	//}
+
+	// Render button Inspect and Pass if user role is Sheriff
+	if (m_playerList[USER_PLAYER_INDEX]->isSheriff()) {
+		// The buttons are colored only when it is user's turn
+		m_ButtonLeft.setTexture(m_playerList[USER_PLAYER_INDEX]->isInTurn() ? (&m_InspectButtonTexture) : (&m_InspectButtonGrayTexture), true);
+		m_ButtonRight.setTexture(m_playerList[USER_PLAYER_INDEX]->isInTurn() ? (&m_PassButtonTexture) : (&m_PassButtonGrayTexture), true);
+	}
+	// Render button Discard and Present if user role is Sheriff
+	else {
+		// The buttons are colored only when it is user's turn
+		m_ButtonLeft.setTexture(m_playerList[USER_PLAYER_INDEX]->isInTurn() && (!m_discardDone) ? (&m_discardButtonTexture) : (&m_discardButtonGrayTexture), true);
+		m_ButtonRight.setTexture(m_playerList[USER_PLAYER_INDEX]->isInTurn() ? (&m_presentButtonTexture) : (&m_presentButtonGrayTexture), true);
 	}
 
 	return true;
@@ -965,6 +1030,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 		std::string playerName = jsonMessage["PlayerName"];
 
 		m_gameLogic->handleStartTurnEvent(playerName);
+		setupPlayerUI();
 
 		// Send a response message
 		Network::getInstance().respondMessage(jsonMessage);
@@ -1045,6 +1111,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 			else if (jsonMessage["Pile"] == "RIGHT_DISCARD_PILE") {
 				m_gameLogic->handleDiscardEvent(Game::PileType::RIGHT_DISCARD_PILE, cardName);
 			}
+			setupPlayerUI();
 		}
 
 		// If it is not user's discard, setup animation of opponent's discard

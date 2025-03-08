@@ -84,17 +84,35 @@ protected:
 	// Render Objects
 	sf::RectangleShape m_ButtonLeft;
 	sf::RectangleShape m_ButtonRight;
-	sf::Text m_ButtonLeftText;
-	sf::Text m_ButtonRightText;
+	//sf::Text m_ButtonLeftText;
+	//sf::Text m_ButtonRightText;
+	sf::Texture m_discardButtonTexture;
+	sf::Texture m_discardButtonHighlightTexture;
+	sf::Texture m_discardButtonGrayTexture;
+	sf::Texture m_presentButtonTexture;
+	sf::Texture m_presentButtonHighLightTexture;
+	sf::Texture m_presentButtonGrayTexture;
+	sf::Texture m_InspectButtonTexture;
+	sf::Texture m_InspectButtonHighlightTexture;
+	sf::Texture m_InspectButtonGrayTexture;
+	sf::Texture m_PassButtonTexture;
+	sf::Texture m_PassButtonHighlightTexture;
+	sf::Texture m_PassButtonGrayTexture;
+
 	sf::RectangleShape m_moneyIcon;
 	sf::Texture m_moneyIconTexture;
 	sf::Text m_moneyText;
+
 	sf::Text m_goodsReportText;
 	sf::Text m_infoText;
 	sf::Text m_guideText;
 
+	sf::RectangleShape m_soundIcon;
+	sf::Texture m_soundIconTexture;
+	sf::Texture m_noSoundIconTexture;
+
 	// Shaders
-	sf::Shader m_glowShader;
+	//sf::Shader m_glowShader;
 
 	// Players and Cards
 	std::vector<Card*> m_userHand;

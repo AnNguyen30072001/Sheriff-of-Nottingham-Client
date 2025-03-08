@@ -793,7 +793,7 @@ void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTyp
 						sheriff->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5, [this, cardTypes, sheriff, revealIndex, jsonMessage]
 					{
 						// Update player's catalog
-						sheriff->setPlayerMoney(m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getPlayerMoney()
+						sheriff->setPlayerMoney(sheriff->getPlayerMoney()
 							- Card::cardTypeToPenalty.at(cardTypes[revealIndex]));
 
 						// Continue revealing until all cards are revealed
