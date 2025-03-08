@@ -328,8 +328,8 @@ void Tablet::setupGiveBagUI()
 	m_tabletGiveBag.setPosition(585.f, 150.f);
 
 	// Goods buttons
-	std::string texturePaths[4] = { "AppleReport.png", "BreadReport.png", "CheeseReport.png", "ChickenReport.png" };
-	std::string texturePathsHighlight[4] = { "AppleReportHighlight.png", "BreadReportHighlight.png", "CheeseReportHighlight.png", "ChickenReportHighlight.png" };
+	std::string texturePaths[4] = { "AppleReport.png", "CheeseReport.png", "BreadReport.png", "ChickenReport.png" };
+	std::string texturePathsHighlight[4] = { "AppleReportHighlight.png", "CheeseReportHighlight.png", "BreadReportHighlight.png", "ChickenReportHighlight.png" };
 	for (int i = 0; i < 4; ++i) {
 		m_goodsButtonTextures[i].loadFromFile("assets/Images/" + texturePaths[i]);
 		m_goodsButtonTexturesHighLight[i].loadFromFile("assets/Images/" + texturePathsHighlight[i]);
@@ -432,7 +432,7 @@ void Tablet::setupInfoUI(Player * player)
 	
 	// Goods
 	std::string texturePathsHighlight[8] = 
-	{ "AppleReportHighlight.png", "BreadReportHighlight.png", "CheeseReportHighlight.png", "ChickenReportHighlight.png", 
+	{ "AppleReportHighlight.png", "CheeseReportHighlight.png", "BreadReportHighlight.png", "ChickenReportHighlight.png", 
 		"PepperReportHighlight.png", "MeadReportHighlight.png", "SilkReportHighlight.png", "CrossbowReportHighlight.png"};
 	for (int i = 0; i < 8; ++i) {
 		m_goodsButtonTexturesHighLight[i].loadFromFile("assets/Images/" + texturePathsHighlight[i]);

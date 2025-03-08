@@ -372,7 +372,7 @@ void GameLogic::setupDiscardEvent()
 		float posX = 78.f + (i % 3) * 105.f;
 		float posY = i < 3 ? 350.f : 505.f;
 		m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_selectedCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE,
-			0.5, sf::Vector2f(posX, posY), 0.72));
+			0.5, sf::Vector2f(posX, posY), 0.667));
 	}
 	// Re-arrange userhand
 	m_game->userHandUI();

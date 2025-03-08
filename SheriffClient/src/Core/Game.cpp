@@ -8,7 +8,8 @@
 void Game::initVariables(std::vector<Player*> playerList)
 {
 	if (!m_backgroundTexture.loadFromFile("assets/Images/Background.png") ||
-		!m_cardsHolderTexture.loadFromFile("assets/Images/CardsHolder.png")) {
+		!m_cardsHolderTexture.loadFromFile("assets/Images/CardsHolder.png") ||
+		!m_backgroundClothTexture.loadFromFile("assets/Images/Background_cloth.png") ) {
 		std::cerr << "Error loading background texture!\n";
 	}
 	m_backgroundTexture.setSmooth(true);
@@ -106,10 +107,17 @@ void Game::initWindow()
 	m_background.setFillColor(sf::Color::White);
 	m_background.setSize(sf::Vector2f(1920.f, 1080.f));
 	m_background.setTexture(&m_backgroundTexture);
+	
+	m_backgroundCloth.setPosition(sf::Vector2f(0.f, 0.f));
+	m_backgroundCloth.setFillColor(sf::Color::White);
+	m_backgroundCloth.setSize(sf::Vector2f(1920.f, 1080.f));
+	m_backgroundCloth.setTexture(&m_backgroundClothTexture);
+
 	m_cardsHolder.setPosition(sf::Vector2f(0.f, 0.f));
 	m_cardsHolder.setFillColor(sf::Color::White);
 	m_cardsHolder.setSize(sf::Vector2f(1920.f, 1080.f));
 	m_cardsHolder.setTexture(&m_cardsHolderTexture);
+
 	m_withdrawEventMask.setSize(sf::Vector2f(1920.f, 1080.f));
 	m_withdrawEventMask.setFillColor(sf::Color(0, 0, 0, 180));
 	m_discardEventMask.setSize(sf::Vector2f(1920.f, 1080.f));
@@ -765,6 +773,7 @@ bool Game::render()
 
 	// Background
 	m_window->draw(m_background);
+	m_window->draw(m_backgroundCloth);
 	m_window->draw(m_cardsHolder);
 
 	// Player avatar and stuff
@@ -795,6 +804,7 @@ bool Game::render()
 	std::lock_guard<std::mutex> lockText(m_textMutex);
 	if (m_gameEvent == WITHDRAW) {
 		m_window->draw(m_withdrawEventMask);
+		m_window->draw(m_backgroundCloth);
 		m_window->draw(m_guideText);
 	}
 
@@ -811,6 +821,7 @@ bool Game::render()
 		// A mask to focus on discard event, filter out the main deck
 		if (m_gameEvent == DISCARD || (m_gameEvent == IDLE && !m_tablet->isTabletVisible())) {
 			m_window->draw(m_discardEventMask);
+			m_window->draw(m_backgroundCloth);
 			m_window->draw(m_guideText);
 		}
 		m_window->draw(m_deck->getDiscardDeckLeft());
