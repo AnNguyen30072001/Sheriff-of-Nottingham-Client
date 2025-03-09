@@ -250,6 +250,7 @@ void Tablet::render()
 		m_parentWindow->draw(m_tabletInfo);
 
 		m_parentWindow->draw(m_playerAvatar);
+		m_parentWindow->draw(m_playerAvatarFrame);
 		m_parentWindow->draw(m_playerName);
 
 		for (int i = 0; i < 8; i++) {
@@ -401,11 +402,20 @@ void Tablet::setupInfoUI(Player * player)
 
 	// Player avatar
 	m_playerAvatar = player->getAvatar();
+	m_playerAvatarFrame = player->getAvatarFrame();
 	m_playerName = player->getNameText();
-	m_playerAvatar.setPosition(710.f, 154.f);
+	if (player->isUserPlayer()) {
+		m_playerAvatar.setPosition(710.f, 164.f);
+		m_playerAvatarFrame.setPosition(690.f, 144.f);
+	}
+	else {
+		m_playerAvatar.setPosition(730.f, 210.f);
+		m_playerAvatarFrame.setPosition(710.f, 190.f);
+	}
+
 	m_playerName.setCharacterSize(30);
 	m_playerName.setPosition(m_playerAvatar.getPosition() + 
-		(player->isUserPlayer() ? sf::Vector2f(0.f, 150.f) : sf::Vector2f(0.f, 130.f)));
+		(player->isUserPlayer() ? sf::Vector2f(-10.f, 150.f) : sf::Vector2f(-10.f, 110.f)));
 
 	// Player money
 	m_moneyIcon.setSize(sf::Vector2f(70.f, 70.f));

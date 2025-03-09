@@ -780,6 +780,7 @@ bool Game::render()
 	Player* sheriffPlayer = nullptr;
 	for (const auto& player : m_playerList) {
 		m_window->draw(player->getAvatar());
+		m_window->draw(player->getAvatarFrame());
 		m_window->draw(player->getNameText());
 		m_window->draw(player->getInfoTabIcon());
 		if (player->isSheriff()) {
@@ -836,11 +837,13 @@ bool Game::render()
 
 		// Draw highlighted sheriff and merchant
 		m_window->draw(sheriffPlayer->getAvatar());
+		m_window->draw(sheriffPlayer->getAvatarFrame());
 		m_window->draw(sheriffPlayer->getNameText());
 		m_window->draw(sheriffPlayer->getInfoTabIcon());
 		m_window->draw(sheriffPlayer->getSheriffBadge());
 		m_window->draw(sheriffPlayer->getTurnIndicator());
 		m_window->draw(m_playerList[m_MerchantShowingBagIndex]->getAvatar());
+		m_window->draw(m_playerList[m_MerchantShowingBagIndex]->getAvatarFrame());
 		m_window->draw(m_playerList[m_MerchantShowingBagIndex]->getNameText());
 		m_window->draw(m_playerList[m_MerchantShowingBagIndex]->getInfoTabIcon());
 		m_window->draw(m_playerList[m_MerchantShowingBagIndex]->getBagIcon());

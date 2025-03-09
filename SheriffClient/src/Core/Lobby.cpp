@@ -155,6 +155,7 @@ bool Lobby::render()
 	std::lock_guard<std::mutex> lock(m_PlayerMutex);
 	for (const auto& player : m_playerList) {
 		m_window->draw(player->getAvatar());	
+		m_window->draw(player->getAvatarFrame());	
 		m_window->draw(player->getReadyButton());
 		m_window->draw(player->getReadyText());
 		m_window->draw(player->getNameText());

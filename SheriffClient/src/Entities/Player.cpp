@@ -38,7 +38,8 @@ bool Player::initFontAndTexture()
 		std::cerr << "Error loading font!\n";
 		return false;
 	}
-	if (!m_avatarTexture.loadFromFile("assets/Images/PlayerAvatar.png")) {
+	if (!m_avatarTexture.loadFromFile("assets/Images/PlayerAvatar.png") || 
+		!m_avatarFrameTexture.loadFromFile("assets/Images/PlayerAvatarFrame.png")) {
 		std::cerr << "Error loading texture!\n";
 		return false;
 	}
@@ -61,11 +62,15 @@ bool Player::initFontAndTexture()
 bool Player::initUserPlayer(std::string name, sf::Color playerColor)
 {
 	// User player setup
-	m_avatar.setRadius(70.f);
+	m_avatar.setRadius(60.f);
 	m_avatar.setFillColor(sf::Color::White);
 	m_avatar.setTexture(&m_avatarTexture);
-	m_avatar.setOutlineThickness(5.f);
-	m_avatar.setOutlineColor(playerColor);
+	//m_avatar.setOutlineThickness(5.f);
+	//m_avatar.setOutlineColor(playerColor);
+
+	m_avatarFrame.setRadius(80.f);
+	m_avatarFrame.setFillColor(sf::Color::White);
+	m_avatarFrame.setTexture(&m_avatarFrameTexture);
 
 	m_nameText.setFont(m_font);
 	m_nameText.setCharacterSize(24);
@@ -105,7 +110,8 @@ bool Player::initUserPlayer(std::string name, sf::Color playerColor)
 	m_turnIndicator.setString("In Turn");
 
 	// Positioning
-	m_avatar.setPosition(890.f, 870.f);
+	m_avatar.setPosition(900.f, 880.f);
+	m_avatarFrame.setPosition(880.f, 860.f);
 	m_nameText.setPosition(900.f, 835.f);
 
 	m_readyButton.setPosition(1060.f, 880.f);
@@ -121,11 +127,15 @@ bool Player::initUserPlayer(std::string name, sf::Color playerColor)
 
 bool Player::initPlayer(float posX, float posY)
 {
-	m_avatar.setRadius(50.f);
+	m_avatar.setRadius(40.f);
 	m_avatar.setFillColor(sf::Color::White);
 	m_avatar.setTexture(&m_avatarTexture);
-	m_avatar.setOutlineThickness(5.f);
-	m_avatar.setOutlineColor(m_playerColor);
+	//m_avatar.setOutlineThickness(5.f);
+	//m_avatar.setOutlineColor(m_playerColor);
+
+	m_avatarFrame.setRadius(60.f);
+	m_avatarFrame.setFillColor(sf::Color::White);
+	m_avatarFrame.setTexture(&m_avatarFrameTexture);
 
 	m_nameText.setFont(m_font);
 	m_nameText.setCharacterSize(20);
@@ -164,8 +174,9 @@ bool Player::initPlayer(float posX, float posY)
 	m_turnIndicator.setString("In Turn");
 
 	// Positioning
-	m_avatar.setPosition(posX, posY);
-	m_nameText.setPosition(posX + 5, posY - 30.f);
+	m_avatar.setPosition(posX + 10.f, posY + 10.f);
+	m_avatarFrame.setPosition(posX - 10.f, posY - 10.f);
+	m_nameText.setPosition(posX + 5.f, posY - 30.f);
 
 	m_readyButton.setPosition(posX + 25.f, posY + 120.f);
 	m_readyText.setPosition(
@@ -206,6 +217,11 @@ bool Player::setPlayerColor(const sf::Color color)
 sf::CircleShape& Player::getAvatar()
 {
 	return m_avatar;
+}
+
+sf::CircleShape& Player::getAvatarFrame()
+{
+	return m_avatarFrame;
 }
 
 sf::Text& Player::getNameText()

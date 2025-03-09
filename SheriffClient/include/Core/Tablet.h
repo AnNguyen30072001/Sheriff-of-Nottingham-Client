@@ -46,30 +46,40 @@ private:
 	sf::Texture			m_tabletTextureGiveBag;
 	sf::Texture			m_tabletTextureInfo;
 	sf::RectangleShape	m_backgroundMask;				// Window background black mask
+
 	sf::CircleShape		m_playerAvatar;					// Player avatar
+	sf::CircleShape		m_playerAvatarFrame;			// Player avatar frame
 	sf::Text			m_playerName;
+
 	sf::RectangleShape	m_moneyIcon;					// Money icon
 	sf::Texture			m_moneyIconTexture;
 	sf::Text			m_moneyText;
+
 	sf::RectangleShape	m_scoreIcon;					// Score icon
 	sf::Texture			m_scoreIconTexture;
 	sf::Text			m_scoreText;
+
 	sf::RectangleShape	m_goldMedals[4];				// Gold medals for legal goods
 	sf::Texture			m_goldMedalTexture;
 	sf::RectangleShape	m_silverMedals[4];				// Silver medals for legal goods
 	sf::Texture			m_silverMedalTexture;
 	sf::RectangleShape	m_blackMarketMedals[4];			// Black market medals for contrabands
 	sf::Texture			m_blackMarketMedalTexture;
+
 	sf::Text			m_goodsAmountText[8];
+
 	sf::RectangleShape	m_okButton;						// OK button
 	sf::Text			m_okButtonText;
+
 	sf::RectangleShape	m_goodsButtons[8]; // Buttons for Apple, Bread, Cheese, Chicken, Crossbow, Mead, Pepper, Silk
 	sf::Texture			m_goodsButtonTextures[4];
 	sf::Texture			m_goodsButtonTexturesHighLight[8];
+
 	sf::Text			m_bribeText;
 	sf::RectangleShape	m_bribeBox;
 	sf::Text			m_bribeBoxText;
 	std::string			m_bribeInput;
+
 	sf::RectangleShape	m_BoxOutline;
 	sf::Text			m_maxMoneyText;
 

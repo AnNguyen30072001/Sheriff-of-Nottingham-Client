@@ -166,6 +166,9 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 				m_game->m_timer->reset();
 				m_game->m_timer->start();
 			}
+			else {
+				m_game->m_timer->stop();
+			}
 
 			// If it is sheriff's turn, setup animations and UI of giving bag
 			if (m_game->m_playerList[i]->isSheriff() && !m_game->m_dummyCards.empty()) {

@@ -28,6 +28,7 @@ public:
 	bool setPlayerColor(const sf::Color color);
 
 	sf::CircleShape& getAvatar();
+	sf::CircleShape& getAvatarFrame();
 	sf::Text& getNameText();
 
 	sf::RectangleShape& getInfoTabIcon();
@@ -63,6 +64,9 @@ private:
 	sf::Font m_font;
 	sf::CircleShape m_avatar;
 	sf::Texture m_avatarTexture;
+	sf::CircleShape m_avatarFrame;
+	sf::Texture m_avatarFrameTexture;
+
 	sf::Color m_playerColor;
 	sf::Text m_nameText;
 
