@@ -35,7 +35,7 @@ public:
 	void handleSheriffInspectEvent(const nlohmann::json& jsonMessage);
 	void handleSheriffPassEvent(const nlohmann::json& jsonMessage);
 
-	void revealCard(Player* sheriff, std::vector<Card::CardType> cardTypes, int revealIndex, const nlohmann::json& jsonMessage);
+	void revealCard(Player* sheriff, std::vector<Card::CardType> cardTypes, int revealIndex, const nlohmann::json& jsonMessage, bool isIllegal = false);
 	void retrieveCards(const nlohmann::json& jsonMessage);
 
 	void handleTimeoutWithdraw();

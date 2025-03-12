@@ -351,7 +351,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 			std::string messageString = message.dump();
 			Network::getInstance().sendMessage(messageString);
 			// Wait for server confirmation
-			m_gameEvent = IDLE;
+			m_gameEvent = SHERIFF_STANDBY;
 			return true;
 		}
 
@@ -364,7 +364,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 			std::string messageString = message.dump();
 			Network::getInstance().sendMessage(messageString);
 			// Wait for server confirmation
-			m_gameEvent = IDLE;
+			m_gameEvent = SHERIFF_STANDBY;
 			return true;
 		}
 	}
@@ -518,7 +518,7 @@ bool Game::handleMouseRelease()
 				Network::getInstance().sendMessage(messageString);
 
 				// Wait for server confirmation
-				m_gameEvent = IDLE;
+				m_gameEvent = DISCARD_STANDBY;
 			}
 
 			// If the dragged card is placed on top of right discard pile
@@ -533,7 +533,7 @@ bool Game::handleMouseRelease()
 				Network::getInstance().sendMessage(messageString);
 
 				// Wait for server confirmation
-				m_gameEvent = IDLE;
+				m_gameEvent = DISCARD_STANDBY;
 			}
 
 			else {
@@ -666,6 +666,12 @@ bool Game::update()
 
 		break;
 
+	case Game::DISCARD_STANDBY:
+		if (!m_tablet->isTabletVisible()) {
+			pollEvents();
+		}
+		break;
+
 	case Game::WITHDRAW:
 		if (!m_tablet->isTabletVisible()) {
 			pollEvents();
@@ -712,6 +718,12 @@ bool Game::update()
 
 		//setupPlayerUI();
 
+		break;
+
+	case Game::SHERIFF_STANDBY:
+		if (!m_tablet->isTabletVisible()) {
+			pollEvents();
+		}
 		break;
 
 	case Game::REVEAL:
@@ -820,7 +832,7 @@ bool Game::render()
 		// Decks
 		m_window->draw(m_deck->getMainDeck());
 		// A mask to focus on discard event, filter out the main deck
-		if (m_gameEvent == DISCARD || (m_gameEvent == IDLE && !m_tablet->isTabletVisible())) {
+		if (m_gameEvent == DISCARD || (m_gameEvent == DISCARD_STANDBY && !m_tablet->isTabletVisible())) {
 			m_window->draw(m_discardEventMask);
 			m_window->draw(m_backgroundCloth);
 			m_window->draw(m_guideText);
@@ -830,7 +842,7 @@ bool Game::render()
 	}
 
 	// Draw Sheriff event objects
-	if (m_gameEvent == SHERIFF_TURN || m_gameEvent == REVEAL) {
+	if (m_gameEvent == SHERIFF_TURN || m_gameEvent == SHERIFF_STANDBY || m_gameEvent == REVEAL) {
 		// Draw objects
 		m_window->draw(m_SheriffEventMask);
 		m_window->draw(m_goodsReportText);

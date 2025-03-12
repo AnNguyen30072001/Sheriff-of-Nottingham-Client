@@ -249,7 +249,7 @@ void GameLogic::handlePresentEvent()
 	message["MessageType"] = "MERCHANT_GIVE_BAG";
 	message["PlayerName"] = m_game->m_playerList[0]->getPlayerName();
 	message["Report"] = Card::m_cardNameToString.at(m_game->m_tablet->getPresentedGoods());
-	message["Fee"] = m_game->m_tablet->getBribeAmount();
+	message["Fee"] = std::to_string(m_game->m_tablet->getBribeAmount());
 
 	for (auto& userCard : m_game->m_userHand) {
 		if (userCard->isSelected()) {
@@ -652,10 +652,16 @@ void GameLogic::handleSheriffInspectEvent(const nlohmann::json & jsonMessage)
 	m_game->m_gameEvent = Game::REVEAL;
 	// Setup
 	int revealedIndex = 0;
+	bool isIllegal = false;
 	std::vector<Card::CardType> cardTypes;
 	for (auto it = jsonMessage["Bag"].begin(); it != jsonMessage["Bag"].end(); it++) {
 		std::string cardName = *it;
-		cardTypes.push_back(Card::m_stringToCardName.at(cardName));
+		Card::CardType cardType = Card::m_stringToCardName.at(cardName);
+		cardTypes.push_back(cardType);
+		// If the bag contain any illegal good, save this information
+		if (cardType != m_goodsReport) {
+			isIllegal = true;
+		}
 	}
 
 	Player* sheriffPlayer = nullptr;
@@ -668,12 +674,12 @@ void GameLogic::handleSheriffInspectEvent(const nlohmann::json & jsonMessage)
 	m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyText, Animation::Type::MOVE_AND_SCALE, 0.5,
 		m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.f));
 	m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyIcon, Animation::Type::MOVE_AND_SCALE, 0.5,
-		m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.f, [this, sheriffPlayer, cardTypes, revealedIndex, jsonMessage]
+		m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.f, [this, sheriffPlayer, cardTypes, revealedIndex, jsonMessage, isIllegal]
 	{
 		m_game->m_moneyText.setCharacterSize(30);
 		// Recursively reveal cards, until all cards are revealed
 		std::cout << "Game Event: " << m_game->getGameEvent() << std::endl;
-		revealCard(sheriffPlayer, cardTypes, revealedIndex, jsonMessage);
+		revealCard(sheriffPlayer, cardTypes, revealedIndex, jsonMessage, isIllegal);
 	}));
 }
 
@@ -685,7 +691,8 @@ void GameLogic::handleSheriffPassEvent(const nlohmann::json & jsonMessage)
 	std::vector<Card::CardType> cardTypes;
 	for (auto it = jsonMessage["Bag"].begin(); it != jsonMessage["Bag"].end(); it++) {
 		std::string cardName = *it;
-		cardTypes.push_back(Card::m_stringToCardName.at(cardName));
+		Card::CardType cardType = Card::m_stringToCardName.at(cardName);
+		cardTypes.push_back(cardType);
 	}
 
 	Player* sheriffPlayer = nullptr;
@@ -707,23 +714,24 @@ void GameLogic::handleSheriffPassEvent(const nlohmann::json & jsonMessage)
 		sheriffPlayer->setPlayerMoney(sheriffPlayer->getPlayerMoney() + m_bribeAmount);
 		std::cout << "Game Event: " << m_game->getGameEvent() << std::endl;
 		// Recursively reveal cards, until all cards are revealed
-		revealCard(sheriffPlayer, cardTypes, revealedIndex, jsonMessage);
+		revealCard(sheriffPlayer, cardTypes, revealedIndex, jsonMessage, false);
 	}));
 }
 
-void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTypes, int revealIndex, const nlohmann::json& jsonMessage)
+void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTypes, int revealIndex, const nlohmann::json& jsonMessage, bool isIllegal)
 {
 	// Add animation to reveal a card
-	m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_dummyCards[revealIndex]->getCard(), Animation::Type::SCALE, 1.2, 0.2, 0.2, [this, cardTypes, sheriff, revealIndex, jsonMessage]
+	m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_dummyCards[revealIndex]->getCard(), Animation::Type::SCALE, 1.2, 0.2, 0.2, [this, cardTypes, sheriff, revealIndex, jsonMessage, isIllegal]
 	{
 		// Reveal the card
 		m_game->m_dummyCards[revealIndex]->setCardTexture(cardTypes[revealIndex]);
-		m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_dummyCards[revealIndex]->getCard(), Animation::Type::SCALE, 1.0, 0.2, 0.f, [this, cardTypes, sheriff, revealIndex, jsonMessage]
+		m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_dummyCards[revealIndex]->getCard(), Animation::Type::SCALE, 1.0, 0.2, 0.f, [this, cardTypes, sheriff, revealIndex, jsonMessage, isIllegal]
 		{
 			sf::Vector2f posOffset = m_game->m_dummyCards[revealIndex]->getCard().getPosition();
 
-			// If Sheriff chose to Pass, merchant get the goods
-			if (jsonMessage["MessageType"] == "SHERIFF_PASS_RESPONSE") {
+			// If Sheriff chose to Pass, or if Sheriff inspects the illegal bag but the current card is legal, merchant get the goods
+			if (jsonMessage["MessageType"] == "SHERIFF_PASS_RESPONSE" || 
+				(cardTypes[revealIndex] == m_goodsReport && isIllegal) ) {
 				std::cout << "Legal\n";
 
 				// Update player's catalog
@@ -732,7 +740,7 @@ void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTyp
 				// Continue revealing until all cards are revealed
 				int nextIndex = revealIndex + 1;
 				if (nextIndex < cardTypes.size()) {
-					revealCard(sheriff, cardTypes, nextIndex, jsonMessage);
+					revealCard(sheriff, cardTypes, nextIndex, jsonMessage, isIllegal);
 				}
 				else {
 					// Update players medal status
@@ -750,8 +758,8 @@ void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTyp
 				}
 			}
 
-			// If Sheriff inspect and the card is legal, merchant get the cash
-			else if (cardTypes[revealIndex] == m_goodsReport) {
+			// If Sheriff inspect and the whole bag is legal, merchant get the cash
+			else if (cardTypes[revealIndex] == m_goodsReport && !isIllegal) {
 				std::cout << "Legal\n";
 
 				// Add animation Merchant receive the cash
@@ -764,13 +772,13 @@ void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTyp
 				m_game->m_moneyText.setPosition(m_game->m_moneyIcon.getPosition() + sf::Vector2f(20.f, 60.f));
 
 				m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyText, Animation::Type::MOVE, 0.15,
-					m_game->m_moneyText.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+					m_game->m_moneyText.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 0.2));
 				m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyIcon, Animation::Type::MOVE, 0.15,
-					m_game->m_moneyIcon.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+					m_game->m_moneyIcon.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 0.2));
 				m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyText, Animation::Type::MOVE_AND_SCALE, 0.2,
-					m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5));
+					m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 0.5));
 				m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyIcon, Animation::Type::MOVE_AND_SCALE, 0.3,
-					m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5, [this, cardTypes, sheriff, revealIndex, jsonMessage, posOffset]
+					m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 0.5, [this, cardTypes, sheriff, revealIndex, jsonMessage, posOffset, isIllegal]
 				{
 					// Update player's catalog
 					m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->increasePlayerGoodsAmount(cardTypes[revealIndex], 1);
@@ -787,13 +795,13 @@ void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTyp
 					m_game->m_moneyText.setPosition(m_game->m_moneyIcon.getPosition() + sf::Vector2f(15.f, 60.f));
 
 					m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyText, Animation::Type::MOVE, 0.15,
-						m_game->m_moneyText.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+						m_game->m_moneyText.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 0.2));
 					m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyIcon, Animation::Type::MOVE, 0.15,
-						m_game->m_moneyIcon.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+						m_game->m_moneyIcon.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 0.2));
 					m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyText, Animation::Type::MOVE_AND_SCALE, 0.3,
-						sheriff->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5));
+						sheriff->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 0.5));
 					m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyIcon, Animation::Type::MOVE_AND_SCALE, 0.3,
-						sheriff->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5, [this, cardTypes, sheriff, revealIndex, jsonMessage]
+						sheriff->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 0.5, [this, cardTypes, sheriff, revealIndex, jsonMessage, isIllegal]
 					{
 						// Update player's catalog
 						sheriff->setPlayerMoney(sheriff->getPlayerMoney()
@@ -802,7 +810,7 @@ void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTyp
 						// Continue revealing until all cards are revealed
 						int nextIndex = revealIndex + 1;
 						if (nextIndex < cardTypes.size()) {
-							revealCard(sheriff, cardTypes, nextIndex, jsonMessage);
+							revealCard(sheriff, cardTypes, nextIndex, jsonMessage, isIllegal);
 						}
 						else {
 							// Update players medal status
@@ -835,13 +843,13 @@ void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTyp
 				m_game->m_moneyText.setPosition(m_game->m_moneyIcon.getPosition() + sf::Vector2f(20.f, 60.f));
 
 				m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyText, Animation::Type::MOVE, 0.15,
-					m_game->m_moneyText.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+					m_game->m_moneyText.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 0.2));
 				m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyIcon, Animation::Type::MOVE, 0.15,
-					m_game->m_moneyIcon.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+					m_game->m_moneyIcon.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 0.2));
 				m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyText, Animation::Type::MOVE_AND_SCALE, 0.2,
-					sheriff->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5));
+					sheriff->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 0.5));
 				m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyIcon, Animation::Type::MOVE_AND_SCALE, 0.3,
-					sheriff->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5, [this, cardTypes, sheriff, revealIndex, jsonMessage, posOffset]
+					sheriff->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 0.5, [this, cardTypes, sheriff, revealIndex, jsonMessage, posOffset, isIllegal]
 				{
 					// Update player's catalog
 					sheriff->setPlayerMoney(sheriff->getPlayerMoney()
@@ -857,13 +865,13 @@ void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTyp
 					m_game->m_moneyText.setPosition(m_game->m_moneyIcon.getPosition() + sf::Vector2f(15.f, 60.f));
 
 					m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyText, Animation::Type::MOVE, 0.15,
-						m_game->m_moneyText.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+						m_game->m_moneyText.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 0.2));
 					m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyIcon, Animation::Type::MOVE, 0.15,
-						m_game->m_moneyIcon.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 1.f));
+						m_game->m_moneyIcon.getPosition() + sf::Vector2f(0.f, 20.f), 0.6, 0.2));
 					m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyText, Animation::Type::MOVE_AND_SCALE, 0.3,
-						m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5));
+						m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 0.5));
 					m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_moneyIcon, Animation::Type::MOVE_AND_SCALE, 0.3,
-						m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.5, [this, cardTypes, sheriff, revealIndex, jsonMessage]
+						m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 0.5, [this, cardTypes, sheriff, revealIndex, jsonMessage, isIllegal]
 					{
 						// Update player's catalog
 						m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->setPlayerMoney(m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getPlayerMoney()
@@ -872,7 +880,7 @@ void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTyp
 						// Continue revealing until all cards are revealed
 						int nextIndex = revealIndex + 1;
 						if (nextIndex < cardTypes.size()) {
-							revealCard(sheriff, cardTypes, nextIndex, jsonMessage);
+							revealCard(sheriff, cardTypes, nextIndex, jsonMessage, isIllegal);
 						}
 						else {
 							// Update players medal status
