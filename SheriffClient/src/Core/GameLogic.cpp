@@ -120,6 +120,12 @@ void GameLogic::handleDealCardsEvent(const nlohmann::json & jsonMessage)
 {
 	int index = 0;
 
+	// Show all current cards in hand
+	for (auto& card : m_game->m_userHand) {
+		std::lock_guard<std::mutex> lock(m_game->m_userHandMutex);
+		card->getCard().setScale(1.f, 1.f);
+	}
+
 	// Get all Card types
 	for (auto it = jsonMessage["Cards"].begin(); it != jsonMessage["Cards"].end(); it++) {
 		if (m_game->m_userHand.size() >= 6U) break;	// Limit guard
@@ -188,21 +194,26 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 
 				// Set infomation
 				m_game->m_textMutex.lock();
-				m_game->m_goodsReportText.setString("Report: " + Card::m_cardNameToString.at(m_goodsReport));
-				m_game->m_goodsReportText.setPosition((1920.f - m_game->m_goodsReportText.getGlobalBounds().width) / 2, 215.f);
-				m_game->m_moneyIcon.setPosition(910.f, 515.f);
+				//m_game->m_goodsReportText.setString("Report: " + Card::m_cardNameToString.at(m_goodsReport));
+				//m_game->m_goodsReportText.setPosition((1920.f - m_game->m_goodsReportText.getGlobalBounds().width) / 2, 215.f);
+				m_game->m_goodsReportText.setString("Report:");
+				m_game->m_goodsReportTexture.loadFromFile("assets/Images/" + Card::m_cardNameToString.at(m_goodsReport) + "ReportHighlight.png");
+				m_game->m_goodsReportIcon.setTexture(&m_game->m_goodsReportTexture, true);
+				m_game->m_infoText.setString("Bribe:");
+				m_game->m_infoText.setPosition(800.f, 540.f);
+				m_game->m_moneyIcon.setPosition(950.f, 520.f);
 				m_game->m_moneyIcon.setScale(1.f, 1.f);
 				m_game->m_moneyText.setString(std::to_string(m_bribeAmount));
 				m_game->m_moneyText.setFillColor(sf::Color::White);
 				m_game->m_moneyText.setCharacterSize(48);
 				m_game->m_moneyText.setScale(1.f, 1.f);
-				m_game->m_moneyText.setPosition(1030.f, 534.f);
+				m_game->m_moneyText.setPosition(1070.f, 540.f);
 				m_game->m_textMutex.unlock();
 
 				// Temporary hide all decks and user cards
-				m_game->m_deck->getDiscardDeckLeft().setScale(0.f, 0.f);
-				m_game->m_deck->getDiscardDeckRight().setScale(0.f, 0.f);
-				m_game->m_deck->getMainDeck().setScale(0.f, 0.f);
+				//m_game->m_deck->getDiscardDeckLeft().setScale(0.f, 0.f);
+				//m_game->m_deck->getDiscardDeckRight().setScale(0.f, 0.f);
+				//m_game->m_deck->getMainDeck().setScale(0.f, 0.f);
 				for (auto& card : m_game->m_userHand) {
 					std::lock_guard<std::mutex> lock(m_game->m_userHandMutex);
 					card->getCard().setScale(0.f, 0.f);
@@ -218,9 +229,9 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 				m_game->m_gameEvent = Game::DEFAULT;
 
 				// Show decks and user cards again
-				m_game->m_deck->getDiscardDeckLeft().setScale(1.f, 1.f);
-				m_game->m_deck->getDiscardDeckRight().setScale(1.f, 1.f);
-				m_game->m_deck->getMainDeck().setScale(1.f, 1.f);
+				//m_game->m_deck->getDiscardDeckLeft().setScale(1.f, 1.f);
+				//m_game->m_deck->getDiscardDeckRight().setScale(1.f, 1.f);
+				//m_game->m_deck->getMainDeck().setScale(1.f, 1.f);
 				for (auto& card : m_game->m_userHand) {
 					std::lock_guard<std::mutex> lock(m_game->m_userHandMutex);
 					card->getCard().setScale(1.f, 1.f);

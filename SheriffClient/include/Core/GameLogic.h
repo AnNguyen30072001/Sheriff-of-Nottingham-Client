@@ -45,7 +45,6 @@ private:
 	Game* m_game;
 	Card::CardType m_goodsReport;
 	int	m_bribeAmount;
-
 };
 
 #endif // !_GAME_LOGIC__

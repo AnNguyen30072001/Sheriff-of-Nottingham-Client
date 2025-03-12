@@ -164,6 +164,8 @@ void Game::initWindow()
 	m_goodsReportText.setFont(m_font);
 	m_goodsReportText.setCharacterSize(48);
 	m_goodsReportText.setFillColor(sf::Color::White);
+	m_goodsReportIcon.setSize(sf::Vector2f(80.f, 80.f));
+	m_goodsReportIcon.setFillColor(sf::Color::White);
 	m_moneyText.setFont(m_font);
 	m_moneyText.setCharacterSize(48);
 	m_moneyText.setFillColor(sf::Color::White);
@@ -190,7 +192,8 @@ void Game::initWindow()
 	//	m_ButtonRight.getPosition().y + m_ButtonRight.getSize().y / 2);
 
 	// Positioning bribe amount, goods report
-	m_goodsReportText.setPosition(804.f, 215.f);
+	m_goodsReportText.setPosition(825.f, 200.f);
+	m_goodsReportIcon.setPosition(sf::Vector2f(1010.f, 190.f));
 	m_moneyIcon.setPosition(910.f, 515.f);
 	m_moneyText.setPosition(1030.f, 534.f);
 
@@ -827,25 +830,24 @@ bool Game::render()
 		m_window->draw(card->getCard());
 	}
 
-	// Draw decks if it is not sheriff turn
-	if (m_gameEvent != SHERIFF_TURN) {
-		// Decks
-		m_window->draw(m_deck->getMainDeck());
-		// A mask to focus on discard event, filter out the main deck
-		if (m_gameEvent == DISCARD || (m_gameEvent == DISCARD_STANDBY && !m_tablet->isTabletVisible())) {
-			m_window->draw(m_discardEventMask);
-			m_window->draw(m_backgroundCloth);
-			m_window->draw(m_guideText);
-		}
-		m_window->draw(m_deck->getDiscardDeckLeft());
-		m_window->draw(m_deck->getDiscardDeckRight());
+	// Decks
+	m_window->draw(m_deck->getMainDeck());
+	// A mask to focus on discard event, filter out the main deck
+	if (m_gameEvent == DISCARD || (m_gameEvent == DISCARD_STANDBY && !m_tablet->isTabletVisible())) {
+		m_window->draw(m_discardEventMask);
+		m_window->draw(m_backgroundCloth);
+		m_window->draw(m_guideText);
 	}
+	m_window->draw(m_deck->getDiscardDeckLeft());
+	m_window->draw(m_deck->getDiscardDeckRight());
 
 	// Draw Sheriff event objects
 	if (m_gameEvent == SHERIFF_TURN || m_gameEvent == SHERIFF_STANDBY || m_gameEvent == REVEAL) {
 		// Draw objects
 		m_window->draw(m_SheriffEventMask);
 		m_window->draw(m_goodsReportText);
+		m_window->draw(m_goodsReportIcon);
+		m_window->draw(m_infoText);
 
 		// Draw highlighted sheriff and merchant
 		m_window->draw(sheriffPlayer->getAvatar());
@@ -868,10 +870,10 @@ bool Game::render()
 			//m_window->draw(m_ButtonRightText);
 		}
 
-		// If reveal, show info text
-		if (m_gameEvent == REVEAL) {
-			m_window->draw(m_infoText);
-		}
+		//// If reveal, show info text
+		//if (m_gameEvent == REVEAL) {
+		//	m_window->draw(m_infoText);
+		//}
 
 		// Draw money
 		m_window->draw(m_moneyIcon);
@@ -968,12 +970,12 @@ void Game::userHandUI()
 		float posX = 520.f + (i % 6) * 150.f;
 		if (m_userHand[i]->isSelected()) {
 			//m_userHand[i]->setupCardUI(posX, 600.f);
-			m_animationPlayer.addAnimation(new Animation(m_userHand[i]->getCard(), Animation::Type::MOVE, 0.3, sf::Vector2f(posX, 600.f), 1.f, 0.5));
+			m_animationPlayer.addAnimation(new Animation(m_userHand[i]->getCard(), Animation::Type::MOVE, 0.15, sf::Vector2f(posX, 600.f), 1.f, 0.4));
 			m_anyCardSelected = true;
 		}
 		else {
 			//m_userHand[i]->setupCardUI(posX, 635.f);
-			m_animationPlayer.addAnimation(new Animation(m_userHand[i]->getCard(), Animation::Type::MOVE, 0.3, sf::Vector2f(posX, 635.f), 1.f, 0.5));
+			m_animationPlayer.addAnimation(new Animation(m_userHand[i]->getCard(), Animation::Type::MOVE, 0.15, sf::Vector2f(posX, 635.f), 1.f, 0.4));
 		}
 	}
 }

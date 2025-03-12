@@ -108,6 +108,8 @@ protected:
 	sf::Text m_moneyText;
 
 	sf::Text m_goodsReportText;
+	sf::RectangleShape m_goodsReportIcon;
+	sf::Texture m_goodsReportTexture;
 	sf::Text m_infoText;
 	sf::Text m_guideText;
 
