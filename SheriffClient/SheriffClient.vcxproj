@@ -140,7 +140,7 @@
     <ClCompile Include="src/Network/Network.cpp" />
     <ClCompile Include="src/Entities/Player.cpp" />
     <ClCompile Include="src/Entities/Popup.cpp" />
-    <ClCompile Include="src/Audio/Sound.cpp" />
+    <ClCompile Include="src/Utils/Sound.cpp" />
     <ClCompile Include="src/Core/Tablet.cpp" />
     <ClCompile Include="src/Entities/Timer.cpp" />
   </ItemGroup>
@@ -157,7 +157,7 @@
     <ClInclude Include="include/Network/Network.h" />
     <ClInclude Include="include/Entities/Player.h" />
     <ClInclude Include="include/Entities/Popup.h" />
-    <ClInclude Include="include/Audio/Sound.h" />
+    <ClInclude Include="include/Utils/Sound.h" />
     <ClInclude Include="include/Core/Tablet.h" />
     <ClInclude Include="include/Entities/Timer.h" />
   </ItemGroup>

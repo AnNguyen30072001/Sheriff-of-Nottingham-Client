@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include "../include/Entities/Player.h"
 #include "../include/Network/Network.h"
+#include "../include/Utils/Sound.h"
 
 #pragma once
 class Lobby : public Observer
@@ -20,6 +21,9 @@ private:
 
 	// Threading
 	std::mutex m_PlayerMutex;
+
+	// Sound
+	Sound m_soundPlayer;
 
 	bool initVariable();
 	bool initWindow();

@@ -22,13 +22,11 @@ bool Login::initWindow()
 	// Font
 	if (!m_font.loadFromFile("assets/arial-font/arial.ttf")) {
 		std::cerr << "Error loading font!\n";
-		return false;
 	}
 
 	// Background
 	if (!m_backgroundTexture.loadFromFile("assets/Images/LoginBackground.png")) {
-		std::cerr << "Error loading background texture!";
-		return false;
+		std::cerr << "Error loading background texture!\n";
 	}
 
 	// Shader
@@ -140,9 +138,11 @@ bool Login::pollEvents()
 			m_mousePressedPos = INVALID;
 			if (m_ev.mouseButton.button == sf::Mouse::Left) {
 				if (m_loginButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
+					m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
 					m_mousePressedPos = LOGIN_BUTTON;
 				}
 				else if (m_usernameBox.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
+					m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
 					m_mousePressedPos = USERNAME_BOX;
 					m_BoxOutline.setPosition(m_usernameBox.getPosition());
 				}

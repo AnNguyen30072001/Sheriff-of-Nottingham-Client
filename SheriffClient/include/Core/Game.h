@@ -10,6 +10,7 @@
 #include "../include/Core/Tablet.h"
 #include "../include/Network/Network.h"
 #include "../include/Utils/Animation.h"
+#include "../include/Utils/Sound.h"
 #include "../include/Entities/Timer.h"
 #include "../include/Entities/Popup.h"
 
@@ -142,6 +143,9 @@ protected:
 	Timer* m_timer;
 	AnimationManager m_animationPlayer;
 	float m_elapsedTime;
+
+	// Sound
+	Sound m_soundPlayer;
 
 	// Game Logic
 	int m_MerchantShowingBagIndex;

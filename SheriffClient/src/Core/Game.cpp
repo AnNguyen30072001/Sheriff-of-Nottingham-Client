@@ -269,6 +269,9 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	m_anyCardSelected = false;
 	for (int i = 0; i < m_userHand.size(); i++) {
 		if (m_userHand[i]->getCard().getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY)) && m_gameEvent == DEFAULT) {
+			// Play a sound
+			m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+
 			m_userHand[i]->getAnimationPlayer().cancel();
 			std::lock_guard<std::mutex> lock(m_userHandMutex);
 			m_userHand[i]->setSelected(!m_userHand[i]->isSelected());
@@ -289,6 +292,9 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	// If a player's catalog is clicked, show that player's info
 	for (auto& player : m_playerList) {
 		if (player->getInfoTabIcon().getGlobalBounds().contains(mousePosXY) && m_gameEvent != DISCONNECTED) {
+			// Play a sound
+			m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+
 			// Update scores
 			m_gameLogic->updatePlayersMedalStatus();
 			m_textMutex.lock();
@@ -307,6 +313,9 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	if (m_anyCardSelected && m_playerList[USER_PLAYER_INDEX]->isInTurn() && !m_playerList[USER_PLAYER_INDEX]->isSheriff() && m_gameEvent == DEFAULT) {
 		// Onclick discard event
 		if (m_ButtonLeft.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY)) && !m_discardDone) {
+			// Play a sound
+			m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+
 			// Clear all leftover selected cards
 			for (auto& card : m_selectedCards) {
 				delete card;
@@ -337,6 +346,9 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 
 		// Onclick present event
 		else if (m_ButtonRight.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
+			// Play a sound
+			m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+
 			m_tablet->showTablet(Tablet::Type::GIVE_BAG, m_playerList[USER_PLAYER_INDEX]->getPlayerMoney());
 			m_gameEvent = Game::PRESENT;
 			return true;
@@ -347,6 +359,9 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	if (m_playerList[USER_PLAYER_INDEX]->isSheriff() && m_playerList[USER_PLAYER_INDEX]->isInTurn() && m_gameEvent == SHERIFF_TURN) {
 		// If player press "Inspect" button
 		if (m_ButtonLeft.getGlobalBounds().contains(mousePosXY)) {
+			// Play a sound
+			m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+
 			// Send message to server
 			json message;
 			message["MessageType"] = "SHERIFF_CHECK";
@@ -360,6 +375,9 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 
 		// If player press "Pass" button
 		else if (m_ButtonRight.getGlobalBounds().contains(mousePosXY)) {
+			// Play a sound
+			m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+
 			// Send message to server
 			json message;
 			message["MessageType"] = "SHERIFF_PASS";
@@ -374,6 +392,9 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 
 	// Left deck is clicked when withdrawing
 	if (m_deck->getDiscardDeckLeft().getGlobalBounds().contains(mousePosXY) && m_gameEvent == WITHDRAW) {
+		// Play a sound
+		m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+
 		// Only interactable if that deck has any card left
 		if (m_deck->getStackLeft().empty()) return false;
 
@@ -389,6 +410,9 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 
 	// Right deck is clicked when withdrawing
 	if (m_deck->getDiscardDeckRight().getGlobalBounds().contains(mousePosXY) && m_gameEvent == WITHDRAW) {
+		// Play a sound
+		m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+
 		// Only interactable if that deck has any card left
 		if (m_deck->getStackRight().empty()) return false;
 
@@ -404,6 +428,9 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 
 	// Main deck is clicked when withdrawing
 	if (m_deck->getMainDeck().getGlobalBounds().contains(mousePosXY) && m_gameEvent == WITHDRAW) {
+		// Play a sound
+		m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+
 		json message;
 		message["MessageType"] = "MERCHANT_WITHDRAW_CARDS";
 		message["PlayerName"] = m_playerList[USER_PLAYER_INDEX]->getPlayerName();
@@ -417,6 +444,9 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	// A selected card is clicked when discarding
 	for (auto& card : m_selectedCards) {
 		if (card->getCard().getGlobalBounds().contains(mousePosXY) && m_gameEvent == DISCARD) {
+			// Play a sound
+			m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+
 			// Start the drag and save static position
 			if (!card->isDragging() && !m_anyCardDragged) {
 				std::lock_guard<std::mutex> lock(m_selectedCardsMutex);
@@ -432,6 +462,9 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 
 	// If clicked on sound icon, toggle play/stop background music
 	if (m_soundIcon.getGlobalBounds().contains(mousePosXY)) {
+		// Play a sound
+		m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+
 		if (m_backgroundMusic.getStatus() == sf::SoundSource::Status::Playing) {
 			m_backgroundMusic.stop();
 			m_soundIcon.setTexture(&m_noSoundIconTexture);
@@ -608,15 +641,6 @@ bool Game::update()
 
 	// Update the timer if needed
 	m_timer->update();
-
-	//// Test
-	//updatePlayersMedalStatus();
-	//m_textMutex.lock();
-	//for (auto& player : m_playerList) {
-	//	updatePlayerScore(player);
-	//}
-	//m_textMutex.unlock();
-	//// EoT
 
 	switch (m_gameEvent)
 	{

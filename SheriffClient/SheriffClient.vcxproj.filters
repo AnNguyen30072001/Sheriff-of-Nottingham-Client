@@ -84,8 +84,8 @@
     <ClCompile Include="src/Network/Network.cpp">
       <Filter>Source Files\Network</Filter>
     </ClCompile>
-    <ClCompile Include="src/Audio/Sound.cpp">
-      <Filter>Source Files\Audio</Filter>
+    <ClCompile Include="src/Utils/Sound.cpp">
+      <Filter>Source Files\Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -131,8 +131,8 @@
     <ClInclude Include="include/Network/Network.h">
       <Filter>Header Files\Network</Filter>
     </ClInclude>
-    <ClInclude Include="include/Audio/Sound.h">
-      <Filter>Header Files\Audio</Filter>
+    <ClInclude Include="include/Utils/Sound.h">
+      <Filter>Header Files\Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

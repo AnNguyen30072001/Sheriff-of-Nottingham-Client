@@ -100,6 +100,10 @@ bool Lobby::handleMouseClick(sf::Vector2f mousePosXY)
 	for (auto& player : m_playerList) {
 		if (player->isUserPlayer()) {
 			if (player->getReadyButton().getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
+				// Play a sound
+				m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+
+				// Status
 				bool prev_status = player->isPlayerReady();
 
 				// Need to send status of user to Server 

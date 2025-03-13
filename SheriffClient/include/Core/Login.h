@@ -4,6 +4,7 @@
 #include <iostream>
 #include <unordered_map>
 #include "../include/Utils/ColorMap.h"
+#include "../include/Utils/Sound.h"
 #include "../include/Network/Network.h"
 #include "../include/Entities/Popup.h"
 #include <SFML/Graphics.hpp>
@@ -39,6 +40,7 @@ private:
 	sf::Event m_ev;
 	sf::VideoMode m_videoMode;
 	Popup* m_popup;
+	Sound m_soundPlayer;
 
 	sf::RectangleShape m_background;
 	sf::Texture m_backgroundTexture;
