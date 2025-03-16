@@ -22,9 +22,6 @@
     <Filter Include="Header Files\Entities">
       <UniqueIdentifier>{f74054d6-7a61-48bc-8776-26070dc6905e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Audio">
-      <UniqueIdentifier>{306ec102-9f29-4b94-ac62-250cf3b4271b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Network">
       <UniqueIdentifier>{ad47e984-c551-4a6f-ba06-e2e36f3408f3}</UniqueIdentifier>
     </Filter>
@@ -33,9 +30,6 @@
     </Filter>
     <Filter Include="Source Files\Entities">
       <UniqueIdentifier>{72ac0f23-9273-4746-b987-9bab9107d63f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Audio">
-      <UniqueIdentifier>{d57fad97-4cb7-4a81-9495-8e7c91e1a55a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Network">
       <UniqueIdentifier>{89fb1f1e-4037-40e5-9310-a2aef671cf2e}</UniqueIdentifier>

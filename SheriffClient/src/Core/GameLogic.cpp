@@ -292,7 +292,9 @@ void GameLogic::handleGiveBagEvent(const nlohmann::json & jsonMessage)
 			m_game->removeFromUserHand(i);
 			i--;
 			// Push a dummy card to render next Sheriff turn
+			m_game->m_dummyCardsMutex.lock();
 			m_game->m_dummyCards.push_back(new Card(Card::UNKNOWN));
+			m_game->m_dummyCardsMutex.unlock();
 			m_game->m_dummyCards[m_game->m_dummyCards.size() - 1]->getCard().setScale(0.f, 0.f);
 			m_game->m_dummyCards[m_game->m_dummyCards.size() - 1]->getCard().setPosition(m_game->m_playerList[0]->getBagIcon().getPosition() + sf::Vector2f(40.f, 40.f));
 		}
@@ -343,7 +345,9 @@ void GameLogic::handleOpponentGiveBagEvent(const nlohmann::json & jsonMessage)
 
 			// Add animation put cards to bag
 			for (int j = 0; j < goodsAmount; j++) {
+				m_game->m_dummyCardsMutex.lock();
 				m_game->m_dummyCards.push_back(new Card(Card::UNKNOWN));
+				m_game->m_dummyCardsMutex.unlock();
 			}
 			for (int j = 0; j < m_game->m_dummyCards.size(); j++) {
 				m_game->m_dummyCards[j]->getCard().setScale(0.4, 0.4);
@@ -367,7 +371,7 @@ void GameLogic::handleOpponentGiveBagEvent(const nlohmann::json & jsonMessage)
 	}
 }
 
-void GameLogic::setupDiscardEvent()
+void GameLogic::setupExchangeEvent()
 {
 	// Move presented cards from user hand to discard area
 	for (int i = 0; i < m_game->m_userHand.size(); i++) {
@@ -386,7 +390,7 @@ void GameLogic::setupDiscardEvent()
 		float posX = 78.f + (i % 3) * 105.f;
 		float posY = i < 3 ? 350.f : 505.f;
 		m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_selectedCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE,
-			0.5, sf::Vector2f(posX, posY), 0.667));
+			0.3, sf::Vector2f(posX, posY), 0.667));
 	}
 	// Re-arrange userhand
 	m_game->userHandUI();
@@ -399,6 +403,31 @@ void GameLogic::setupDiscardEvent()
 
 	// Change state machine
 	m_game->m_gameEvent = Game::WITHDRAW;
+}
+
+void GameLogic::setupOpponentExchangeEvent(int playerIndex, std::vector<std::string> cardNames)
+{
+	sf::Vector2f startPos = m_game->m_playerList[playerIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f);
+	sf::Vector2f startScale = sf::Vector2f(0.f, 0.f);
+	float endScale = 0.667;
+	Card* opponentSelectedCard = nullptr;
+
+	// Push the cards into m_selectedCards
+	for (int i = 0; i < cardNames.size(); i++) {
+		opponentSelectedCard = new Card(Card::m_stringToCardName.at(cardNames[i]));
+
+		m_game->m_selectedCardsMutex.lock();
+		m_game->m_selectedCards.push_back(opponentSelectedCard);
+		m_game->m_selectedCardsMutex.unlock();
+
+		opponentSelectedCard->getCard().setScale(startScale);
+		opponentSelectedCard->getCard().setPosition(startPos);
+		// Move selected card into temporary slots
+		float posX = 78.f + (i % 3) * 105.f;
+		float posY = i < 3 ? 350.f : 505.f;
+		m_game->m_animationPlayer.addAnimation(new Animation(opponentSelectedCard->getCard(), Animation::Type::MOVE_AND_SCALE,
+			0.3, sf::Vector2f(posX, posY), endScale));
+	}
 }
 
 void GameLogic::handleWithdrawEvent(Game::PileType type)
@@ -544,16 +573,21 @@ void GameLogic::handleOpponentWithdrawEvent(Game::PileType type, int playerIndex
 	case Game::PileType::LEFT_DISCARD_PILE:
 		if (m_game->m_deck->getStackLeft().empty()) return;			// Prevent drawing from null
 
+		m_game->m_dummyCardsMutex.lock();
 		m_game->m_dummyCards.push_back(m_game->m_deck->getStackLeft().top());
+		m_game->m_dummyCardsMutex.unlock();
+
 		index = m_game->m_dummyCards.size() - 1;
 		dummyCard = m_game->m_dummyCards[index];
 		dummyCard->getCard().setPosition(650.f, 324.f);
 		// Add animation withdraw for the player, pop the left deck and set new texture once animation is done
-		m_game->m_animationPlayer.addAnimation(new Animation(dummyCard->getCard(), Animation::Type::MOVE_AND_SCALE, 1.f,
-			endPos, 0.3, 0.f, [this, dummyCard, index]
+		m_game->m_animationPlayer.addAnimation(new Animation(dummyCard->getCard(), Animation::Type::MOVE_AND_SCALE, 0.7,
+			endPos, 0.6, 0.f, [this, dummyCard, index]
 		{
 			delete dummyCard;
-			if (!m_game->m_dummyCards.empty()) { m_game->m_dummyCards.erase(m_game->m_dummyCards.begin()); }
+			if (!m_game->m_dummyCards.empty()) { 
+				m_game->m_dummyCards.erase(m_game->m_dummyCards.begin()); 
+			}
 		}));
 
 		m_game->m_deck->getStackLeft().pop();
@@ -568,16 +602,21 @@ void GameLogic::handleOpponentWithdrawEvent(Game::PileType type, int playerIndex
 	case Game::PileType::RIGHT_DISCARD_PILE:
 		if (m_game->m_deck->getStackRight().empty()) return;			// Prevent drawing from null
 
+		m_game->m_dummyCardsMutex.lock();
 		m_game->m_dummyCards.push_back(m_game->m_deck->getStackRight().top());
+		m_game->m_dummyCardsMutex.unlock();
+
 		index = m_game->m_dummyCards.size() - 1;
 		dummyCard = m_game->m_dummyCards[index];
 		dummyCard->getCard().setPosition(1162.f, 324.f);
 		// Add animation withdraw for the player, pop the left deck and set new texture once animation is done
-		m_game->m_animationPlayer.addAnimation(new Animation(dummyCard->getCard(), Animation::Type::MOVE_AND_SCALE, 1.f,
-			endPos, 0.3, 0.f, [this, dummyCard, index]
+		m_game->m_animationPlayer.addAnimation(new Animation(dummyCard->getCard(), Animation::Type::MOVE_AND_SCALE, 0.7,
+			endPos, 0.6, 0.f, [this, dummyCard, index]
 		{
 			delete dummyCard;
-			if (!m_game->m_dummyCards.empty()) { m_game->m_dummyCards.erase(m_game->m_dummyCards.begin()); }
+			if (!m_game->m_dummyCards.empty()) { 
+				m_game->m_dummyCards.erase(m_game->m_dummyCards.begin()); 
+			}
 		}));
 
 		m_game->m_deck->getStackRight().pop();
@@ -591,15 +630,21 @@ void GameLogic::handleOpponentWithdrawEvent(Game::PileType type, int playerIndex
 		break;
 	case Game::PileType::MAIN_DECK:
 		// Add animation withdraw of an unknown card
+		m_game->m_dummyCardsMutex.lock();
 		m_game->m_dummyCards.push_back(new Card(Card::UNKNOWN));
+		m_game->m_dummyCardsMutex.unlock();
+
 		index = m_game->m_dummyCards.size() - 1;
 		dummyCard = m_game->m_dummyCards[index];
 		dummyCard->getCard().setPosition(885.f, 280.f);
-		m_game->m_animationPlayer.addAnimation(new Animation(dummyCard->getCard(), Animation::Type::MOVE_AND_SCALE, 1.f,
-			endPos, 0.3, 0.f, [this, dummyCard, index]
+		dummyCard->getCard().setScale(1.f, 1.f);
+		m_game->m_animationPlayer.addAnimation(new Animation(dummyCard->getCard(), Animation::Type::MOVE_AND_SCALE, 0.7,
+			endPos, 0.6, 0.f, [this, dummyCard, index]
 		{
 			delete dummyCard;
-			if (!m_game->m_dummyCards.empty()) { m_game->m_dummyCards.erase(m_game->m_dummyCards.begin()); }
+			if (!m_game->m_dummyCards.empty()) { 
+				m_game->m_dummyCards.erase(m_game->m_dummyCards.begin()); 
+			}
 		}));
 
 		break;
@@ -611,12 +656,20 @@ void GameLogic::handleOpponentWithdrawEvent(Game::PileType type, int playerIndex
 
 void GameLogic::handleOpponentDiscardEvent(Game::PileType type, int playerIndex, Card::CardType cardType)
 {
-	sf::Vector2f startPos = m_game->m_playerList[playerIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f);
-	sf::Vector2f startScale = sf::Vector2f(0.3, 0.3);
+	sf::Vector2f startPos = sf::Vector2f(0.f, 0.f);;
+	sf::Vector2f startScale = sf::Vector2f(0.f, 0.f);;
 	sf::Vector2f endPosLeft = sf::Vector2f(650.f, 324.f);
 	sf::Vector2f endPosRight = sf::Vector2f(1162.f, 324.f);
-	Card* dummyCard = nullptr;
+	Card* opponentSelectedCard = nullptr;
 	int index = 0;
+	for (int i = 0; i < m_game->m_selectedCards.size(); i++) {
+		if (m_game->m_selectedCards[i]->getCardType() == cardType) {
+			startPos = m_game->m_selectedCards[i]->getCard().getPosition();
+			startScale = m_game->m_selectedCards[i]->getCard().getScale();
+			m_game->m_selectedCards.erase(m_game->m_selectedCards.begin() + i);
+			break;
+		}
+	}
 
 	switch (type)
 	{
@@ -624,31 +677,39 @@ void GameLogic::handleOpponentDiscardEvent(Game::PileType type, int playerIndex,
 		m_game->m_deck->getStackLeft().push(new Card(cardType));
 		m_game->m_dummyCards.push_back(m_game->m_deck->getStackLeft().top());
 		index = m_game->m_dummyCards.size() - 1;
-		dummyCard = m_game->m_dummyCards[index];
-		dummyCard->getCard().setPosition(startPos);
-		dummyCard->getCard().setScale(startScale);
+		opponentSelectedCard = m_game->m_dummyCards[index];
+		opponentSelectedCard->getCard().setPosition(startPos);
+		opponentSelectedCard->getCard().setScale(startScale);
+
 		// Add animation discard card
-		m_game->m_animationPlayer.addAnimation(new Animation(dummyCard->getCard(), Animation::Type::MOVE_AND_SCALE, 1.f,
-			endPosLeft, 0.8, 0.f, [this]
+		m_game->m_animationPlayer.addAnimation(new Animation(opponentSelectedCard->getCard(), Animation::Type::MOVE_AND_SCALE, 0.5,
+			endPosLeft, 0.8, 0.f, [this, index]
 		{
 			m_game->m_deck->setDiscardDeckLeftTexture(m_game->m_deck->getStackLeft().top()->getCardType());
-			if (!m_game->m_dummyCards.empty()) { m_game->m_dummyCards.erase(m_game->m_dummyCards.begin()); }
+
+			if (!m_game->m_dummyCards.empty()) {
+				m_game->m_dummyCards.erase(m_game->m_dummyCards.begin());
+			}
 		}));
 
 		break;
 	case Game::PileType::RIGHT_DISCARD_PILE:
-		m_game->m_deck->getStackRight().push(new Card(cardType));
-		m_game->m_dummyCards.push_back(m_game->m_deck->getStackRight().top());
-		index = m_game->m_dummyCards.size() - 1;
-		dummyCard = m_game->m_dummyCards[index];
-		dummyCard->getCard().setPosition(startPos);
-		dummyCard->getCard().setScale(startScale);
+		//m_game->m_deck->getStackRight().push(new Card(cardType));
+		//m_game->m_dummyCards.push_back(m_game->m_deck->getStackRight().top());
+		//index = m_game->m_dummyCards.size() - 1;
+		//dummyCard = m_game->m_dummyCards[index];
+		//dummyCard->getCard().setPosition(startPos);
+		//dummyCard->getCard().setScale(startScale);
+		m_game->m_deck->getStackRight().push(opponentSelectedCard);
+
 		// Add animation discard card
-		m_game->m_animationPlayer.addAnimation(new Animation(dummyCard->getCard(), Animation::Type::MOVE_AND_SCALE, 1.f,
-			endPosRight, 0.8, 0.f, [this]
+		m_game->m_animationPlayer.addAnimation(new Animation(opponentSelectedCard->getCard(), Animation::Type::MOVE_AND_SCALE, 0.5,
+			endPosRight, 0.8, 0.f, [this, index]
 		{
 			m_game->m_deck->setDiscardDeckRightTexture(m_game->m_deck->getStackRight().top()->getCardType());
-			if (!m_game->m_dummyCards.empty()) { m_game->m_dummyCards.erase(m_game->m_dummyCards.begin()); }
+			if (!m_game->m_dummyCards.empty()) {
+				m_game->m_dummyCards.erase(m_game->m_dummyCards.begin());
+			}
 		}));
 
 		break;

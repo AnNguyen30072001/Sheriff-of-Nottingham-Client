@@ -324,18 +324,20 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 			m_selectedCards.clear();
 			m_selectedCardsMutex.unlock();
 
+			json message;
+
 			// Count number of selected cards
 			int numberOfSelectedCards = 0;
 			for (int i = 0; i < m_userHand.size(); i++) {
 				if (m_userHand[i]->isSelected()) {
 					numberOfSelectedCards++;
+					message["Cards"].push_back(Card::m_cardNameToString.at(m_userHand[i]->getCardType()));
 				}
 			}
 
 			// Send message to request discard
-			json message;
 			message["MessageType"] = "MERCHANT_DISCARD_REQUEST";
-			message["NumberOfCards"] = numberOfSelectedCards;
+			message["NumberOfCards"] = std::to_string(numberOfSelectedCards);
 			message["PlayerName"] = m_playerList[USER_PLAYER_INDEX]->getPlayerName();
 			std::string messageString = message.dump();
 			Network::getInstance().sendMessage(messageString);
@@ -1104,9 +1106,26 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 
 	// Server accept discard request
 	else if (jsonMessage["MessageType"] == "MERCHANT_DISCARD_REQUEST_RESPONSE") {
+		// If it is user exchange
 		if (jsonMessage["PlayerName"] == m_playerList[USER_PLAYER_INDEX]->getPlayerName()) {
-			m_gameLogic->setupDiscardEvent();
+			m_gameLogic->setupExchangeEvent();
 			Network::getInstance().respondMessage(jsonMessage);
+		}
+		// If it is another merchant exchange
+		else {
+			std::vector<std::string> cardNames;
+			for (auto it = jsonMessage["Cards"].begin(); it != jsonMessage["Cards"].end(); it++) {
+				std::string cardName = *it;
+				cardNames.push_back(cardName);
+			}
+			for (int i = 1; i < m_playerList.size(); i++) {
+				if (jsonMessage["PlayerName"] == m_playerList[i]->getPlayerName()) {
+					m_gameLogic->setupOpponentExchangeEvent(i, cardNames);
+					Network::getInstance().respondMessage(jsonMessage);
+
+					break;
+				}
+			}
 		}
 	}
 
@@ -1144,6 +1163,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 					else if (jsonMessage["Pile"] == "MAIN_DECK") {
 						m_gameLogic->handleOpponentWithdrawEvent(Game::PileType::MAIN_DECK, i);
 					}
+					break;
 				}
 			}
 		}

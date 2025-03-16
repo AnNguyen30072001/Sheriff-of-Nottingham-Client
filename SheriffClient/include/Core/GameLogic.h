@@ -24,7 +24,8 @@ public:
 	void handleGiveBagEvent(const nlohmann::json& jsonMessage);
 	void handleOpponentGiveBagEvent(const nlohmann::json& jsonMessage);
 
-	void setupDiscardEvent();
+	void setupExchangeEvent();
+	void setupOpponentExchangeEvent(int playerIndex, std::vector<std::string> cardNames);
 
 	void handleWithdrawEvent(Game::PileType type);
 	void handleDiscardEvent(Game::PileType type, std::string cardName);
