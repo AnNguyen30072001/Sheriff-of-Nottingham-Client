@@ -193,10 +193,13 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 				}
 
 				// Set infomation
+				m_game->m_goodsReportIcon.setPosition(sf::Vector2f(920.f, 180.f));
+				if (m_goodsReport == Card::CHEESE) {
+					m_game->m_goodsReportIcon.setPosition(m_game->m_goodsReportIcon.getPosition() + sf::Vector2f(0.f, 10.f));
+				}
+
 				m_game->m_textMutex.lock();
-				//m_game->m_goodsReportText.setString("Report: " + Card::m_cardNameToString.at(m_goodsReport));
-				//m_game->m_goodsReportText.setPosition((1920.f - m_game->m_goodsReportText.getGlobalBounds().width) / 2, 215.f);
-				m_game->m_goodsReportText.setString("Report:");
+				m_game->m_goodsReportText.setString("\"Just " + std::to_string(m_game->m_dummyCards.size()) + "         , I swear!\"");
 				m_game->m_goodsReportTexture.loadFromFile("assets/Images/" + Card::m_cardNameToString.at(m_goodsReport) + "ReportHighlight.png");
 				m_game->m_goodsReportIcon.setTexture(&m_game->m_goodsReportTexture, true);
 				m_game->m_infoText.setString("Bribe:");
@@ -329,10 +332,12 @@ void GameLogic::handleOpponentGiveBagEvent(const nlohmann::json & jsonMessage)
 	for (int i = 0; i < m_game->m_playerList.size(); i++) {
 		if (m_game->m_playerList[i]->getPlayerName() == jsonMessage["PlayerName"]) {
 			// Clear dummy cards to store new ones. Just a safety measure
+			m_game->m_dummyCardsMutex.lock();
 			for (auto& card : m_game->m_dummyCards) {
 				delete card;
 			}
 			m_game->m_dummyCards.clear();
+			m_game->m_dummyCardsMutex.unlock();
 
 			// Store data to render the next Sheriff turn
 			m_goodsReport = Card::m_stringToCardName.at(jsonMessage["Report"]);
@@ -700,13 +705,19 @@ void GameLogic::handleOpponentDiscardEvent(Game::PileType type, int playerIndex,
 		//dummyCard = m_game->m_dummyCards[index];
 		//dummyCard->getCard().setPosition(startPos);
 		//dummyCard->getCard().setScale(startScale);
-		m_game->m_deck->getStackRight().push(opponentSelectedCard);
+		m_game->m_deck->getStackRight().push(new Card(cardType));
+		m_game->m_dummyCards.push_back(m_game->m_deck->getStackRight().top());
+		index = m_game->m_dummyCards.size() - 1;
+		opponentSelectedCard = m_game->m_dummyCards[index];
+		opponentSelectedCard->getCard().setPosition(startPos);
+		opponentSelectedCard->getCard().setScale(startScale);
 
 		// Add animation discard card
 		m_game->m_animationPlayer.addAnimation(new Animation(opponentSelectedCard->getCard(), Animation::Type::MOVE_AND_SCALE, 0.5,
 			endPosRight, 0.8, 0.f, [this, index]
 		{
 			m_game->m_deck->setDiscardDeckRightTexture(m_game->m_deck->getStackRight().top()->getCardType());
+
 			if (!m_game->m_dummyCards.empty()) {
 				m_game->m_dummyCards.erase(m_game->m_dummyCards.begin());
 			}

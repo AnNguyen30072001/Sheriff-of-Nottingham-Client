@@ -30,12 +30,12 @@ void Game::initVariables(std::vector<Player*> playerList)
 		!m_presentButtonGrayTexture.loadFromFile("assets/Images/Buttons/ButtonPresentGray.png") || 
 		!m_presentButtonHighLightTexture.loadFromFile("assets/Images/Buttons/ButtonPresentHighLight.png") || 
 		!m_presentButtonTexture.loadFromFile("assets/Images/Buttons/ButtonPresent.png") ||
-		!m_InspectButtonGrayTexture.loadFromFile("assets/Images/Buttons/ButtonDiscardGray.png") ||
-		!m_InspectButtonHighlightTexture.loadFromFile("assets/Images/Buttons/ButtonDiscardHighLight.png") ||
-		!m_InspectButtonTexture.loadFromFile("assets/Images/Buttons/ButtonDiscard.png") || 
-		!m_PassButtonGrayTexture.loadFromFile("assets/Images/Buttons/ButtonPresentGray.png") ||
-		!m_PassButtonHighlightTexture.loadFromFile("assets/Images/Buttons/ButtonPresentHighLight.png") ||
-		!m_PassButtonTexture.loadFromFile("assets/Images/Buttons/ButtonPresent.png") )
+		!m_InspectButtonGrayTexture.loadFromFile("assets/Images/Buttons/ButtonInspectGray.png") ||
+		!m_InspectButtonHighlightTexture.loadFromFile("assets/Images/Buttons/ButtonInspectHighLight.png") ||
+		!m_InspectButtonTexture.loadFromFile("assets/Images/Buttons/ButtonInspect.png") || 
+		!m_PassButtonGrayTexture.loadFromFile("assets/Images/Buttons/ButtonPassGray.png") ||
+		!m_PassButtonHighlightTexture.loadFromFile("assets/Images/Buttons/ButtonPassHighLight.png") ||
+		!m_PassButtonTexture.loadFromFile("assets/Images/Buttons/ButtonPass.png") )
 	{	
 		std::cerr << "Error loading game texture!\n";
 	}
@@ -192,8 +192,7 @@ void Game::initWindow()
 	//	m_ButtonRight.getPosition().y + m_ButtonRight.getSize().y / 2);
 
 	// Positioning bribe amount, goods report
-	m_goodsReportText.setPosition(825.f, 200.f);
-	m_goodsReportIcon.setPosition(sf::Vector2f(1010.f, 190.f));
+	m_goodsReportText.setPosition(755.f, 200.f);
 	m_moneyIcon.setPosition(910.f, 515.f);
 	m_moneyText.setPosition(1030.f, 534.f);
 
