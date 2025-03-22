@@ -907,10 +907,9 @@ bool Game::render()
 	}
 
 	// Draw dummy card animation if needed
+	std::lock_guard<std::mutex> lockDummyCards(m_dummyCardsMutex);
 	for (auto& card : m_dummyCards) {
-		m_dummyCardsMutex.lock();
 		m_window->draw(card->getCard());	
-		m_dummyCardsMutex.unlock();
 	}
 
 	// Selected cards, for discard,present...

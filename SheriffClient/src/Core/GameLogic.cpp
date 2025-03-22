@@ -282,12 +282,14 @@ void GameLogic::handleGiveBagEvent(const nlohmann::json & jsonMessage)
 			m_game->m_selectedCardsMutex.lock();
 			m_game->m_selectedCards.push_back(m_game->m_userHand[i]);
 			m_game->m_selectedCardsMutex.unlock();
+
 			m_game->removeFromUserHand(i);
 			i--;
 			// Push a dummy card to render next Sheriff turn
 			m_game->m_dummyCardsMutex.lock();
 			m_game->m_dummyCards.push_back(new Card(Card::UNKNOWN));
 			m_game->m_dummyCardsMutex.unlock();
+
 			m_game->m_dummyCards[m_game->m_dummyCards.size() - 1]->getCard().setScale(0.f, 0.f);
 			m_game->m_dummyCards[m_game->m_dummyCards.size() - 1]->getCard().setPosition(m_game->m_playerList[0]->getBagIcon().getPosition() + sf::Vector2f(40.f, 40.f));
 		}
