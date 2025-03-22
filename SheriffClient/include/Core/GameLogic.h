@@ -10,8 +10,8 @@ public:
 	GameLogic(Game* game);
 	~GameLogic() = default;
 
-	void updatePlayersMedalStatus();
-	void updatePlayerScore(Player* player);
+	//void updatePlayersMedalStatus();
+	//void updatePlayerScore(Player* player);
 
 	bool attemptReconnect(float deltaTime);
 
@@ -41,6 +41,8 @@ public:
 
 	void handleTimeoutWithdraw();
 	void handleTimeoutDiscard();
+
+	void updatePlayerInfo(Player* player, int money, int score, std::unordered_map<Card::CardType, int> playerCardMap, std::unordered_map<Card::CardType, int> blackMarketBonusMap);
 
 private:
 	Game* m_game;

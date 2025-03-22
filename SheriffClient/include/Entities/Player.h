@@ -11,7 +11,8 @@ public:
 		NONE,
 		GOLD,
 		SILVER,
-		BLACK_MARKET
+		BLACK_MARKET,
+		BLACK_MARKET_PLUS
 	};
 
 	Player(std::string name, sf::Color playerColor, bool isUserPlayer);
@@ -50,6 +51,7 @@ public:
 
 	int getPlayerGoodsAmount(int cardType);
 	void increasePlayerGoodsAmount(int cardType, int value);
+	void setPlayerGoodsAmount(int cardType, int value);
 
 	int getPlayerMoney() const;
 	void setPlayerMoney(int value);

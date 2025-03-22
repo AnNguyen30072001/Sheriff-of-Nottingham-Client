@@ -8,92 +8,82 @@ GameLogic::GameLogic(Game* game) : m_game(game)
 	m_goodsReport = Card::UNKNOWN;
 }
 
-void GameLogic::updatePlayersMedalStatus()
-{
-	//// Find out each good amount to be considered gold or silver
-	int goldMedalAmount[4] = { 0, 0, 0, 0 };
-	int silverMedalAmount[4] = { 0, 0, 0, 0 };
-	int playerGoodAmount = 0;
-	for (auto& player : m_game->m_playerList) {
-		for (int i = 0; i < 4; i++) {
-			playerGoodAmount = player->getPlayerGoodsAmount(i + 1);
-			if (playerGoodAmount > goldMedalAmount[i]) {
-				silverMedalAmount[i] = goldMedalAmount[i];
-				goldMedalAmount[i] = playerGoodAmount;
-			}
-			else if (playerGoodAmount < goldMedalAmount[i] && playerGoodAmount > silverMedalAmount[i]) {
-				silverMedalAmount[i] = playerGoodAmount;
-			}
-		}
-	}
-
-	// Test
-	//std::cout << "\nGold: ";
-	//for (int amount : goldMedalAmount) {
-	//	std::cout << amount << " ";
-	//}
-	//std::cout << "\nSilver: ";
-	//for (int amount : silverMedalAmount) {
-	//	std::cout << amount << " ";
-	//}
-
-	//// Give medal to players according to good amount
-	for (auto& player : m_game->m_playerList) {
-		for (int i = 0; i < 4; i++) {
-			playerGoodAmount = player->getPlayerGoodsAmount(i + 1);
-			if (playerGoodAmount == goldMedalAmount[i] && goldMedalAmount[i] != 0) {
-				player->setPlayerMedalStatus(i + 1, Player::MedalStatus::GOLD);
-			}
-			else if (playerGoodAmount == silverMedalAmount[i] && silverMedalAmount[i] != 0) {
-				player->setPlayerMedalStatus(i + 1, Player::MedalStatus::SILVER);
-			}
-			else {
-				player->setPlayerMedalStatus(i + 1, Player::MedalStatus::NONE);
-			}
-		}
-
-		for (int j = 4; j < 8; j++) {
-			playerGoodAmount = player->getPlayerGoodsAmount(j + 1);
-			if (playerGoodAmount >= 3) {
-				player->setPlayerMedalStatus(j + 1, Player::MedalStatus::BLACK_MARKET);
-			}
-		}
-	}
-}
-
-void GameLogic::updatePlayerScore(Player * player)
-{
-	int finalScore = 0;
-
-	// Convert money to score
-	finalScore += player->getPlayerMoney();
-
-	// Convert goods value to score
-	for (int i = 0; i < 8; i++) {
-		int goodAmount = player->getPlayerGoodsAmount(i + 1);
-		// Multiply amount with value of card type, then add to score
-		finalScore += goodAmount * Card::cardTypeToValue.at(static_cast<Card::CardType>(i + 1));
-	}
-
-	// Convert medals to score
-	for (int i = 0; i < 8; i++) {
-		// Gold bonus
-		if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::GOLD) {
-			finalScore += Card::cardTypeToGoldBonus.at(static_cast<Card::CardType>(i + 1));
-		}
-		// Silver bonus
-		else if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::SILVER) {
-			finalScore += Card::cardTypeToSilverBonus.at(static_cast<Card::CardType>(i + 1));
-		}
-		// Black market bonus
-		else if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::BLACK_MARKET) {
-			finalScore += Card::cardTypeToContrabandBonus.at(static_cast<Card::CardType>(i + 1));
-		}
-	}
-
-	// Set player score
-	player->setPlayerScore(finalScore);
-}
+//void GameLogic::updatePlayersMedalStatus()
+//{
+//	//// Find out each good amount to be considered gold or silver
+//	int goldMedalAmount[4] = { 0, 0, 0, 0 };
+//	int silverMedalAmount[4] = { 0, 0, 0, 0 };
+//	int playerGoodAmount = 0;
+//	for (auto& player : m_game->m_playerList) {
+//		for (int i = 0; i < 4; i++) {
+//			playerGoodAmount = player->getPlayerGoodsAmount(i + 1);
+//			if (playerGoodAmount > goldMedalAmount[i]) {
+//				silverMedalAmount[i] = goldMedalAmount[i];
+//				goldMedalAmount[i] = playerGoodAmount;
+//			}
+//			else if (playerGoodAmount < goldMedalAmount[i] && playerGoodAmount > silverMedalAmount[i]) {
+//				silverMedalAmount[i] = playerGoodAmount;
+//			}
+//		}
+//	}
+//
+//	//// Give medal to players according to good amount
+//	for (auto& player : m_game->m_playerList) {
+//		for (int i = 0; i < 4; i++) {
+//			playerGoodAmount = player->getPlayerGoodsAmount(i + 1);
+//			if (playerGoodAmount == goldMedalAmount[i] && goldMedalAmount[i] != 0) {
+//				player->setPlayerMedalStatus(i + 1, Player::MedalStatus::GOLD);
+//			}
+//			else if (playerGoodAmount == silverMedalAmount[i] && silverMedalAmount[i] != 0) {
+//				player->setPlayerMedalStatus(i + 1, Player::MedalStatus::SILVER);
+//			}
+//			else {
+//				player->setPlayerMedalStatus(i + 1, Player::MedalStatus::NONE);
+//			}
+//		}
+//
+//		for (int j = 4; j < 8; j++) {
+//			playerGoodAmount = player->getPlayerGoodsAmount(j + 1);
+//			if (playerGoodAmount >= 3) {
+//				player->setPlayerMedalStatus(j + 1, Player::MedalStatus::BLACK_MARKET);
+//			}
+//		}
+//	}
+//}
+//
+//void GameLogic::updatePlayerScore(Player * player)
+//{
+//	int finalScore = 0;
+//
+//	// Convert money to score
+//	finalScore += player->getPlayerMoney();
+//
+//	// Convert goods value to score
+//	for (int i = 0; i < 8; i++) {
+//		int goodAmount = player->getPlayerGoodsAmount(i + 1);
+//		// Multiply amount with value of card type, then add to score
+//		finalScore += goodAmount * Card::cardTypeToValue.at(static_cast<Card::CardType>(i + 1));
+//	}
+//
+//	// Convert medals to score
+//	for (int i = 0; i < 8; i++) {
+//		// Gold bonus
+//		if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::GOLD) {
+//			finalScore += Card::cardTypeToGoldBonus.at(static_cast<Card::CardType>(i + 1));
+//		}
+//		// Silver bonus
+//		else if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::SILVER) {
+//			finalScore += Card::cardTypeToSilverBonus.at(static_cast<Card::CardType>(i + 1));
+//		}
+//		// Black market bonus
+//		else if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::BLACK_MARKET) {
+//			finalScore += Card::cardTypeToContrabandBonus.at(static_cast<Card::CardType>(i + 1));
+//		}
+//	}
+//
+//	// Set player score
+//	player->setPlayerScore(finalScore);
+//}
 
 bool GameLogic::attemptReconnect(float deltaTime)
 {
@@ -827,14 +817,14 @@ void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTyp
 				}
 				else {
 					// Update players medal status
-					updatePlayersMedalStatus();
+					//updatePlayersMedalStatus();
 
 					// Update players score
-					m_game->m_textMutex.lock();
-					for (auto& player : m_game->m_playerList) {
-						updatePlayerScore(player);
-					}
-					m_game->m_textMutex.unlock();
+					//m_game->m_textMutex.lock();
+					//for (auto& player : m_game->m_playerList) {
+					//	updatePlayerScore(player);
+					//}
+					//m_game->m_textMutex.unlock();
 
 					// Retrieve the cards laid on table
 					retrieveCards(jsonMessage);
@@ -897,14 +887,14 @@ void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTyp
 						}
 						else {
 							// Update players medal status
-							updatePlayersMedalStatus();
+							//updatePlayersMedalStatus();
 
 							// Update players score
-							m_game->m_textMutex.lock();
-							for (auto& player : m_game->m_playerList) {
-								updatePlayerScore(player);
-							}
-							m_game->m_textMutex.unlock();
+							//m_game->m_textMutex.lock();
+							//for (auto& player : m_game->m_playerList) {
+							//	updatePlayerScore(player);
+							//}
+							//m_game->m_textMutex.unlock();
 
 							// Retrieve the cards laid on table
 							retrieveCards(jsonMessage);
@@ -967,14 +957,14 @@ void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTyp
 						}
 						else {
 							// Update players medal status
-							updatePlayersMedalStatus();
+							//updatePlayersMedalStatus();
 
 							// Update players score
-							m_game->m_textMutex.lock();
-							for (auto& player : m_game->m_playerList) {
-								updatePlayerScore(player);
-							}
-							m_game->m_textMutex.unlock();
+							//m_game->m_textMutex.lock();
+							//for (auto& player : m_game->m_playerList) {
+							//	updatePlayerScore(player);
+							//}
+							//m_game->m_textMutex.unlock();
 
 							// Retrieve the cards laid on table
 							retrieveCards(jsonMessage);
@@ -1074,5 +1064,30 @@ void GameLogic::handleTimeoutDiscard()
 		}
 		std::string messageString = message.dump();
 		Network::getInstance().sendMessage(messageString);
+	}
+}
+
+void GameLogic::updatePlayerInfo(Player* player, int money, int score, std::unordered_map<Card::CardType, int> playerCardMap, std::unordered_map<Card::CardType, int> blackMarketBonusMap)
+{
+	// Update player money and score
+	player->setPlayerMoney(money);
+	player->setPlayerScore(score);
+
+	// Update goods amount
+	for (int cardType = Card::APPLE; cardType <= Card::CROSSBOW; cardType++) {
+		player->setPlayerGoodsAmount(cardType, playerCardMap[static_cast<Card::CardType>(cardType)]);
+	}
+
+	// Update black market status
+	for (int cardType = Card::PEPPER; cardType <= Card::SILK; cardType++) {
+		if (blackMarketBonusMap[static_cast<Card::CardType>(cardType)] == 1) {
+			player->setPlayerMedalStatus(cardType, Player::MedalStatus::BLACK_MARKET);
+		}
+		else if (blackMarketBonusMap[static_cast<Card::CardType>(cardType)] == 2) {
+			player->setPlayerMedalStatus(cardType, Player::MedalStatus::BLACK_MARKET_PLUS);
+		}
+		else {
+			player->setPlayerMedalStatus(cardType, Player::MedalStatus::NONE);
+		}
 	}
 }

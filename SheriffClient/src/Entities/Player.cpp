@@ -315,6 +315,11 @@ void Player::increasePlayerGoodsAmount(int cardType, int value)
 	m_goods[cardType - 1] += value;
 }
 
+void Player::setPlayerGoodsAmount(int cardType, int value)
+{
+	m_goods[cardType - 1] = value;
+}
+
 int Player::getPlayerMoney() const
 {
 	return m_money;

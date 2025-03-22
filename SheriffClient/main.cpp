@@ -95,8 +95,13 @@ int main()
 				playerList[0]->setSheriffStatus(true);
 				playerList[2]->increasePlayerGoodsAmount(Card::APPLE, 2);
 				playerList[2]->increasePlayerGoodsAmount(Card::PEPPER, 3);
-				playerList[2]->increasePlayerGoodsAmount(Card::SILK, 3);
+				playerList[2]->setPlayerMedalStatus(Card::PEPPER, Player::MedalStatus::BLACK_MARKET_PLUS);
+				playerList[2]->setPlayerMedalStatus(Card::MEAD, Player::MedalStatus::BLACK_MARKET);
+				playerList[2]->setPlayerMedalStatus(Card::SILK, Player::MedalStatus::BLACK_MARKET_PLUS);
+				playerList[2]->increasePlayerGoodsAmount(Card::SILK, 2);
 				playerList[0]->increasePlayerGoodsAmount(Card::APPLE, 1);
+				playerList[0]->increasePlayerGoodsAmount(Card::MEAD, 1);
+				playerList[1]->increasePlayerGoodsAmount(Card::CROSSBOW, 4);
 				game->addToUserHand(Card::APPLE);
 				game->addToUserHand(Card::APPLE);
 				game->addToUserHand(Card::CHICKEN);

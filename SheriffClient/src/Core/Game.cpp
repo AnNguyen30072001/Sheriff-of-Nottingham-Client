@@ -295,12 +295,13 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 			m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
 
 			// Update scores
-			m_gameLogic->updatePlayersMedalStatus();
-			m_textMutex.lock();
-			for (auto& player : m_playerList) {
-				m_gameLogic->updatePlayerScore(player);
-			}
-			m_textMutex.unlock();
+			//m_gameLogic->updatePlayersMedalStatus();
+			//m_textMutex.lock();
+			//for (auto& player : m_playerList) {
+			//	m_gameLogic->updatePlayerScore(player);
+			//}
+			//m_textMutex.unlock();
+
 			// Show tablet
 			m_tablet->showTablet(Tablet::Type::INFO, player->getPlayerMoney(), player);
 
@@ -1250,6 +1251,57 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 			m_gameEvent = IDLE;
 			Network::getInstance().respondMessage(jsonMessage);
 		}
+	}
+
+	// Server update player score
+	else if (jsonMessage["MessageType"] == "PLAYER_UPDATE_INFO") {
+		for (auto& player : m_playerList) {
+			if (player->getPlayerName() == jsonMessage["PlayerName"]) {
+				std::unordered_map<Card::CardType, int> playerCardMap;
+				std::unordered_map<Card::CardType, int> blackMarketBonusMap;
+				int playerMoney = player->getPlayerMoney();
+				int playerScore = player->getPlayerScore();
+
+				// Get money and score info
+				if (jsonMessage.contains("Money")) {
+					std::string money = jsonMessage["Money"];
+					playerMoney = std::stoi(money);
+				}
+				if (jsonMessage.contains("Point")) {
+					std::string score = jsonMessage["Point"];
+					playerScore = std::stoi(score);
+				}
+				
+				// Get cards info
+				if (jsonMessage.contains("Cards") && jsonMessage["Cards"].is_object()) {
+					for (auto it = jsonMessage["Cards"].begin(); it != jsonMessage["Cards"].end(); it++) {
+						std::string cardTypeString = it.key();
+						Card::CardType cardType = Card::m_stringToCardName.at(cardTypeString);
+						std::string cardCountString = it.value();
+						int cardCount = std::stoi(cardCountString);
+						// Push to map
+						playerCardMap[cardType] = cardCount;
+					}
+				}
+
+				// Get black market bonuses info
+				if (jsonMessage.contains("BlackMarketBonuses") && jsonMessage["BlackMarketBonuses"].is_object()) {
+					for (auto it = jsonMessage["BlackMarketBonuses"].begin(); it != jsonMessage["BlackMarketBonuses"].end(); it++) {
+						std::string cardTypeString = it.key();
+						Card::CardType cardType = Card::m_stringToCardName.at(cardTypeString);
+						std::string bonusCountString = it.value();
+						int bonusCount = std::stoi(bonusCountString);
+						// Push to map
+						blackMarketBonusMap[cardType] = bonusCount;
+					}
+				}
+
+				m_gameLogic->updatePlayerInfo(player, playerMoney, playerScore, playerCardMap, blackMarketBonusMap);
+
+				break;
+			}
+		}
+		Network::getInstance().respondMessage(jsonMessage);
 	}
 }
 

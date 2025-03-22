@@ -63,8 +63,8 @@ private:
 	sf::Texture			m_goldMedalTexture;
 	sf::RectangleShape	m_silverMedals[4];				// Silver medals for legal goods
 	sf::Texture			m_silverMedalTexture;
-	sf::RectangleShape	m_blackMarketMedals[4];			// Black market medals for contrabands
-	sf::Texture			m_blackMarketMedalTexture;
+	sf::RectangleShape	m_blackMarketMedals[6];			// Black market medals for contrabands
+	sf::Texture			m_blackMarketMedalTexture[6];
 
 	sf::Text			m_goodsAmountText[8];
 
