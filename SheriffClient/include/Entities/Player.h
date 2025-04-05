@@ -11,8 +11,9 @@ public:
 		NONE,
 		GOLD,
 		SILVER,
-		BLACK_MARKET,
-		BLACK_MARKET_PLUS
+		BLACK_MARKET_LOW,
+		BLACK_MARKET_HIGH,
+		BLACK_MARKET_BOTH
 	};
 
 	Player(std::string name, sf::Color playerColor, bool isUserPlayer);

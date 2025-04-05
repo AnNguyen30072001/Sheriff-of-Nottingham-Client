@@ -128,6 +128,7 @@ protected:
 	Deck* m_deck;
 	Tablet* m_tablet;
 	std::vector<Card*> m_dummyCards;		// Dummy cards for animation render and temporary displays
+	std::vector<Card*> m_bribedCards;		// Cards for rendering bribed cards on right side of screen
 
 	// Threading
 	std::mutex m_userHandMutex;

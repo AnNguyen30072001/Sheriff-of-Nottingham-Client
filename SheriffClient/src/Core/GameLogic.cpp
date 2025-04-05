@@ -5,7 +5,9 @@
 GameLogic::GameLogic(Game* game) : m_game(game)
 {
 	m_bribeAmount = 0;
-	m_goodsReport = Card::UNKNOWN;
+	m_goodsReport = Card::INVALID;
+	m_bribedGoodsAmount = 0;
+	m_BribedGoodsType = Card::INVALID;
 }
 
 //void GameLogic::updatePlayersMedalStatus()
@@ -170,16 +172,26 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 			if (m_game->m_playerList[i]->isSheriff() && !m_game->m_dummyCards.empty()) {
 				// Change game state
 				m_game->m_gameEvent = Game::SHERIFF_TURN;
+
 				// Setup initial position to make sure the cards are centered
 				float totalWidth = m_game->m_dummyCards.size() * 135.f + (m_game->m_dummyCards.size() - 1) * 15.f;
 				float posXOffset = ((1920 - totalWidth) / 2.f) + 67.5;
-				// Animation
+
+				// Animation of presented cards
 				for (int i = 0; i < m_game->m_dummyCards.size(); i++) {
 					float posX = posXOffset + i * (135.f + 15.f);
 					std::lock_guard<std::mutex> lock(m_game->m_dummyCardsMutex);
 					m_game->m_dummyCards[i]->getCard().setOrigin(67.5, 97.5);
 					m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_dummyCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.3,
 						sf::Vector2f(posX, 395.f), 1.f));
+				}
+
+				// Animation of bribed cards
+				for (int i = 0; i < m_game->m_bribedCards.size(); i++) {
+					float posX = 1546.f + (i % 3) * 105.f;
+					float posY = i < 3 ? 350.f : 505.f;
+					m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_bribedCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE,
+						0.3, sf::Vector2f(posX, posY), 0.667, 0.5));
 				}
 
 				// Set infomation
@@ -192,15 +204,17 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 				m_game->m_goodsReportText.setString("\"Just " + std::to_string(m_game->m_dummyCards.size()) + "         , I swear!\"");
 				m_game->m_goodsReportTexture.loadFromFile("assets/Images/" + Card::m_cardNameToString.at(m_goodsReport) + "ReportHighlight.png");
 				m_game->m_goodsReportIcon.setTexture(&m_game->m_goodsReportTexture, true);
-				m_game->m_infoText.setString("Bribe:");
-				m_game->m_infoText.setPosition(800.f, 540.f);
-				m_game->m_moneyIcon.setPosition(950.f, 520.f);
+				//m_game->m_infoText.setString("Bribe:");
+				//m_game->m_infoText.setPosition(800.f, 540.f);
+				//m_game->m_moneyIcon.setPosition(950.f, 520.f);
+				m_game->m_moneyIcon.setPosition(1595.f, 220.f);
 				m_game->m_moneyIcon.setScale(1.f, 1.f);
 				m_game->m_moneyText.setString(std::to_string(m_bribeAmount));
 				m_game->m_moneyText.setFillColor(sf::Color::White);
 				m_game->m_moneyText.setCharacterSize(48);
 				m_game->m_moneyText.setScale(1.f, 1.f);
-				m_game->m_moneyText.setPosition(1070.f, 540.f);
+				//m_game->m_moneyText.setPosition(1070.f, 540.f);
+				m_game->m_moneyText.setPosition(1730.f, 240.f);
 				m_game->m_textMutex.unlock();
 
 				// Temporary hide all decks and user cards
@@ -215,7 +229,26 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 			// If it is a merchant's turn, reset all previous stored goods infomation, for safety measure
 			else {
 				m_game->m_tablet->resetOptions();
+
+				for (auto& card : m_game->m_dummyCards) {
+					m_game->m_dummyCardsMutex.lock();
+					delete card;
+					m_game->m_dummyCardsMutex.unlock();
+				}
+
+				for (auto& card : m_game->m_bribedCards) {
+					m_game->m_dummyCardsMutex.lock();
+					delete card;
+					m_game->m_dummyCardsMutex.unlock();
+				}
+
+				for (auto& card : m_game->m_selectedCards) {
+					m_game->m_selectedCardsMutex.lock();
+					delete card;
+					m_game->m_selectedCardsMutex.unlock();
+				}
 				m_game->m_dummyCards.clear();
+				m_game->m_bribedCards.clear();
 				m_game->m_selectedCards.clear();
 
 				m_game->m_discardDone = false;
@@ -236,24 +269,23 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 
 void GameLogic::handlePresentEvent()
 {
-	// Get infomation
-	//std::map<std::string, int> cardCount;
-	//for (auto& userCard : m_game->m_userHand) {
-	//	if (userCard->isSelected()) {
-	//		cardCount[Card::m_cardNameToString.at(userCard->getCardType())]++;
-	//	}
-	//}
-
-	//for (auto it = cardCount.begin(); it != cardCount.end(); ++it) {
-	//	message["Bag"][it->first] = it->second;
-	//}
-
 	// Prepare JSON message
 	json message;
 	message["MessageType"] = "MERCHANT_GIVE_BAG";
 	message["PlayerName"] = m_game->m_playerList[0]->getPlayerName();
 	message["Report"] = Card::m_cardNameToString.at(m_game->m_tablet->getPresentedGoods());
-	message["Fee"] = std::to_string(m_game->m_tablet->getBribeAmount());
+	if (m_game->m_tablet->getBribedGoodsAmount() != 0) {
+		message["Fee"] = {
+			{"Money", std::to_string(m_game->m_tablet->getBribeAmount())},
+			{Card::m_cardNameToString.at(m_game->m_tablet->getBribedGoodsType()), std::to_string(m_game->m_tablet->getBribedGoodsAmount())}
+		};
+	}
+	else {
+		message["Fee"] = {
+			{"Money", std::to_string(m_game->m_tablet->getBribeAmount())}
+		};
+	}
+
 
 	for (auto& userCard : m_game->m_userHand) {
 		if (userCard->isSelected()) {
@@ -261,17 +293,19 @@ void GameLogic::handlePresentEvent()
 		}
 	}
 
-	// Convert message and send
-	std::string messageString = message.dump();
-	Network::sendMessage(messageString);
-
 	// Save information for next Sheriff turn
 	m_goodsReport = m_game->m_tablet->getPresentedGoods();
 	m_bribeAmount = m_game->m_tablet->getBribeAmount();
+	m_bribedGoodsAmount = m_game->m_tablet->getBribedGoodsAmount();
+	m_BribedGoodsType = m_game->m_tablet->getBribedGoodsType();
 
 	// Reset tablet and wait for server response
 	m_game->m_tablet->resetOptions();
 	m_game->m_gameEvent = Game::IDLE;
+
+	// Convert message and send
+	std::string messageString = message.dump();
+	Network::sendMessage(messageString);
 }
 
 void GameLogic::handleGiveBagEvent(const nlohmann::json & jsonMessage)
@@ -310,6 +344,19 @@ void GameLogic::handleGiveBagEvent(const nlohmann::json & jsonMessage)
 		m_game->m_animationPlayer.addAnimation(new Animation(card->getCard(), Animation::Type::MOVE_AND_SCALE, 0.3f,
 			m_game->m_playerList[0]->getBagIcon().getPosition() + sf::Vector2f(40.f, 40.f), 0.f));
 	}
+
+	// Push bribed cards if any
+	if (m_BribedGoodsType != Card::INVALID) {
+		for (int i = 0; i < m_bribedGoodsAmount; i++) {
+			m_game->m_dummyCardsMutex.lock();
+			m_game->m_bribedCards.push_back(new Card(m_BribedGoodsType));
+			m_game->m_dummyCardsMutex.unlock();
+
+			m_game->m_bribedCards[m_game->m_bribedCards.size() - 1]->getCard().setScale(0.f, 0.f);
+			m_game->m_bribedCards[m_game->m_bribedCards.size() - 1]->getCard().setPosition(m_game->m_playerList[0]->getBagIcon().getPosition() + sf::Vector2f(40.f, 40.f));
+		}
+	}
+
 	// Store information of merchant giving bag for next Sheriff turn
 	m_game->m_MerchantShowingBagIndex = 0;
 	// Hide tablet
@@ -333,8 +380,28 @@ void GameLogic::handleOpponentGiveBagEvent(const nlohmann::json & jsonMessage)
 
 			// Store data to render the next Sheriff turn
 			m_goodsReport = Card::m_stringToCardName.at(jsonMessage["Report"]);
-			std::string bribe = jsonMessage["Fee"];
-			m_bribeAmount = std::stoi(bribe);
+
+			if (jsonMessage.contains("Fee") && jsonMessage["Fee"].is_object()) {
+				const auto& feeObj = jsonMessage["Fee"];
+
+				if (feeObj.contains("Money")) {
+					std::string bribeMoneyStr = feeObj["Money"].get<std::string>();
+					m_bribeAmount = std::stoi(bribeMoneyStr);
+				}
+
+				if (feeObj.size() > 1) {
+					for (auto it = feeObj.begin(); it != feeObj.end(); ++it) {
+						if (it.key() != "Money") {
+							std::string bribeGoodsTypeStr = it.key();
+							std::string bribeGoodsAmountStr = it.value().get<std::string>();
+							m_BribedGoodsType = Card::m_stringToCardName.at(bribeGoodsTypeStr);
+							m_bribedGoodsAmount = std::stoi(bribeGoodsAmountStr);
+							break; // Only take the first non-Money penalty
+						}
+					}
+				}
+			}
+
 			std::string amount = jsonMessage["Amount"];
 			int goodsAmount = std::stoi(amount);
 			m_game->m_MerchantShowingBagIndex = i;
@@ -363,6 +430,19 @@ void GameLogic::handleOpponentGiveBagEvent(const nlohmann::json & jsonMessage)
 					Network::getInstance().respondMessage(jsonMessage);
 				}));
 			}));
+
+			// Push bribed cards if any
+			if (m_BribedGoodsType != Card::INVALID) {
+				for (int j = 0; j < m_bribedGoodsAmount; j++) {
+					m_game->m_dummyCardsMutex.lock();
+					m_game->m_bribedCards.push_back(new Card(m_BribedGoodsType));
+					m_game->m_dummyCardsMutex.unlock();
+
+					m_game->m_bribedCards[j]->getCard().setScale(0.f, 0.f);
+					m_game->m_bribedCards[j]->getCard().setPosition(m_game->m_playerList[i]->getAvatar().getPosition() + sf::Vector2f(30.f, 30.f));
+				}
+			}
+
 			break;
 		}
 	}
@@ -982,45 +1062,114 @@ void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 {
 	if (m_game->m_dummyCards.empty()) return;
 
+	Player* sheriffPlayer = nullptr;
+	for (auto& player : m_game->m_playerList) {
+		if (player->getPlayerName() == jsonMessage["PlayerName"]) {
+			sheriffPlayer = player;
+		}
+	}
+
+	// Initial scan
+	bool isAnyCardDiscarded = false;
+	for (int i = 0; i < m_game->m_dummyCards.size(); i++) {
+		if (m_game->m_dummyCards[i]->getCardType() != m_goodsReport && jsonMessage["MessageType"] != "SHERIFF_PASS_RESPONSE") {
+			isAnyCardDiscarded = true;
+			break;
+		}
+	}
+
+	// Retrieve the presented goods
 	for (int i = 0; i < m_game->m_dummyCards.size(); i++) {
 		// If card is legal, hand it to merchant
 		if (m_game->m_dummyCards[i]->getCardType() == m_goodsReport || jsonMessage["MessageType"] == "SHERIFF_PASS_RESPONSE") {
 			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_dummyCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.4,
-				m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 0.6, [this, i, jsonMessage]
+				m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 0.6, [this, i, jsonMessage, isAnyCardDiscarded]
 			{
 				// If done process the last card
-				if (i == m_game->m_dummyCards.size() - 1) {
-					// Reveal process is complete
-					m_game->m_revealingDone = true;
-
+				if ((i == m_game->m_dummyCards.size() - 1) && !isAnyCardDiscarded) {
 					for (Card* card : m_game->m_dummyCards) {
 						delete card;
 						card = nullptr;
 					}
 					m_game->m_dummyCards.clear();
 
-					// Send response message
-					Network::getInstance().respondMessage(jsonMessage);
+					if (m_game->m_bribedCards.empty()) {
+						// Reveal process is complete
+						m_game->m_revealingDone = true;
+						// Send response message
+						Network::getInstance().respondMessage(jsonMessage);
+
+						return;
+					}
 				}
 			}));
 		}
 		// If card is not legal, shuffle it back to main deck
 		else {
-			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_dummyCards[i]->getCard(), Animation::Type::SCALE, 0.f, 0.3, 0.6, [this, i, jsonMessage]
+			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_dummyCards[i]->getCard(), Animation::Type::SCALE, 0.f, 0.3, 1.2, [this, i, jsonMessage]
 			{
 				// If done process the last card
 				if (i == m_game->m_dummyCards.size() - 1) {
-					// Reveal process is complete
-					m_game->m_revealingDone = true;
-
 					for (Card* card : m_game->m_dummyCards) {
 						delete card;
 						card = nullptr;
 					}
 					m_game->m_dummyCards.clear();
 
+					if (m_game->m_bribedCards.empty()) {
+						// Reveal process is complete
+						m_game->m_revealingDone = true;
+						// Send response message
+						Network::getInstance().respondMessage(jsonMessage);
+
+						return;
+					}
+				}
+			}));
+		}
+	}
+
+	// Retrieve the bribed cards
+	for (int i = 0; i < m_game->m_bribedCards.size(); i++) {
+		if (jsonMessage["MessageType"] == "SHERIFF_PASS_RESPONSE") {
+			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_bribedCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.4,
+				sheriffPlayer->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.8 + 0.5*i, [this, i, jsonMessage, isAnyCardDiscarded]
+			{
+				// If done process the last card
+				if ((i == m_game->m_bribedCards.size() - 1)) {
+					for (Card* card : m_game->m_bribedCards) {
+						delete card;
+						card = nullptr;
+					}
+					m_game->m_bribedCards.clear();
+
+					// Reveal process is complete
+					m_game->m_revealingDone = true;
 					// Send response message
 					Network::getInstance().respondMessage(jsonMessage);
+
+					return;
+				}
+			}));
+		}
+		else {
+			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_bribedCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.4,
+				m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.8 + 0.5*i, [this, i, jsonMessage, isAnyCardDiscarded]
+			{
+				// If done process the last card
+				if ((i == m_game->m_bribedCards.size() - 1)) {
+					for (Card* card : m_game->m_bribedCards) {
+						delete card;
+						card = nullptr;
+					}
+					m_game->m_bribedCards.clear();
+
+					// Reveal process is complete
+					m_game->m_revealingDone = true;
+					// Send response message
+					Network::getInstance().respondMessage(jsonMessage);
+
+					return;
 				}
 			}));
 		}
@@ -1083,10 +1232,13 @@ void GameLogic::updatePlayerInfo(Player* player, int money, int score, std::unor
 	// Update black market status
 	for (int cardType = Card::PEPPER; cardType <= Card::SILK; cardType++) {
 		if (blackMarketBonusMap[static_cast<Card::CardType>(cardType)] == 1) {
-			player->setPlayerMedalStatus(cardType, Player::MedalStatus::BLACK_MARKET);
+			player->setPlayerMedalStatus(cardType, Player::MedalStatus::BLACK_MARKET_LOW);
 		}
 		else if (blackMarketBonusMap[static_cast<Card::CardType>(cardType)] == 2) {
-			player->setPlayerMedalStatus(cardType, Player::MedalStatus::BLACK_MARKET_PLUS);
+			player->setPlayerMedalStatus(cardType, Player::MedalStatus::BLACK_MARKET_HIGH);
+		}
+		else if (blackMarketBonusMap[static_cast<Card::CardType>(cardType)] == 3) {
+			player->setPlayerMedalStatus(cardType, Player::MedalStatus::BLACK_MARKET_BOTH);
 		}
 		else {
 			player->setPlayerMedalStatus(cardType, Player::MedalStatus::NONE);

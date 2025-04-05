@@ -21,7 +21,7 @@ void Game::initVariables(std::vector<Player*> playerList)
 	m_backgroundMusic.setVolume(70);
 	m_backgroundMusic.setLoop(true);
 
-	if (!m_moneyIconTexture.loadFromFile("assets/Images/MoneyIcon.png") ||
+	if (!m_moneyIconTexture.loadFromFile("assets/Images/Tokens/MoneyIcon.png") ||
 		!m_soundIconTexture.loadFromFile("assets/Images/SoundIndicator.png") ||
 		!m_noSoundIconTexture.loadFromFile("assets/Images/NoSoundIndicator.png") ||
 		!m_discardButtonGrayTexture.loadFromFile("assets/Images/Buttons/ButtonDiscardGray.png") ||
@@ -910,6 +910,9 @@ bool Game::render()
 	std::lock_guard<std::mutex> lockDummyCards(m_dummyCardsMutex);
 	for (auto& card : m_dummyCards) {
 		m_window->draw(card->getCard());	
+	}
+	for (auto& card : m_bribedCards) {
+		m_window->draw(card->getCard());
 	}
 
 	// Selected cards, for discard,present...

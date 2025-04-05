@@ -47,7 +47,9 @@ public:
 private:
 	Game* m_game;
 	Card::CardType m_goodsReport;
+	Card::CardType m_BribedGoodsType;
 	int	m_bribeAmount;
+	int m_bribedGoodsAmount;
 };
 
 #endif // !_GAME_LOGIC__

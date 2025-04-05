@@ -23,7 +23,9 @@ public:
 
 	// Get infomation
 	unsigned int getBribeAmount() const;
+	unsigned int getBribedGoodsAmount() const;
 	Card::CardType getPresentedGoods() const;
+	Card::CardType getBribedGoodsType() const;
 	bool isPresentConfirmed();
 
 	bool pollEvents();
@@ -72,13 +74,21 @@ private:
 	sf::Text			m_okButtonText;
 
 	sf::RectangleShape	m_goodsButtons[8]; // Buttons for Apple, Bread, Cheese, Chicken, Crossbow, Mead, Pepper, Silk
-	sf::Texture			m_goodsButtonTextures[4];
+	sf::Texture			m_goodsButtonTextures[8];
 	sf::Texture			m_goodsButtonTexturesHighLight[8];
+	sf::RectangleShape	m_goodsBribeButtons[8];	// Buttons to select bribed goods. These buttons use same texture as m_goodsButtons
 
-	sf::Text			m_bribeText;
-	sf::RectangleShape	m_bribeBox;
-	sf::Text			m_bribeBoxText;
-	std::string			m_bribeInput;
+	sf::Text			m_giveBagInfoText1;
+	sf::Text			m_giveBagInfoText2;
+	sf::Text			m_bribeMoneyText;
+	sf::RectangleShape	m_bribeMoneyBox;
+	sf::Text			m_bribeMoneyBoxText;
+	std::string			m_bribeMoneyInput;
+	sf::Text			m_bribeGoodsText;
+	sf::RectangleShape	m_bribeGoodsBox;
+	sf::Text			m_bribeGoodsBoxText;
+	std::string			m_bribeGoodsAmountInput;
+	Card::CardType		m_bribeGoodsTypeInput;
 
 	sf::RectangleShape	m_BoxOutline;
 	sf::Text			m_maxMoneyText;
@@ -86,7 +96,8 @@ private:
 	Card::CardType m_selectedGoods; // The goods that merchant reports
 	int m_playerMoney;
 	int m_playerScore;
-	unsigned int m_bribeAmount; // Selected bribe amount
+	unsigned int m_bribeMoneyAmount; // Selected bribe money amount
+	unsigned int m_bribeGoodsAmount; // Selected bribe goods amount
 
 	bool m_isTabletVisible; // To toggle tablet visibility
 	bool m_confirm;
@@ -99,6 +110,8 @@ private:
 	bool handleMouseClick(sf::Vector2f mousePosXY);
 	bool handleMouseDrag(sf::Vector2f mousePosXY);
 	void handleTextEnter();
+
+	void centerText(sf::Text & text, sf::RectangleShape & button);
 };
 
 
