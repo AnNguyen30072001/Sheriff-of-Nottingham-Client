@@ -1130,10 +1130,19 @@ void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 	}
 
 	// Retrieve the bribed cards
-	for (int i = 0; i < m_game->m_bribedCards.size(); i++) {
-		if (jsonMessage["MessageType"] == "SHERIFF_PASS_RESPONSE") {
+	int bribedGoodReceiveAmount = 0;
+	if (jsonMessage.contains("BribedGoodReceiveAmount")) {
+		std::string bribedGoodReceiveAmountStr = jsonMessage["BribedGoodReceiveAmount"].get<std::string>();
+		bribedGoodReceiveAmount = std::stoi(bribedGoodReceiveAmountStr);
+	}
+
+	if (jsonMessage["MessageType"] == "SHERIFF_PASS_RESPONSE") {
+		// If the bribed card is available to pass to Sheriff (Honor among Thieves) -> animation sheriff receive bribed good
+		for (int i = 0; i < bribedGoodReceiveAmount; i++) {
+			if (i >= m_game->m_bribedCards.size()) break;		// Safe guard
+
 			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_bribedCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.4,
-				sheriffPlayer->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.8 + 0.5*i, [this, i, jsonMessage, isAnyCardDiscarded]
+				sheriffPlayer->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.8 + 0.5*i, [this, i, jsonMessage]
 			{
 				// If done process the last card
 				if ((i == m_game->m_bribedCards.size() - 1)) {
@@ -1152,9 +1161,11 @@ void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 				}
 			}));
 		}
-		else {
-			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_bribedCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.4,
-				m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.8 + 0.5*i, [this, i, jsonMessage, isAnyCardDiscarded]
+
+		// If the bribed card is not available because Merchant lied (Honor among Thieves) -> Animation discard the bribed good
+		for (int i = bribedGoodReceiveAmount; i < m_game->m_bribedCards.size(); i++) {
+			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_bribedCards[i]->getCard(), Animation::Type::SCALE,
+				0.f, 0.4, 1.8 + 0.5*i, [this, i, jsonMessage]
 			{
 				// If done process the last card
 				if ((i == m_game->m_bribedCards.size() - 1)) {
@@ -1174,6 +1185,46 @@ void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 			}));
 		}
 	}
+
+	// If Sheriff decided to check -> animation add the bribed good back to Merchant
+	else if (jsonMessage["MessageType"] == "SHERIFF_CHECK_RESPONSE") {
+		for (int i = 0; i < m_game->m_bribedCards.size(); i++) {
+			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_bribedCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.4,
+				m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.8 + 0.5*i, [this, i, jsonMessage]
+			{
+				// If done process the last card
+				if ((i == m_game->m_bribedCards.size() - 1)) {
+					for (Card* card : m_game->m_bribedCards) {
+						delete card;
+						card = nullptr;
+					}
+					m_game->m_bribedCards.clear();
+
+					// Reveal process is complete
+					m_game->m_revealingDone = true;
+					// Send response message
+					Network::getInstance().respondMessage(jsonMessage);
+
+					return;
+				}
+			}));
+		}
+	}
+
+	//for (int i = 0; i < m_game->m_bribedCards.size(); i++) {
+	//	if ( (jsonMessage["MessageType"] == "SHERIFF_PASS_RESPONSE") && (bribedGoodReceiveAmount > 0) ) {
+	//		//bribedGoodReceiveAmount--;
+
+	//	}
+	//	// If the bribed card is not available because Merchant lied (Honor among Thieves) -> Animation discard the bribed good
+	//	else if ( (jsonMessage["MessageType"] == "SHERIFF_PASS_RESPONSE") && (bribedGoodReceiveAmount == 0) ) {
+
+	//	}
+	//	// If Sheriff decided to check -> animation add the bribed good back to Merchant
+	//	else {
+
+	//	}
+	//}
 }
 
 void GameLogic::handleTimeoutWithdraw()
