@@ -792,11 +792,11 @@ bool Game::update()
 
 		if (m_selectedCards.empty()) {
 			m_gameEvent = IDLE;
-			// Restructure server's timeout message type
-			json serverMessage;
-			serverMessage["MessageType"] = "PLAYER_TIMEOUT";
-			// Respond message
-			Network::getInstance().respondMessage(serverMessage);
+			//// Restructure server's timeout message type
+			//json serverMessage;
+			//serverMessage["MessageType"] = "PLAYER_TIMEOUT";
+			//// Respond message
+			//Network::getInstance().respondMessage(serverMessage);
 		}
 
 		break;
@@ -1241,18 +1241,21 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 		// Stop the timer
 		m_timer->stop();
 
-		// If player is in the middle of withdraw/discard event, randomize what's left
-		if (m_gameEvent == WITHDRAW) {
-			m_gameLogic->handleTimeoutWithdraw();
+		//// If player is in the middle of withdraw/discard event, randomize what's left
+		//if (m_gameEvent == WITHDRAW) {
+		//	m_gameLogic->handleTimeoutWithdraw();
+		//}
+		//else if (m_gameEvent == DISCARD) {
+		//	m_gameLogic->handleTimeoutDiscard();
+		//}
+		//// If not, send response message and wait for new turn
+		//else {
+		if (m_gameEvent == DISCARD) {
+			m_gameEvent = TIMEOUT_DISCARD;
 		}
-		else if (m_gameEvent == DISCARD) {
-			m_gameLogic->handleTimeoutDiscard();
-		}
-		// If not, send response message and wait for new turn
-		else {
-			m_gameEvent = IDLE;
-			Network::getInstance().respondMessage(jsonMessage);
-		}
+		//}
+		// Respond message
+		Network::getInstance().respondMessage(jsonMessage);
 	}
 
 	// Server update player score

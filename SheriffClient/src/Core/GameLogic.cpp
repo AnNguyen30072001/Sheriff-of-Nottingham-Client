@@ -583,7 +583,7 @@ void GameLogic::handleDiscardEvent(Game::PileType type, std::string cardName)
 		for (int i = 0; i < m_game->m_selectedCards.size(); i++) {
 			// Look for the right card to insert to pile
 			if ((m_game->m_selectedCards[i]->isDragging() && m_game->m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName))
-				|| (m_game->m_gameEvent == Game::TIMEOUT_DISCARD && m_game->m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName))) {
+				|| (m_game->m_gameEvent == Game::IDLE && m_game->m_selectedCards[i]->getCardType() == Card::m_stringToCardName.at(cardName))) {
 				m_game->m_deck->getStackLeft().push(m_game->m_selectedCards[i]);
 				// Animation card fit into deck, callback to function set texture
 				m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_selectedCards[i]->getCard(), Animation::Type::MOVE,
