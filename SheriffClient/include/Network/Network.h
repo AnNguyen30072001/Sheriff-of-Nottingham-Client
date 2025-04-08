@@ -25,7 +25,7 @@ class Network
 {
 public:
 	// Server: 34.92.181.81
-	static Network& getInstance(const std::string& address = "34.92.181.81", uint16_t port = 8080)
+	static Network& getInstance(const std::string& address = "127.0.0.1", uint16_t port = 8080)
 	{
 		static Network instance(address, port);
 		return instance;

@@ -147,6 +147,36 @@ void GameLogic::handleDealCardsEvent(const nlohmann::json & jsonMessage)
 	}
 }
 
+void GameLogic::handleDealRoleEvent()
+{
+	m_game->m_tablet->resetOptions();
+	m_game->m_infoText.setScale(0.f, 0.f);
+
+	for (auto& card : m_game->m_dummyCards) {
+		m_game->m_dummyCardsMutex.lock();
+		delete card;
+		m_game->m_dummyCardsMutex.unlock();
+	}
+
+	for (auto& card : m_game->m_bribedCards) {
+		m_game->m_dummyCardsMutex.lock();
+		delete card;
+		m_game->m_dummyCardsMutex.unlock();
+	}
+
+	for (auto& card : m_game->m_selectedCards) {
+		m_game->m_selectedCardsMutex.lock();
+		delete card;
+		m_game->m_selectedCardsMutex.unlock();
+	}
+	m_game->m_dummyCards.clear();
+	m_game->m_bribedCards.clear();
+	m_game->m_selectedCards.clear();
+
+	m_game->m_discardDone = false;
+	m_game->m_gameEvent = Game::DEFAULT;
+}
+
 void GameLogic::handleStartTurnEvent(std::string playerName)
 {
 	for (int i = 0; i < m_game->m_playerList.size(); i++) {
@@ -229,6 +259,9 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 			// If it is a merchant's turn, reset all previous stored goods infomation, for safety measure
 			else {
 				m_game->m_tablet->resetOptions();
+				m_game->m_infoText.setScale(0.f, 0.f);
+				m_BribedGoodsType = Card::INVALID;
+				m_bribedGoodsAmount = 0;
 
 				for (auto& card : m_game->m_dummyCards) {
 					m_game->m_dummyCardsMutex.lock();
@@ -274,7 +307,7 @@ void GameLogic::handlePresentEvent()
 	message["MessageType"] = "MERCHANT_GIVE_BAG";
 	message["PlayerName"] = m_game->m_playerList[0]->getPlayerName();
 	message["Report"] = Card::m_cardNameToString.at(m_game->m_tablet->getPresentedGoods());
-	if (m_game->m_tablet->getBribedGoodsAmount() != 0) {
+	if ( (m_game->m_tablet->getBribedGoodsAmount() != 0) && (m_game->m_tablet->getBribedGoodsType() != Card::INVALID) ) {
 		message["Fee"] = {
 			{"Money", std::to_string(m_game->m_tablet->getBribeAmount())},
 			{Card::m_cardNameToString.at(m_game->m_tablet->getBribedGoodsType()), std::to_string(m_game->m_tablet->getBribedGoodsAmount())}
@@ -1098,6 +1131,7 @@ void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 						m_game->m_revealingDone = true;
 						// Send response message
 						Network::getInstance().respondMessage(jsonMessage);
+						std::cout << "Reveal card respond case: Sheriff pass or all cards legal\n";
 
 						return;
 					}
@@ -1109,21 +1143,20 @@ void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_dummyCards[i]->getCard(), Animation::Type::SCALE, 0.f, 0.3, 1.2, [this, i, jsonMessage]
 			{
 				// If done process the last card
-				if (i == m_game->m_dummyCards.size() - 1) {
-					for (Card* card : m_game->m_dummyCards) {
-						delete card;
-						card = nullptr;
-					}
-					m_game->m_dummyCards.clear();
+				for (Card* card : m_game->m_dummyCards) {
+					delete card;
+					card = nullptr;
+				}
+				m_game->m_dummyCards.clear();
 
-					if (m_game->m_bribedCards.empty()) {
-						// Reveal process is complete
-						m_game->m_revealingDone = true;
-						// Send response message
-						Network::getInstance().respondMessage(jsonMessage);
+				if (m_game->m_bribedCards.empty()) {
+					// Reveal process is complete
+					m_game->m_revealingDone = true;
+					// Send response message
+					Network::getInstance().respondMessage(jsonMessage);
+					std::cout << "Reveal card respond case: illegal card\n";
 
-						return;
-					}
+					return;
 				}
 			}));
 		}
@@ -1156,6 +1189,7 @@ void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 					m_game->m_revealingDone = true;
 					// Send response message
 					Network::getInstance().respondMessage(jsonMessage);
+					std::cout << "Reveal card respond case: give bribed cards to Sheriff\n";
 
 					return;
 				}
@@ -1179,6 +1213,7 @@ void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 					m_game->m_revealingDone = true;
 					// Send response message
 					Network::getInstance().respondMessage(jsonMessage);
+					std::cout << "Reveal card respond case: give bribed cards to Merchant\n";
 
 					return;
 				}

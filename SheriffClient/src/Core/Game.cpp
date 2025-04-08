@@ -1038,6 +1038,8 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 
 	// Game deals role, only care to switch status for sheriff player, the rest are merchants
 	else if (jsonMessage["MessageType"] == "GAME_DEALS_ROLE") {
+		m_gameLogic->handleDealRoleEvent();
+
 		if (jsonMessage["Role"] == "SHERIFF") {
 			for (auto& player : m_playerList) {
 				if (player->getPlayerName() == jsonMessage["PlayerName"]) {
@@ -1214,6 +1216,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 		m_gameEvent = REVEAL;
 		// Set info text
 		m_textMutex.lock();
+		m_infoText.setScale(1.f, 1.f);
 		m_infoText.setString("Sheriff chose to inspect the goods!");
 		m_infoText.setPosition((1920.f - m_infoText.getGlobalBounds().width) / 2, 680.f);
 		m_textMutex.unlock();
@@ -1230,6 +1233,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 		// Set info text
 		m_textMutex.lock();
 		m_infoText.setString("Sheriff chose to let the goods pass!");
+		m_infoText.setScale(1.f, 1.f);
 		m_infoText.setPosition((1920.f - m_infoText.getGlobalBounds().width) / 2, 680.f);
 		m_textMutex.unlock();
 		// Handle animations

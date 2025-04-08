@@ -17,6 +17,7 @@ public:
 
 	void handleDealCardsEvent(const nlohmann::json& jsonMessage);
 
+	void handleDealRoleEvent();
 	void handleStartTurnEvent(std::string playerName);
 
 	void handlePresentEvent();

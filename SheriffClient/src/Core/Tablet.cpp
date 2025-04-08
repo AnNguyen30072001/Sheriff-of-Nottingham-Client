@@ -1,7 +1,7 @@
 #include "../include/Core/Tablet.h"
 #include <iostream>
 
-#define BRIBE_GOODS_AMOUNT_MAX	99U
+#define BRIBE_GOODS_AMOUNT_MAX	9U
 
 Tablet::Tablet(sf::RenderWindow* parentWindow)
 {
@@ -181,6 +181,8 @@ void Tablet::handleTextEnter()
 
 			centerText(m_bribeMoneyBoxText, m_bribeMoneyBox);
 		}
+
+		// If Bribe Goods Box is selected
 		else if (m_BoxOutline.getPosition() == m_bribeGoodsBox.getPosition()) {
 			if (m_ev.text.unicode == 8) {  // Backspace key
 				if (!m_bribeGoodsAmountInput.empty()) {
@@ -698,15 +700,15 @@ bool Tablet::confirmSelection()
 		return false;
 	}
 
-	if (m_bribeGoodsAmount != 0 && m_bribeGoodsTypeInput == Card::INVALID) {
-		// Return early
-		return false;
-	}
+	//if (m_bribeGoodsAmount != 0 && m_bribeGoodsTypeInput == Card::INVALID) {
+	//	// Return early
+	//	return false;
+	//}
 
-	if (m_bribeGoodsAmount == 0 && m_bribeGoodsTypeInput != Card::INVALID) {
-		// Return early
-		return false;
-	}
+	//if (m_bribeGoodsAmount == 0 && m_bribeGoodsTypeInput != Card::INVALID) {
+	//	// Return early
+	//	return false;
+	//}
 
 	// Log the selection
 	std::cout << "Reported goods: " << Card::m_cardNameToString.at(m_selectedGoods)
