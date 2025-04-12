@@ -172,6 +172,9 @@ void Game::initWindow()
 	m_moneyIcon.setSize(sf::Vector2f(100.f, 100.f));
 	m_moneyIcon.setFillColor(sf::Color::White);
 	m_moneyIcon.setTexture(&m_moneyIconTexture);
+	m_bribedGoodsText.setFont(m_font);
+	m_bribedGoodsText.setCharacterSize(48);
+	m_bribedGoodsText.setFillColor(sf::Color::White);
 
 	// Info text
 	m_infoText.setFont(m_font);
@@ -192,9 +195,9 @@ void Game::initWindow()
 	//	m_ButtonRight.getPosition().y + m_ButtonRight.getSize().y / 2);
 
 	// Positioning bribe amount, goods report
-	m_goodsReportText.setPosition(755.f, 200.f);
-	m_moneyIcon.setPosition(910.f, 515.f);
-	m_moneyText.setPosition(1030.f, 534.f);
+	//m_goodsReportText.setPosition(755.f, 200.f);
+	//m_moneyIcon.setPosition(910.f, 515.f);
+	//m_moneyText.setPosition(1030.f, 534.f);
 
 	// Initial draw user hand
 	userHandUI();
@@ -873,7 +876,8 @@ bool Game::render()
 		m_window->draw(m_SheriffEventMask);
 		m_window->draw(m_goodsReportText);
 		m_window->draw(m_goodsReportIcon);
-		m_window->draw(m_infoText);
+		m_window->draw(m_bribedGoodsText);
+		//m_window->draw(m_infoText);
 
 		// Draw highlighted sheriff and merchant
 		m_window->draw(sheriffPlayer->getAvatar());
@@ -896,10 +900,15 @@ bool Game::render()
 			//m_window->draw(m_ButtonRightText);
 		}
 
-		//// If reveal, show info text
-		//if (m_gameEvent == REVEAL) {
-		//	m_window->draw(m_infoText);
-		//}
+		// If reveal, show info text
+		if (m_gameEvent == REVEAL) {
+			m_window->draw(m_infoText);
+		}
+
+		// Draw bribed cards in reverse order to help render reveal process
+		for (int i = m_bribedCards.size() - 1; i > 0; i--) {
+			m_window->draw(m_bribedCards[i]->getCard());
+		}
 
 		// Draw money
 		m_window->draw(m_moneyIcon);
@@ -910,9 +919,6 @@ bool Game::render()
 	std::lock_guard<std::mutex> lockDummyCards(m_dummyCardsMutex);
 	for (auto& card : m_dummyCards) {
 		m_window->draw(card->getCard());	
-	}
-	for (auto& card : m_bribedCards) {
-		m_window->draw(card->getCard());
 	}
 
 	// Selected cards, for discard,present...

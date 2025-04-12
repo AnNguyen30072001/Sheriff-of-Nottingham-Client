@@ -89,8 +89,6 @@ protected:
 	// Render Objects
 	sf::RectangleShape m_ButtonLeft;
 	sf::RectangleShape m_ButtonRight;
-	//sf::Text m_ButtonLeftText;
-	//sf::Text m_ButtonRightText;
 	sf::Texture m_discardButtonTexture;
 	sf::Texture m_discardButtonHighlightTexture;
 	sf::Texture m_discardButtonGrayTexture;
@@ -111,6 +109,7 @@ protected:
 	sf::Text m_goodsReportText;
 	sf::RectangleShape m_goodsReportIcon;
 	sf::Texture m_goodsReportTexture;
+	sf::Text m_bribedGoodsText;
 	sf::Text m_infoText;
 	sf::Text m_guideText;
 

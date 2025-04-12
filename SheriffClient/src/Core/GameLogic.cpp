@@ -216,12 +216,16 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 						sf::Vector2f(posX, 395.f), 1.f));
 				}
 
-				// Animation of bribed cards
+				// Setup bribed cards
 				for (int i = 0; i < m_game->m_bribedCards.size(); i++) {
-					float posX = 1546.f + (i % 3) * 105.f;
-					float posY = i < 3 ? 350.f : 505.f;
-					m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_bribedCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE,
-						0.3, sf::Vector2f(posX, posY), 0.667, 0.5));
+					//float posX = 1546.f + (i % 3) * 105.f;
+					//float posY = i < 3 ? 350.f : 505.f;
+					float posX = 1600.f;
+					float posY = 505.f;
+					//m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_bribedCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE,
+					//	0.3, sf::Vector2f(posX, posY), 0.667, 0.5));
+					m_game->m_bribedCards[i]->getCard().setPosition(posX, posY);
+					m_game->m_bribedCards[i]->getCard().setScale(0.667, 0.667);
 				}
 
 				// Set infomation
@@ -231,20 +235,27 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 				}
 
 				m_game->m_textMutex.lock();
+				m_game->m_goodsReportText.setPosition(755.f, 200.f);
 				m_game->m_goodsReportText.setString("\"Just " + std::to_string(m_game->m_dummyCards.size()) + "         , I swear!\"");
 				m_game->m_goodsReportTexture.loadFromFile("assets/Images/" + Card::m_cardNameToString.at(m_goodsReport) + "ReportHighlight.png");
 				m_game->m_goodsReportIcon.setTexture(&m_game->m_goodsReportTexture, true);
-				//m_game->m_infoText.setString("Bribe:");
-				//m_game->m_infoText.setPosition(800.f, 540.f);
 				//m_game->m_moneyIcon.setPosition(950.f, 520.f);
-				m_game->m_moneyIcon.setPosition(1595.f, 220.f);
+				m_game->m_moneyIcon.setPosition(1595.f, 350.f);
 				m_game->m_moneyIcon.setScale(1.f, 1.f);
 				m_game->m_moneyText.setString(std::to_string(m_bribeAmount));
 				m_game->m_moneyText.setFillColor(sf::Color::White);
 				m_game->m_moneyText.setCharacterSize(48);
 				m_game->m_moneyText.setScale(1.f, 1.f);
 				//m_game->m_moneyText.setPosition(1070.f, 540.f);
-				m_game->m_moneyText.setPosition(1730.f, 240.f);
+				m_game->m_moneyText.setPosition(1730.f, 370.f);
+				if (m_game->m_bribedCards.size() > 0) {
+					m_game->m_bribedGoodsText.setString(std::to_string(m_game->m_bribedCards.size()));
+					m_game->m_bribedGoodsText.setScale(1.f, 1.f);
+				}
+				else {
+					m_game->m_bribedGoodsText.setScale(0.f, 0.f);
+				}
+				m_game->m_bribedGoodsText.setPosition(1730.f, 540.f);
 				m_game->m_textMutex.unlock();
 
 				// Temporary hide all decks and user cards
