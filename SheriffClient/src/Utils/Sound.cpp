@@ -1,4 +1,4 @@
-#include "../Utils/Sound.h"
+#include "../include/Utils/Sound.h"
 #include <iostream>
 
 Sound::Sound() {}
@@ -14,6 +14,7 @@ void Sound::play(const std::string& name, Type type, float playingOffset, float 
 		// Load sound buffer if not already loaded
 		if (!m_buffer.loadFromFile("assets/Sound/" + name)) {
 			std::cerr << "Failed to load sound: " << name << std::endl;
+
 			return;
 		}
 
