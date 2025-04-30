@@ -136,6 +136,7 @@
     <ClCompile Include="src/Core/GameLogic.cpp" />
     <ClCompile Include="src/Core/Lobby.cpp" />
     <ClCompile Include="src/Core/Login.cpp" />
+    <ClCompile Include="src/Core/VictoryScreen.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src/Network/Network.cpp" />
     <ClCompile Include="src/Entities/Player.cpp" />
@@ -154,6 +155,7 @@
     <ClInclude Include="include/Core/GameState.h" />
     <ClInclude Include="include/Core/Lobby.h" />
     <ClInclude Include="include/Core/Login.h" />
+    <ClInclude Include="include/Core/VictoryScreen.h" />
     <ClInclude Include="include/Network/Network.h" />
     <ClInclude Include="include/Entities/Player.h" />
     <ClInclude Include="include/Entities/Popup.h" />

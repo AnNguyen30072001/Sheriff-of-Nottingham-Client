@@ -81,6 +81,9 @@
     <ClCompile Include="src/Utils/Sound.cpp">
       <Filter>Source Files\Utils</Filter>
     </ClCompile>
+    <ClCompile Include="src/Core/VictoryScreen.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include/Core/Game.h">
@@ -127,6 +130,9 @@
     </ClInclude>
     <ClInclude Include="include/Utils/Sound.h">
       <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="include/Core/VictoryScreen.h">
+      <Filter>Header Files\Core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

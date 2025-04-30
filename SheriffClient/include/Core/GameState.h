@@ -5,7 +5,8 @@ enum gameState {
 	INVALID,
 	LOGIN_VIEW,
 	LOBBY_VIEW,
-	GAME_VIEW
+	GAME_VIEW,
+	END_VIEW
 };
 
 extern gameState g_gameState;
