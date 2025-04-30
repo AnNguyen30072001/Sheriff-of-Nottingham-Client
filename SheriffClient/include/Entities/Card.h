@@ -28,7 +28,8 @@ public:
 	static const std::unordered_map<CardType, int> cardTypeToPenalty;
 	static const std::unordered_map<CardType, int> cardTypeToGoldBonus;
 	static const std::unordered_map<CardType, int> cardTypeToSilverBonus;
-	static const std::unordered_map<CardType, int> cardTypeToContrabandBonus;
+	static const std::unordered_map<CardType, int> cardTypeToContrabandBonusLow;
+	static const std::unordered_map<CardType, int> cardTypeToContrabandBonusHigh;
 
 	Card(CardType cardType);
 	~Card();

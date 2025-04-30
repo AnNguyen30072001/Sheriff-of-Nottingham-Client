@@ -58,6 +58,12 @@ bool Login::initWindow()
 	m_usernameBox.setFillColor(sf::Color(200, 200, 200));
 	m_usernameBox.setPosition(850, 550);
 
+	// User name display text
+	m_usernameDisplay.setFont(m_font);
+	m_usernameDisplay.setCharacterSize(24);
+	m_usernameDisplay.setFillColor(sf::Color::Black);
+	m_usernameDisplay.setPosition(m_usernameBox.getPosition().x + 10, m_usernameBox.getPosition().y + 10);
+
 	// IP Input Box
 	//m_IPBox = sf::RectangleShape(sf::Vector2f(400, 50));
 	//m_IPBox.setFillColor(sf::Color(200, 200, 200));
@@ -163,7 +169,14 @@ bool Login::pollEvents()
 					m_usernameText.pop_back();
 				}
 				else if (m_ev.text.unicode >= 32 && m_ev.text.unicode <= 126) { // Printable characters
-					m_usernameText += static_cast<char>(m_ev.text.unicode);
+					//m_usernameText += static_cast<char>(m_ev.text.unicode);
+					std::string temp = m_usernameText + static_cast<char>(m_ev.text.unicode);
+					m_usernameDisplay.setString(temp);
+
+					// Measure the width
+					if (m_usernameDisplay.getLocalBounds().width <= 380) {
+						m_usernameText += static_cast<char>(m_ev.text.unicode);
+					}
 				}
 			}
 			//else if (m_mousePressedPos == IP_BOX) {

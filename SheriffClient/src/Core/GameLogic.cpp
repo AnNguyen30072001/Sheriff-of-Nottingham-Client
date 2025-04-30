@@ -1330,15 +1330,19 @@ void GameLogic::updatePlayerInfo(Player* player, int money, int score, std::unor
 	for (int cardType = Card::PEPPER; cardType <= Card::SILK; cardType++) {
 		if (blackMarketBonusMap[static_cast<Card::CardType>(cardType)] == 1) {
 			player->setPlayerMedalStatus(cardType, Player::MedalStatus::BLACK_MARKET_LOW);
+			std::cout << "Player " << player->getPlayerName() << "Black Market status: Low" << std::endl;
 		}
 		else if (blackMarketBonusMap[static_cast<Card::CardType>(cardType)] == 2) {
 			player->setPlayerMedalStatus(cardType, Player::MedalStatus::BLACK_MARKET_HIGH);
+			std::cout << "Player " << player->getPlayerName() << "Black Market status: High" << std::endl;
 		}
 		else if (blackMarketBonusMap[static_cast<Card::CardType>(cardType)] == 3) {
 			player->setPlayerMedalStatus(cardType, Player::MedalStatus::BLACK_MARKET_BOTH);
+			std::cout << "Player " << player->getPlayerName() << "Black Market status: Both" << std::endl;
 		}
 		else {
 			player->setPlayerMedalStatus(cardType, Player::MedalStatus::NONE);
+			std::cout << "Player " << player->getPlayerName() << "Black Market status: None" << std::endl;
 		}
 	}
 }

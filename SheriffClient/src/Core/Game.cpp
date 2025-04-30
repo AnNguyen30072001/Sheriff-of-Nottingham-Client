@@ -1,6 +1,7 @@
 #include "../include/Core/Game.h"
 #include "../include/Core/GameLogic.h"
-#include <Windows.h>
+#include "../include/Core/GameState.h"
+//#include <Windows.h>
 #include <string.h>
 
 #define USER_PLAYER_INDEX	0U
@@ -263,6 +264,11 @@ Deck * Game::getDeck()
 Game::GameEvent & Game::getGameEvent()
 {
 	return m_gameEvent;
+}
+
+std::vector<Player*> Game::getPlayerList() const
+{
+	return m_playerList;
 }
 
 bool Game::handleMouseClick(sf::Vector2f mousePosXY)
@@ -1300,8 +1306,8 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 				}
 
 				// Get black market bonuses info
-				if (jsonMessage.contains("BlackMarketBonuses") && jsonMessage["BlackMarketBonuses"].is_object()) {
-					for (auto it = jsonMessage["BlackMarketBonuses"].begin(); it != jsonMessage["BlackMarketBonuses"].end(); it++) {
+				if (jsonMessage.contains("BlackMarketBonus") && jsonMessage["BlackMarketBonus"].is_object()) {
+					for (auto it = jsonMessage["BlackMarketBonus"].begin(); it != jsonMessage["BlackMarketBonus"].end(); it++) {
 						std::string cardTypeString = it.key();
 						Card::CardType cardType = Card::m_stringToCardName.at(cardTypeString);
 						std::string bonusCountString = it.value();
@@ -1318,6 +1324,13 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 		}
 		Network::getInstance().respondMessage(jsonMessage);
 	}
+
+	// Game end
+	else if (jsonMessage["MessageType"] == "GAME_END") {
+		g_gameState = END_VIEW;
+		Network::getInstance().respondMessage(jsonMessage);
+	}
+
 }
 
 

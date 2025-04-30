@@ -65,10 +65,18 @@ const std::unordered_map<Card::CardType, int> Card::cardTypeToSilverBonus = {
 	{UNKNOWN, 0}
 };
 
-const std::unordered_map<Card::CardType, int> Card::cardTypeToContrabandBonus = {
+const std::unordered_map<Card::CardType, int> Card::cardTypeToContrabandBonusHigh = {
 	{PEPPER, 30},
 	{MEAD, 32},
 	{SILK, 34},
+	{CROSSBOW, 0},
+	{UNKNOWN, 0}
+};
+
+const std::unordered_map<Card::CardType, int> Card::cardTypeToContrabandBonusLow = {
+	{PEPPER, 27},
+	{MEAD, 29},
+	{SILK, 31},
 	{CROSSBOW, 0},
 	{UNKNOWN, 0}
 };

@@ -521,50 +521,48 @@ void Tablet::setupInfoUI(Player * player)
 	//std::cout << "Player money: " << player->getPlayerMoney() << std::endl;
 
 	// Tablet background
-	m_tabletInfo.setSize(sf::Vector2f(1110.f, 1158.f));
+	m_tabletInfo.setSize(sf::Vector2f(1200.f, 1200.f));
 	m_tabletInfo.setFillColor(sf::Color::White);
 	m_tabletInfo.setTexture(&m_tabletTextureInfo);
-	m_tabletInfo.setPosition(405.f, -39.f);
+	m_tabletInfo.setPosition(360, -60.f);
 
 	// Player avatar
 	m_playerAvatar = player->getAvatar();
 	m_playerAvatarFrame = player->getAvatarFrame();
 	m_playerName = player->getNameText();
-	if (player->isUserPlayer()) {
-		m_playerAvatar.setPosition(710.f, 164.f);
-		m_playerAvatarFrame.setPosition(690.f, 144.f);
-	}
-	else {
-		m_playerAvatar.setPosition(730.f, 210.f);
-		m_playerAvatarFrame.setPosition(710.f, 190.f);
-	}
 
+	m_playerAvatar.setRadius(63.f);
+	m_playerAvatarFrame.setRadius(83.f);
+	m_playerAvatar.setPosition(612.f, 117.f);
+	m_playerAvatarFrame.setPosition(m_playerAvatar.getPosition() + sf::Vector2f(-20.f, -20.f));
+
+	m_playerNameBox.setSize(sf::Vector2f(400.f, 40.f));
+	m_playerNameBox.setPosition(475.f, 276.f);
 	m_playerName.setCharacterSize(30);
-	m_playerName.setPosition(m_playerAvatar.getPosition() + 
-		(player->isUserPlayer() ? sf::Vector2f(-10.f, 150.f) : sf::Vector2f(-10.f, 110.f)));
+	centerText(m_playerName, m_playerNameBox);
 
 	// Player money
-	m_moneyIcon.setSize(sf::Vector2f(70.f, 70.f));
+	m_moneyIcon.setSize(sf::Vector2f(75.f, 75.f));
 	m_moneyIcon.setFillColor(sf::Color::White);
 	m_moneyIcon.setTexture(&m_moneyIconTexture);
-	m_moneyIcon.setPosition(1045.f, 154.f);
+	m_moneyIcon.setPosition(1088.f, 141.f);
 	m_moneyText.setFont(m_font);
 	m_moneyText.setFillColor(sf::Color::Black);
 	m_moneyText.setString(std::to_string(m_playerMoney));
 	m_moneyText.setCharacterSize(42);
-	m_moneyText.setPosition(1140.f, 167.f);
+	m_moneyText.setPosition(1185.f, 155.f);
 
 	// Player score
-	m_playerScore = player->getPlayerScore();
-	m_scoreIcon.setSize(sf::Vector2f(70.f, 70.f));
-	m_scoreIcon.setFillColor(sf::Color::White);
-	m_scoreIcon.setTexture(&m_scoreIconTexture);
-	m_scoreIcon.setPosition(1045.f, 245.f);
-	m_scoreText.setFont(m_font);
-	m_scoreText.setFillColor(sf::Color::Black);
-	m_scoreText.setString(std::to_string(m_playerScore));
-	m_scoreText.setCharacterSize(42);
-	m_scoreText.setPosition(1140.f, 255.f);
+	//m_playerScore = player->getPlayerScore();
+	//m_scoreIcon.setSize(sf::Vector2f(70.f, 70.f));
+	//m_scoreIcon.setFillColor(sf::Color::White);
+	//m_scoreIcon.setTexture(&m_scoreIconTexture);
+	//m_scoreIcon.setPosition(1045.f, 245.f);
+	//m_scoreText.setFont(m_font);
+	//m_scoreText.setFillColor(sf::Color::Black);
+	//m_scoreText.setString(std::to_string(m_playerScore));
+	//m_scoreText.setCharacterSize(42);
+	//m_scoreText.setPosition(1140.f, 255.f);
 	
 	// Goods
 	std::string texturePathsUserHighlight[8] = 
@@ -592,13 +590,13 @@ void Tablet::setupInfoUI(Player * player)
 		float posY = 0.f;
 		if (!player->isUserPlayer()) {
 			m_goodsButtonTexturesHighLight[i].loadFromFile("assets/Images/" + texturePathsOpponentHighlight[i]);
-			posX = i < 4 ? (610.f + (i % 4) * 200.f) : 920.f;
-			posY = i < 4 ? 423.f : 610.f;
+			posX = i < 4 ? (592.f + (i % 4) * 222.f) : 922.f;
+			posY = i < 4 ? 354.f : 555.f;
 		}
 		else {
 			m_goodsButtonTexturesHighLight[i].loadFromFile("assets/Images/" + texturePathsUserHighlight[i]);
-			posX = 610.f + (i % 4) * 200.f;
-			posY = i < 4 ? 423.f : 610.f;
+			posX = 592.f + (i % 4) * 222.f;
+			posY = i < 4 ? 354.f : 555.f;
 		}
 		m_goodsButtons[i].setSize(sf::Vector2f(100.f, 100.f));
 		m_goodsButtons[i].setScale(1.f, 1.f);
@@ -608,7 +606,7 @@ void Tablet::setupInfoUI(Player * player)
 		m_goodsButtons[i].setPosition(posX, posY); // Position buttons in a row
 
 		// Goods Text
-		m_goodsAmountText[i].setCharacterSize(48);
+		m_goodsAmountText[i].setCharacterSize(40);
 		m_goodsAmountText[i].setFont(m_font);
 		m_goodsAmountText[i].setFillColor(sf::Color::Black);
 		m_goodsAmountText[i].setScale(1.f, 1.f);
@@ -618,14 +616,14 @@ void Tablet::setupInfoUI(Player * player)
 			int goodAmount = player->getPlayerGoodsAmount(i + 1);
 			std::string amount = std::to_string(goodAmount);
 			m_goodsAmountText[i].setString(amount);
-			m_goodsAmountText[i].setPosition(posX + (goodAmount < 10 ? 35.f : 20.f), posY + 115.f);
+			m_goodsAmountText[i].setPosition(posX + (goodAmount < 10 ? 37.f : 24.f), posY + 108.f);
 		}
 		// If display opponent info, just display the total contraband amount
 		else {
 			// Display contraband amount
 			std::string amount = std::to_string(contrabandAmount);
 			m_goodsAmountText[i].setString(amount);
-			m_goodsAmountText[i].setPosition(posX + (contrabandAmount < 10 ? 35.f : 20.f), posY + 115.f);
+			m_goodsAmountText[i].setPosition(posX + (contrabandAmount < 10 ? 35.f : 24.f), posY + 108.f);
 		}
 	}
 
@@ -661,19 +659,17 @@ void Tablet::setupInfoUI(Player * player)
 
 	// Black market medals
 	for (int i = 0; i < 6; i++) {
-		m_blackMarketMedals[i].setSize(sf::Vector2f(190.f, 120.f));
+		m_blackMarketMedals[i].setSize(sf::Vector2f(265.f, 167.f));
 		m_blackMarketMedals[i].setTexture(&m_blackMarketMedalTexture[i]);
 		m_blackMarketMedals[i].setFillColor(sf::Color(255, 255, 255, 0));
-		float posX;
+		float posX = 481.f + (i / 2) * 365.f;
 		float posY;
 		// Setup positions
 		if (i % 2 == 0) {
-			posX = 600.f + i * 132.5;
-			posY = 790.f;
+			posY = 744.f;
 		}
 		else {
-			posX = 480.f + i * 132.5;
-			posY = 820.f;
+			posY = 792.f;
 		}
 		m_blackMarketMedals[i].setPosition(posX, posY);
 

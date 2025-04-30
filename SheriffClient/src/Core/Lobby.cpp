@@ -1,7 +1,7 @@
 #include <iostream>
 #include "../include/Core/Lobby.h"
 #include "../include/Core/GameState.h"
-#include <Windows.h>
+//#include <Windows.h>
 
 bool Lobby::initVariable()
 {
@@ -233,7 +233,7 @@ void Lobby::onMessageReceived(const nlohmann::json& jsonMessage)
 	// Handle game start (in this case, response message is not sent here, but sent after Lobby is initiated)
 	else if (jsonMessage["MessageType"] == "GAME_START") {
 		// TO DO: Add UI to indicate game about to start 
-		Sleep(1000);
+		//Sleep(1000);
 		g_gameState = GAME_VIEW;
 	}
 

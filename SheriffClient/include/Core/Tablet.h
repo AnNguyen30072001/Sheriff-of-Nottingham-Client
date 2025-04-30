@@ -52,6 +52,7 @@ private:
 	sf::CircleShape		m_playerAvatar;					// Player avatar
 	sf::CircleShape		m_playerAvatarFrame;			// Player avatar frame
 	sf::Text			m_playerName;
+	sf::RectangleShape	m_playerNameBox;
 
 	sf::RectangleShape	m_moneyIcon;					// Money icon
 	sf::Texture			m_moneyIconTexture;

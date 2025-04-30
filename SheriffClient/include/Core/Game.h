@@ -52,6 +52,7 @@ public:
 	std::vector<Card*>& getSelectedCards();
 	Deck* getDeck();
 	GameEvent& getGameEvent();
+	std::vector<Player*> getPlayerList() const;
 
 	bool pollEvents();
 	bool update();
