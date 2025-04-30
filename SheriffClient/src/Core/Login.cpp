@@ -60,9 +60,7 @@ bool Login::initWindow()
 
 	// User name display text
 	m_usernameDisplay.setFont(m_font);
-	m_usernameDisplay.setCharacterSize(24);
 	m_usernameDisplay.setFillColor(sf::Color::Black);
-	m_usernameDisplay.setPosition(m_usernameBox.getPosition().x + 10, m_usernameBox.getPosition().y + 10);
 
 	// IP Input Box
 	//m_IPBox = sf::RectangleShape(sf::Vector2f(400, 50));
@@ -205,9 +203,9 @@ bool Login::update()
 	}
 
 	// Username text display
-	m_usernameDisplay = sf::Text(m_usernameText, m_font, 24);
+	m_usernameDisplay = sf::Text(m_usernameText, m_font, 30);
 	m_usernameDisplay.setFillColor(sf::Color::Black);
-	m_usernameDisplay.setPosition(m_usernameBox.getPosition().x + 10, m_usernameBox.getPosition().y + 10);
+	m_usernameDisplay.setPosition(m_usernameBox.getPosition().x + 10, m_usernameBox.getPosition().y + 5);
 
 	// IP Address display
 	//m_IPDisplay = sf::Text(m_IPText, m_font, 24);
