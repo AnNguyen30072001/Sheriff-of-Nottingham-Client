@@ -37,6 +37,8 @@ private:
 	sf::Texture						m_backgroundTexture;
 
 	// Objects
+	sf::RectangleShape				m_nameTextBox;
+
 	sf::Text						m_scoreText;
 	sf::RectangleShape				m_scoreTextBox;
 

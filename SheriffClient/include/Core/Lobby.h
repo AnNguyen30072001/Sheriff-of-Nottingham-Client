@@ -28,6 +28,8 @@ private:
 	bool initVariable();
 	bool initWindow();
 
+	void centerText(sf::Text & text, sf::RectangleShape & boundingBox);
+
 public:
 	enum insertPos {
 		TAIL,

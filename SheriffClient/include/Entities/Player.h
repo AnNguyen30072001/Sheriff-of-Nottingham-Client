@@ -72,6 +72,7 @@ private:
 
 	sf::Color m_playerColor;
 	sf::Text m_nameText;
+	sf::RectangleShape m_nameTextBox;
 
 	sf::RectangleShape m_readyButton;
 	sf::Text m_readyText;
@@ -99,6 +100,8 @@ private:
 
 	MedalStatus m_medalStatus[8];
 	int m_score;
+
+	void centerText(sf::Text & text, sf::RectangleShape & boundingBox);
 };
 
 #endif // !PLAYER__

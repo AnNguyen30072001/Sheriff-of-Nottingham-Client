@@ -31,6 +31,15 @@ bool Lobby::initWindow()
 	return true;
 }
 
+void Lobby::centerText(sf::Text & text, sf::RectangleShape & boundingBox)
+{
+	float x = boundingBox.getPosition().x + (boundingBox.getSize().x - text.getLocalBounds().width) / 2.f;
+	float y = boundingBox.getPosition().y + (boundingBox.getSize().y - text.getLocalBounds().height) / 2.f - 5.f;
+	x -= text.getLocalBounds().left;
+	y -= text.getLocalBounds().top / 2;
+	text.setPosition(x, y);
+}
+
 Lobby::Lobby()
 {
 	initVariable();

@@ -40,10 +40,12 @@ bool Summary::render()
 	m_window->draw(m_background);
 
 	// Draw players avatar, name
-	for (auto& player : m_playerList) {
-		m_window->draw(player->getAvatar());
-		m_window->draw(player->getAvatarFrame());
-		m_window->draw(player->getNameText());
+	for (int i = 0; i < m_playerList.size(); i++) {
+		m_window->draw(m_playerList[i]->getAvatar());
+		m_window->draw(m_playerList[i]->getAvatarFrame());
+		if (i == m_highlightedPlayerIdx) {
+			m_window->draw(m_playerList[i]->getNameText());
+		}
 	}
 
 	// Draw info
@@ -82,8 +84,13 @@ void Summary::initVariables(std::vector<Player*> playerList)
 		std::cerr << "Error loading money icon!\n";
 	}
 
+	//m_background.setTexture(&m_backgroundTexture);
+	m_background.setFillColor(sf::Color::White);
+
 	m_scoreText.setFont(m_font);
+	m_scoreText.setFillColor(sf::Color::Black);
 	m_moneyText.setFont(m_font);
+	m_moneyText.setFillColor(sf::Color::Black);
 
 	std::string texturePaths[8] =
 	{ "AppleReportHighlight.png", "CheeseReportHighlight.png", "BreadReportHighlight.png", "ChickenReportHighlight.png",
@@ -95,6 +102,7 @@ void Summary::initVariables(std::vector<Player*> playerList)
 
 	for (auto& text : m_goodsAmountText) {
 		text.setFont(m_font);
+		text.setFillColor(sf::Color::Black);
 	}
 
 	std::string blackMedalTexturePaths[6] = {
@@ -107,6 +115,14 @@ void Summary::initVariables(std::vector<Player*> playerList)
 			std::cerr << "Error loading meddal texture!" << std::endl;
 		}
 	}
+
+	m_moneyIcon.setTexture(&m_moneyIconTexture);
+	for (int i = 0; i < GOODS_ICON_NUM_MAX; i++) {
+		m_goodsIcon[i].setTexture(&m_goodsIconTexture[i]);
+	}
+	for (int i = 0; i < BLACK_MARKET_MEDAL_NUM_MAX; i++) {
+		m_blackMarketMedals[i].setTexture(&m_blackMarketMedalTexture[i]);
+	}
 }
 
 void Summary::initWindow()
@@ -115,6 +131,10 @@ void Summary::initWindow()
 	m_videoMode.height = 1080;
 	m_window = new sf::RenderWindow(m_videoMode, "Sheriff of Nottingham", sf::Style::Default);
 	m_window->setVerticalSyncEnabled(true);
+
+	// Backgrounds
+	m_background.setPosition(sf::Vector2f(0.f, 0.f));
+	m_background.setSize(sf::Vector2f(1920.f, 1080.f));
 	
 	// Ranking players in descending order
 	updatePlayersMedalStatus();
@@ -130,7 +150,8 @@ void Summary::initWindow()
 	// Players layout
 	setPlayersLayout();
 
-
+	// Player info
+	setPlayerInfoLayout(m_highlightedPlayerIdx);
 }
 
 bool Summary::handleMouseClick(sf::Vector2f mousePosXY)
@@ -142,23 +163,29 @@ void Summary::setPlayersLayout()
 {
 	int lobbySize = m_playerList.size();
 
-	float posXOffset = 124.f;
-	float distX = (1634.f - 124.f) / (lobbySize - 1);
-	float posY = 72.f;
+	float posXOffset = 145.f;
+	float distX = (1655.f - 145.f) / (lobbySize - 1);
+	float posY = 94.f;
 
 	for (int i = 0; i < lobbySize; i++) {
-		m_playerList[i]->getAvatar().setRadius(80.f);
-		m_playerList[i]->getAvatarFrame().setRadius(100.f);
+		m_playerList[i]->getAvatar().setRadius(60.f);
+		m_playerList[i]->getAvatarFrame().setRadius(80.f);
 		m_playerList[i]->getNameText().setCharacterSize(48);
+		m_playerList[i]->getNameText().setFillColor(sf::Color::Black);
+		m_playerList[i]->getNameText().setOutlineThickness(0.f);
+		m_nameTextBox.setSize(sf::Vector2f(640.f, 80.f));
 
 		m_playerList[i]->getAvatar().setPosition(posXOffset + i * distX, posY);
-		m_playerList[i]->getAvatarFrame().setPosition(m_playerList[i]->getAvatar().getPosition() + sf::Vector2f(-30.f, -60.f));
-		m_playerList[i]->getNameText().setPosition(890.f, 305.f);
+		m_playerList[i]->getAvatarFrame().setPosition(m_playerList[i]->getAvatar().getPosition() + sf::Vector2f(-20.f, -20.f));
+		m_nameTextBox.setPosition(640.f, 295.f);
+		centerText(m_playerList[i]->getNameText(), m_nameTextBox);
 	}
 }
 
 void Summary::setPlayerInfoLayout(int index)
 {
+	// Initial position properties
+
 	float posXOffset = 169.f;
 	float distX = 400.f;
 	float posYLineFirst = 491.f;
@@ -168,6 +195,64 @@ void Summary::setPlayerInfoLayout(int index)
 	float distXBlackToken = 664.f;
 	float posYBlackTokenLineFirst = 700.f;
 	float posYBlackTokenLineSecond = 750.f;
+
+	// Set properties
+
+	m_moneyIcon.setSize(sf::Vector2f(54.f, 54.f));
+	m_moneyIcon.setFillColor(sf::Color::White);
+	m_moneyIcon.setPosition(1543.f, 382.f);
+
+	m_scoreTextBox.setSize(sf::Vector2f(260.f, 80.f));
+	m_scoreTextBox.setPosition(830.f, 365.f);
+	m_scoreText.setCharacterSize(60);
+	m_scoreText.setString(std::to_string(m_playerList[index]->getPlayerScore()));
+	centerText(m_scoreText, m_scoreTextBox);
+
+	m_moneyTextBox.setSize(sf::Vector2f(140.f, 54.f));
+	m_moneyTextBox.setPosition(1613.f, 382.f);
+	m_moneyText.setCharacterSize(40);
+	m_moneyText.setString(std::to_string(m_playerList[index]->getPlayerMoney()));
+	centerText(m_moneyText, m_moneyTextBox);
+
+	// Goods info
+	for (int i = 0; i < GOODS_ICON_NUM_MAX; i++) {
+		m_goodsIcon[i].setSize(sf::Vector2f(64.f, 64.f));
+		m_goodsIcon[i].setFillColor(sf::Color::White);
+		m_goodsIcon[i].setPosition(posXOffset + (i % 4) * distX, (i < 4) ? posYLineFirst : posYLineSecond);
+
+		sf::Vector2f refPos = m_goodsIcon[i].getPosition();
+
+		m_goodsAmountTextBox[i].setSize(sf::Vector2f(228.f, 42.f));
+		m_goodsAmountTextBox[i].setPosition(refPos + sf::Vector2f(113.f, 11.f));
+		m_goodsAmountText[i].setCharacterSize(32);
+		m_goodsAmountText[i].setString(std::to_string(m_playerList[index]->getPlayerGoodsAmount(i + 1)));
+		centerText(m_goodsAmountText[i], m_goodsAmountTextBox[i]);
+	}
+
+	// Black market token info
+	for (int i = 0; i < BLACK_MARKET_MEDAL_NUM_MAX; i++) {
+		m_blackMarketMedals[i].setSize(sf::Vector2f(265.f, 167.f));
+		m_blackMarketMedals[i].setFillColor(sf::Color(255, 255, 255, 0));
+
+		float posX = posXOffsetBlackToken + (i / 2) * distXBlackToken;
+		float posY = (i % 2 == 0) ? posYBlackTokenLineFirst : posYBlackTokenLineSecond;
+
+		m_blackMarketMedals[i].setPosition(posX, posY);
+
+		// Only show if player gain that medal
+		if (m_playerList[index]->getPlayerMedalStatus(i / 2 + 5) == Player::MedalStatus::BLACK_MARKET_HIGH && (i % 2 == 0)) {
+			m_blackMarketMedals[i].setFillColor(sf::Color(255, 255, 255, 255));
+		}
+		else if (m_playerList[index]->getPlayerMedalStatus(i / 2 + 5) == Player::MedalStatus::BLACK_MARKET_LOW && (i % 2 != 0)) {
+			m_blackMarketMedals[i].setFillColor(sf::Color(255, 255, 255, 255));
+		}
+		else if (m_playerList[index]->getPlayerMedalStatus(i / 2 + 5) == Player::MedalStatus::BLACK_MARKET_BOTH) {
+			m_blackMarketMedals[i].setFillColor(sf::Color(255, 255, 255, 255));
+		}
+		else {
+			m_blackMarketMedals[i].setFillColor(sf::Color(255, 255, 255, 0));
+		}
+	}
 }
 
 void Summary::updatePlayersMedalStatus()

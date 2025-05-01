@@ -62,13 +62,13 @@ bool Player::initFontAndTexture()
 bool Player::initUserPlayer(std::string name, sf::Color playerColor)
 {
 	// User player setup
-	m_avatar.setRadius(60.f);
+	m_avatar.setRadius(50.f);
 	m_avatar.setFillColor(sf::Color::White);
 	m_avatar.setTexture(&m_avatarTexture);
 	//m_avatar.setOutlineThickness(5.f);
 	//m_avatar.setOutlineColor(playerColor);
 
-	m_avatarFrame.setRadius(80.f);
+	m_avatarFrame.setRadius(70.f);
 	m_avatarFrame.setFillColor(sf::Color::White);
 	m_avatarFrame.setTexture(&m_avatarFrameTexture);
 
@@ -78,6 +78,9 @@ bool Player::initUserPlayer(std::string name, sf::Color playerColor)
 	m_nameText.setOutlineColor(sf::Color::Black);
 	m_nameText.setOutlineThickness(2.f);
 	m_nameText.setString(name);
+
+	// Text box of player name, for horizontal alignment
+	m_nameTextBox.setSize(sf::Vector2f(300.f, 40.f));
 
 	m_readyButton.setSize(sf::Vector2f(120.f, 50.f));
 	m_readyButton.setOutlineColor(sf::Color::Black);
@@ -110,9 +113,10 @@ bool Player::initUserPlayer(std::string name, sf::Color playerColor)
 	m_turnIndicator.setString("In Turn");
 
 	// Positioning
-	m_avatar.setPosition(900.f, 880.f);
-	m_avatarFrame.setPosition(880.f, 860.f);
-	m_nameText.setPosition(900.f, 835.f);
+	m_avatar.setPosition(910.f, 890.f);
+	m_avatarFrame.setPosition(m_avatar.getPosition() + sf::Vector2f(-20.f, -20.f));
+	m_nameTextBox.setPosition(m_avatar.getPosition() + sf::Vector2f(-105.f, -60.f));
+	centerText(m_nameText, m_nameTextBox);
 
 	m_readyButton.setPosition(1060.f, 880.f);
 	m_readyText.setPosition(1095.f, 894.f);
@@ -127,13 +131,11 @@ bool Player::initUserPlayer(std::string name, sf::Color playerColor)
 
 bool Player::initPlayer(float posX, float posY)
 {
-	m_avatar.setRadius(40.f);
+	m_avatar.setRadius(30.f);
 	m_avatar.setFillColor(sf::Color::White);
 	m_avatar.setTexture(&m_avatarTexture);
-	//m_avatar.setOutlineThickness(5.f);
-	//m_avatar.setOutlineColor(m_playerColor);
 
-	m_avatarFrame.setRadius(60.f);
+	m_avatarFrame.setRadius(50.f);
 	m_avatarFrame.setFillColor(sf::Color::White);
 	m_avatarFrame.setTexture(&m_avatarFrameTexture);
 
@@ -142,6 +144,10 @@ bool Player::initPlayer(float posX, float posY)
 	m_nameText.setFillColor(sf::Color::White);
 	m_nameText.setOutlineColor(sf::Color::Black);
 	m_nameText.setOutlineThickness(2.f);
+	m_nameText.setString(getPlayerName());
+
+	// Text box of player name, for horizontal alignment
+	m_nameTextBox.setSize(sf::Vector2f(300.f, 40.f));
 
 	m_readyButton.setSize(sf::Vector2f(60.f, 30.f));
 	m_readyButton.setOutlineColor(sf::Color::Black);
@@ -174,20 +180,21 @@ bool Player::initPlayer(float posX, float posY)
 	m_turnIndicator.setString("In Turn");
 
 	// Positioning
-	m_avatar.setPosition(posX + 10.f, posY + 10.f);
-	m_avatarFrame.setPosition(posX - 10.f, posY - 10.f);
-	m_nameText.setPosition(posX + 5.f, posY - 30.f);
+	m_avatar.setPosition(posX, posY);
+	m_avatarFrame.setPosition(m_avatar.getPosition() + sf::Vector2f(-20.f, -20.f));
+	m_nameTextBox.setPosition(m_avatar.getPosition() + sf::Vector2f(-123.f, -60.f));
+	centerText(m_nameText, m_nameTextBox);
 
-	m_readyButton.setPosition(posX + 25.f, posY + 120.f);
+	m_readyButton.setPosition(posX + 15.f, posY + 110.f);
 	m_readyText.setPosition(
 		m_readyButton.getPosition().x + 10.f,
 		m_readyButton.getPosition().y + 6.f
 	);
 
-	m_infoTabIcon.setPosition(posX - 110.f, posY + 12.f);
-	m_sheriffBadge.setPosition(posX + 135.f, posY + 20.f);
-	m_bagIcon.setPosition(posX + 135.f, posY + 20.f);
-	m_turnIndicator.setPosition(posX + 12.f, posY + 115.f);
+	m_infoTabIcon.setPosition(m_avatar.getPosition() + sf::Vector2f(-130.f, -8.f));
+	m_sheriffBadge.setPosition(m_avatar.getPosition() + sf::Vector2f(115.f, 0.f));
+	m_bagIcon.setPosition(m_avatar.getPosition() + sf::Vector2f(115.f, 0.f));
+	m_turnIndicator.setPosition(m_avatar.getPosition() + sf::Vector2f(-8.f, 95.f));
 
 	return true;
 }
@@ -348,4 +355,13 @@ int Player::getPlayerScore() const
 void Player::setPlayerScore(int value)
 {
 	m_score = value;
+}
+
+void Player::centerText(sf::Text & text, sf::RectangleShape & boundingBox)
+{
+	float x = boundingBox.getPosition().x + (boundingBox.getSize().x - text.getLocalBounds().width) / 2.f;
+	float y = boundingBox.getPosition().y + (boundingBox.getSize().y - text.getLocalBounds().height) / 2.f - 5.f;
+	x -= text.getLocalBounds().left;
+	y -= text.getLocalBounds().top / 2;
+	text.setPosition(x, y);
 }

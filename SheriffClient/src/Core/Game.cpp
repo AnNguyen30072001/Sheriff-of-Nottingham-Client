@@ -79,8 +79,8 @@ void Game::initWindow()
 
 	for (int i = 1; i < m_playerList.size(); i++) {
 		// Positioning players
-		float xOffset = -230.f + (i % 6) * 380.f; // Distribute evenly horizontally
-		m_playerList[i]->initPlayer(xOffset, 50.f);
+		float xOffset = -210.f + (i % 6) * 380.f; // Distribute evenly horizontally
+		m_playerList[i]->initPlayer(xOffset, 70.f);
 	}
 
 	m_deck = new Deck();
@@ -213,14 +213,8 @@ Game::Game(std::vector<Player*> playerList)
 
 Game::~Game()
 {
-	for (int i = 0; i < m_playerList.size(); i++) {
-		delete m_playerList[i];
-	}
 	for (int i = 0; i < m_userHand.size(); i++) {
 		delete m_userHand[i];
-	}
-	for (auto& player : m_playerList) {
-		delete player;
 	}
 	delete m_deck;
 	delete m_tablet;
@@ -705,9 +699,9 @@ bool Game::update()
 		break;
 
 	case Game::DISCARD_STANDBY:
-		if (!m_tablet->isTabletVisible()) {
-			pollEvents();
-		}
+		//if (!m_tablet->isTabletVisible()) {
+		//	pollEvents();
+		//}
 		break;
 
 	case Game::WITHDRAW:
@@ -966,27 +960,6 @@ bool Game::render()
 
 bool Game::setupPlayerUI()
 {
-	//for (int i = 0; i < m_playerList.size(); i++) {
-	//	if (m_playerList[i]->isUserPlayer()) {
-	//		// The buttons are colored only when it is user's turn
-	//		m_ButtonLeft.setFillColor(m_playerList[i]->isInTurn() && (!m_discardDone) ? sf::Color::Red : sf::Color(128, 128, 128));
-	//		m_ButtonRight.setFillColor(m_playerList[i]->isInTurn() ? sf::Color(100, 149, 237) : sf::Color(128, 128, 128));
-
-	//		//// Render button type based on user player role
-	//		m_ButtonLeftText.setString(m_playerList[i]->isSheriff() ? "Inspect" : "Discard");
-	//		m_ButtonRightText.setString(m_playerList[i]->isSheriff() ? "Pass" : "Present");
-
-
-	//		//// Center the text within the button
-	//		sf::FloatRect textBoundsLeft = m_ButtonLeftText.getLocalBounds();
-	//		sf::FloatRect textBoundsRight = m_ButtonRightText.getLocalBounds();
-	//		m_ButtonLeftText.setOrigin(textBoundsLeft.left + textBoundsLeft.width / 2, textBoundsLeft.top + textBoundsLeft.height / 2);
-	//		m_ButtonRightText.setOrigin(textBoundsRight.left + textBoundsRight.width / 2, textBoundsRight.top + textBoundsRight.height / 2);
-
-	//		continue;
-	//	}
-	//}
-
 	// Render button Inspect and Pass if user role is Sheriff
 	if (m_playerList[USER_PLAYER_INDEX]->isSheriff()) {
 		// The buttons are colored only when it is user's turn

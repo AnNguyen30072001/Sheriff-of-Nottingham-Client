@@ -172,7 +172,7 @@ bool Login::pollEvents()
 					m_usernameDisplay.setString(temp);
 
 					// Measure the width
-					if (m_usernameDisplay.getLocalBounds().width <= 380) {
+					if (m_usernameDisplay.getLocalBounds().width <= 320) {
 						m_usernameText += static_cast<char>(m_ev.text.unicode);
 					}
 				}
