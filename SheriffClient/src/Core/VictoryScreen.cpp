@@ -23,12 +23,39 @@ const bool Summary::running() const
 
 bool Summary::pollEvents()
 {
-	return false;
+	while (m_window->pollEvent(m_ev)) {
+		sf::Vector2i mousePosXYLocal = sf::Mouse::getPosition(*m_window);
+		sf::Vector2f mousePosXY = m_window->mapPixelToCoords(mousePosXYLocal);
+		switch (m_ev.type) {
+		case sf::Event::Closed:
+			m_window->close();
+			break;
+
+		case sf::Event::MouseButtonPressed:
+			if (m_ev.mouseButton.button == sf::Mouse::Left) {
+				handleMouseClick(mousePosXY);
+			}
+			break;
+
+		case sf::Event::MouseMoved:
+			handleMouseHover(mousePosXY);
+
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	return true;
 }
 
 bool Summary::update()
 {
+	float deltaTime = m_clock.restart().asSeconds();
+	m_animationPlayer.update(deltaTime);
 
+	pollEvents();
 
 	return true;
 }
@@ -92,7 +119,7 @@ void Summary::initVariables(std::vector<Player*> playerList)
 	m_moneyText.setFont(m_font);
 	m_moneyText.setFillColor(sf::Color::Black);
 
-	std::string texturePaths[8] =
+	std::string texturePaths[GOODS_ICON_NUM_MAX] =
 	{ "AppleReportHighlight.png", "CheeseReportHighlight.png", "BreadReportHighlight.png", "ChickenReportHighlight.png",
 		"PepperReportHighlight.png", "MeadReportHighlight.png", "SilkReportHighlight.png", "CrossbowReportHighlight.png" };
 
@@ -100,17 +127,27 @@ void Summary::initVariables(std::vector<Player*> playerList)
 		m_goodsIconTexture[i].loadFromFile("assets/Images/" + texturePaths[i]);
 	}
 
+	std::string tokenGoldTexturePaths[LEGAL_GOODS_TOKEN_NUM_MAX] =
+	{ "GoldToken_20.png", "GoldToken_15.png", "GoldToken_15.png", "GoldToken_10.png" };
+	std::string tokenSilverTexturePaths[LEGAL_GOODS_TOKEN_NUM_MAX] =
+	{ "SilverToken_10.png", "SilverToken_10.png", "SilverToken_10.png", "SilverToken_5.png" };
+
+	for (int i = 0; i < LEGAL_GOODS_TOKEN_NUM_MAX; i++) {
+		m_tokenGoldIconTexture[i].loadFromFile("assets/Images/Tokens/" + tokenGoldTexturePaths[i]);
+		m_tokenSilverIconTexture[i].loadFromFile("assets/Images/Tokens/" + tokenSilverTexturePaths[i]);
+	}
+
 	for (auto& text : m_goodsAmountText) {
 		text.setFont(m_font);
 		text.setFillColor(sf::Color::Black);
 	}
 
-	std::string blackMedalTexturePaths[6] = {
+	std::string blackMedalTexturePaths[BLACK_MARKET_MEDAL_NUM_MAX] = {
 	"PepperToken_v1.png", "PepperToken_v2.png",
 	"MeadToken_v1.png", "MeadToken_v2.png",
 	"SilkToken_v1.png", "SilkToken_v2.png"
 	};
-	for (int i = 0; i < 6; i++) {
+	for (int i = 0; i < BLACK_MARKET_MEDAL_NUM_MAX; i++) {
 		if (!m_blackMarketMedalTexture[i].loadFromFile("assets/Images/Tokens/" + blackMedalTexturePaths[i])) {
 			std::cerr << "Error loading meddal texture!" << std::endl;
 		}
@@ -149,12 +186,35 @@ void Summary::initWindow()
 
 	// Players layout
 	setPlayersLayout();
+	highlightPlayer(m_highlightedPlayerIdx);
 
 	// Player info
 	setPlayerInfoLayout(m_highlightedPlayerIdx);
 }
 
 bool Summary::handleMouseClick(sf::Vector2f mousePosXY)
+{
+	for (int i = 0; i < m_playerList.size(); i++) {
+		if (m_playerList[i]->getAvatarFrame().getGlobalBounds().contains(mousePosXY)) {
+			// Play a sound
+			m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+
+			// Update info of highlighted player
+			m_highlightedPlayerIdx = i;
+
+			setPlayersLayout();
+			setPlayerInfoLayout(m_highlightedPlayerIdx);
+
+			highlightPlayer(m_highlightedPlayerIdx);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool Summary::handleMouseHover(sf::Vector2f mousePosXY)
 {
 	return false;
 }
@@ -163,20 +223,32 @@ void Summary::setPlayersLayout()
 {
 	int lobbySize = m_playerList.size();
 
-	float posXOffset = 145.f;
+	float posXOffset = 145.f + 60.f;
 	float distX = (1655.f - 145.f) / (lobbySize - 1);
-	float posY = 94.f;
+	float posY = 94.f + 60.f;
 
 	for (int i = 0; i < lobbySize; i++) {
 		m_playerList[i]->getAvatar().setRadius(60.f);
+		m_playerList[i]->getAvatar().setOrigin(60.f, 60.f);
 		m_playerList[i]->getAvatarFrame().setRadius(80.f);
+		m_playerList[i]->getAvatarFrame().setOrigin(80.f, 80.f);
+
+		if (i == m_highlightedPlayerIdx) {
+			m_playerList[i]->getAvatar().setFillColor(sf::Color(255, 255, 255, 255));
+			m_playerList[i]->getAvatarFrame().setFillColor(sf::Color(255, 255, 255, 255));
+		}
+		else {
+			m_playerList[i]->getAvatar().setFillColor(sf::Color(255, 255, 255, 120));
+			m_playerList[i]->getAvatarFrame().setFillColor(sf::Color(255, 255, 255, 120));
+		}
+
 		m_playerList[i]->getNameText().setCharacterSize(48);
 		m_playerList[i]->getNameText().setFillColor(sf::Color::Black);
 		m_playerList[i]->getNameText().setOutlineThickness(0.f);
 		m_nameTextBox.setSize(sf::Vector2f(640.f, 80.f));
 
 		m_playerList[i]->getAvatar().setPosition(posXOffset + i * distX, posY);
-		m_playerList[i]->getAvatarFrame().setPosition(m_playerList[i]->getAvatar().getPosition() + sf::Vector2f(-20.f, -20.f));
+		m_playerList[i]->getAvatarFrame().setPosition(m_playerList[i]->getAvatar().getPosition());
 		m_nameTextBox.setPosition(640.f, 295.f);
 		centerText(m_playerList[i]->getNameText(), m_nameTextBox);
 	}
@@ -332,6 +404,21 @@ void Summary::updatePlayerScore(Player * player)
 	
 		// Set player score
 		player->setPlayerScore(finalScore);
+}
+
+void Summary::highlightPlayer(int index)
+{
+	for (int i = 0; i < m_playerList.size(); i++) {
+		if (i == index) {
+			m_animationPlayer.addAnimation(new Animation(m_playerList[i]->getAvatar(), Animation::Type::SCALE, 1.2, 0.2));
+			m_animationPlayer.addAnimation(new Animation(m_playerList[i]->getAvatarFrame(), Animation::Type::SCALE, 1.2, 0.2));
+		}
+
+		else if (m_playerList[i]->getAvatarFrame().getScale() != sf::Vector2f(1.f, 1.f)) {
+			m_animationPlayer.addAnimation(new Animation(m_playerList[i]->getAvatar(), Animation::Type::SCALE, 1.f, 0.2));
+			m_animationPlayer.addAnimation(new Animation(m_playerList[i]->getAvatarFrame(), Animation::Type::SCALE, 1.f, 0.2));
+		}
+	}
 }
 
 void Summary::centerText(sf::Text & text, sf::RectangleShape & boundingBox)
