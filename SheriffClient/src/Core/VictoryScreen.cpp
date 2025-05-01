@@ -329,35 +329,93 @@ void Summary::setPlayerInfoLayout(int index)
 
 void Summary::updatePlayersMedalStatus()
 {
-	// Find out each good amount to be considered gold or silver
-	int goldMedalAmount[4] = { 0, 0, 0, 0 };
-	int silverMedalAmount[4] = { 0, 0, 0, 0 };
-	int playerGoodAmount = 0;
-	for (auto& player : m_playerList) {
-		for (int i = 0; i < 4; i++) {
-			playerGoodAmount = player->getPlayerGoodsAmount(i + 1);
-			if (playerGoodAmount > goldMedalAmount[i]) {
-				silverMedalAmount[i] = goldMedalAmount[i];
-				goldMedalAmount[i] = playerGoodAmount;
+	for (int i = 0; i < 4; i++)
+	{
+		int kingCount = 0;  /* Most card player have */
+		int queenCount = 0; /* Second most card player have */
+
+		int numberOfKing = 0;  /* number of player have the most card */
+		int numberOfQueen = 0; /* number of player have the second most card */
+
+		for (auto& player : m_playerList)
+		{	
+			int goodAmount = player->getPlayerGoodsAmount(i + 1);
+			if (goodAmount > kingCount)
+			{
+				queenCount = kingCount;
+				numberOfQueen = numberOfKing;
+				kingCount = goodAmount;
+				numberOfKing = 1;
 			}
-			else if (playerGoodAmount < goldMedalAmount[i] && playerGoodAmount > silverMedalAmount[i]) {
-				silverMedalAmount[i] = playerGoodAmount;
+			else if (goodAmount == kingCount)
+			{
+				numberOfKing++;
+			}
+			else if (goodAmount > queenCount)
+			{
+				queenCount = goodAmount;
+				numberOfQueen = 1;
+			}
+			else if (goodAmount == queenCount)
+			{
+				numberOfQueen++;
 			}
 		}
-	}
-	
-	// Give medal to players according to good amount
-	for (auto& player : m_playerList) {
-		for (int i = 0; i < 4; i++) {
-			playerGoodAmount = player->getPlayerGoodsAmount(i + 1);
-			if (playerGoodAmount == goldMedalAmount[i] && goldMedalAmount[i] != 0) {
-				player->setPlayerMedalStatus(i + 1, Player::MedalStatus::GOLD);
+
+		/* No one have this card */
+		if (kingCount == 0)
+		{
+			continue;
+		}
+
+		if (numberOfKing > 1) /* >= 2 King */
+		{
+			int sharedPrice = (Card::cardTypeToGoldBonus.at(static_cast<Card::CardType>(i + 1)) + Card::cardTypeToSilverBonus.at(static_cast<Card::CardType>(i + 1))) / numberOfKing;
+			for (auto& player : m_playerList)
+			{
+				int goodAmount = player->getPlayerGoodsAmount(i + 1);
+				if (goodAmount == kingCount)
+				{
+					player->setPlayerScore(sharedPrice);
+					player->setPlayerMedalStatus(i + 1, Player::MedalStatus::GOLD);
+				}
 			}
-			else if (playerGoodAmount == silverMedalAmount[i] && silverMedalAmount[i] != 0) {
-				player->setPlayerMedalStatus(i + 1, Player::MedalStatus::SILVER);
+		}
+		else /* 1 King */
+		{
+			for (auto& player : m_playerList)
+			{
+				int goodAmount = player->getPlayerGoodsAmount(i + 1);
+				if (goodAmount == kingCount)
+				{
+					player->setPlayerScore(Card::cardTypeToGoldBonus.at(static_cast<Card::CardType>(i + 1)));
+					player->setPlayerMedalStatus(i + 1, Player::MedalStatus::GOLD);
+				}
 			}
-			else {
-				player->setPlayerMedalStatus(i + 1, Player::MedalStatus::NONE);
+			if (queenCount > 1) /* >= 2 Queen */
+			{
+				int sharedPrice = Card::cardTypeToSilverBonus.at(static_cast<Card::CardType>(i + 1)) / numberOfQueen;
+				for (auto& player : m_playerList)
+				{
+					int goodAmount = player->getPlayerGoodsAmount(i + 1);
+					if (goodAmount == queenCount)
+					{
+						player->setPlayerScore(sharedPrice);
+						player->setPlayerMedalStatus(i + 1, Player::MedalStatus::SILVER);
+					}
+				}
+			}
+			else /* 1 Queen */
+			{
+				for (auto& player : m_playerList)
+				{
+					int goodAmount = player->getPlayerGoodsAmount(i + 1);
+					if (goodAmount == queenCount && queenCount > 0)
+					{
+						player->setPlayerScore(Card::cardTypeToSilverBonus.at(static_cast<Card::CardType>(i + 1)));
+						player->setPlayerMedalStatus(i + 1, Player::MedalStatus::SILVER);
+					}
+				}
 			}
 		}
 	}
@@ -365,8 +423,8 @@ void Summary::updatePlayersMedalStatus()
 
 void Summary::updatePlayerScore(Player * player)
 {
+		int bonusLegalScore = player->getPlayerScore();
 		int finalScore = 0;
-	
 		// Convert money to score
 		finalScore += player->getPlayerMoney();
 	
@@ -379,16 +437,19 @@ void Summary::updatePlayerScore(Player * player)
 	
 		// Convert medals to score
 		for (int i = 0; i < 8; i++) {
-			// Gold bonus
-			if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::GOLD) {
-				finalScore += Card::cardTypeToGoldBonus.at(static_cast<Card::CardType>(i + 1));
-			}
-			// Silver bonus
-			else if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::SILVER) {
-				finalScore += Card::cardTypeToSilverBonus.at(static_cast<Card::CardType>(i + 1));
-			}
+			/* Move this section to updatePlayersMedalStatus() function */
+
+			//// Gold bonus
+			//if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::GOLD) {
+			//	finalScore += Card::cardTypeToGoldBonus.at(static_cast<Card::CardType>(i + 1));
+			//}
+			//// Silver bonus
+			//else if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::SILVER) {
+			//	finalScore += Card::cardTypeToSilverBonus.at(static_cast<Card::CardType>(i + 1));
+			//}
+
 			// Black market low bonus
-			else if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::BLACK_MARKET_LOW) {
+			if (player->getPlayerMedalStatus(i + 1) == Player::MedalStatus::BLACK_MARKET_LOW) {
 				finalScore += Card::cardTypeToContrabandBonusLow.at(static_cast<Card::CardType>(i + 1));
 			}
 			// Black market high bonus
@@ -403,7 +464,7 @@ void Summary::updatePlayerScore(Player * player)
 		}
 	
 		// Set player score
-		player->setPlayerScore(finalScore);
+		player->setPlayerScore(bonusLegalScore + finalScore);
 }
 
 void Summary::highlightPlayer(int index)

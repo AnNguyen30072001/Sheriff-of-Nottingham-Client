@@ -10,7 +10,7 @@ Player::Player(std::string name, sf::Color playerColor, bool isUserPlayer)
 	m_isSheriff = false;
 	m_isInTurn = false;
 	m_money = 50;
-	m_score = 50;
+	m_score = 0;
 	m_readyButton.setFillColor(sf::Color(128, 128, 128)); // Gray by default
 
 	initFontAndTexture();
