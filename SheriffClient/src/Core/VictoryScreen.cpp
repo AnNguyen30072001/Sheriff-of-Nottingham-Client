@@ -85,6 +85,11 @@ bool Summary::render()
 		m_window->draw(m_goodsAmountText[i]);
 	}
 
+	for (int i = 0; i < LEGAL_GOODS_TOKEN_NUM_MAX; i++) {
+		m_window->draw(m_tokenGoldIcon[i]);
+		m_window->draw(m_tokenSilverIcon[i]);
+	}
+
 	for (int i = 0; i < BLACK_MARKET_MEDAL_NUM_MAX; i++) {
 		m_window->draw(m_blackMarketMedals[i]);
 	}
@@ -135,6 +140,9 @@ void Summary::initVariables(std::vector<Player*> playerList)
 	for (int i = 0; i < LEGAL_GOODS_TOKEN_NUM_MAX; i++) {
 		m_tokenGoldIconTexture[i].loadFromFile("assets/Images/Tokens/" + tokenGoldTexturePaths[i]);
 		m_tokenSilverIconTexture[i].loadFromFile("assets/Images/Tokens/" + tokenSilverTexturePaths[i]);
+
+		m_tokenGoldIcon[i].setTexture(&m_tokenGoldIconTexture[i]);
+		m_tokenSilverIcon[i].setTexture(&m_tokenSilverIconTexture[i]);
 	}
 
 	for (auto& text : m_goodsAmountText) {
@@ -299,6 +307,30 @@ void Summary::setPlayerInfoLayout(int index)
 		m_goodsAmountText[i].setCharacterSize(32);
 		m_goodsAmountText[i].setString(std::to_string(m_playerList[index]->getPlayerGoodsAmount(i + 1)));
 		centerText(m_goodsAmountText[i], m_goodsAmountTextBox[i]);
+	}
+
+	// Gold and silver token info
+	for (int i = 0; i < LEGAL_GOODS_TOKEN_NUM_MAX; i++) {
+		m_tokenGoldIcon[i].setSize(sf::Vector2f(42.f, 42.f));
+		m_tokenSilverIcon[i].setSize(sf::Vector2f(42.f, 42.f));
+
+		m_tokenGoldIcon[i].setPosition(m_goodsIcon[i].getPosition() + sf::Vector2f(41.f, -6.f));
+		m_tokenSilverIcon[i].setPosition(m_goodsIcon[i].getPosition() + sf::Vector2f(41.f, -6.f));
+
+		if (m_playerList[index]->getPlayerMedalStatus(i + 1) == Player::MedalStatus::GOLD) {
+			m_tokenGoldIcon[i].setFillColor(sf::Color(255, 255, 255, 255));
+			m_tokenSilverIcon[i].setFillColor(sf::Color(255, 255, 255, 0));
+		}
+
+		else if (m_playerList[index]->getPlayerMedalStatus(i + 1) == Player::MedalStatus::SILVER) {
+			m_tokenGoldIcon[i].setFillColor(sf::Color(255, 255, 255, 0));
+			m_tokenSilverIcon[i].setFillColor(sf::Color(255, 255, 255, 255));
+		}
+
+		else {
+			m_tokenGoldIcon[i].setFillColor(sf::Color(255, 255, 255, 0));
+			m_tokenSilverIcon[i].setFillColor(sf::Color(255, 255, 255, 0));
+		}
 	}
 
 	// Black market token info
