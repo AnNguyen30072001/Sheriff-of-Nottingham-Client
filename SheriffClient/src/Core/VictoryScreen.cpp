@@ -11,6 +11,8 @@ Summary::Summary(std::vector<Player*> playerList)
 
 Summary::~Summary()
 {
+	delete this->m_window;
+
 	for (auto& player : m_playerList) {
 		delete player;
 	}
@@ -94,6 +96,8 @@ bool Summary::render()
 		m_window->draw(m_blackMarketMedals[i]);
 	}
 
+	m_window->draw(m_buttonFinish);
+
 	m_window->display();
 
 	return true;
@@ -113,6 +117,10 @@ void Summary::initVariables(std::vector<Player*> playerList)
 	}
 
 	if (!m_moneyIconTexture.loadFromFile("assets/Images/Tokens/MoneyIcon.png")) {
+		std::cerr << "Error loading money icon!\n";
+	}
+
+	if (!m_buttonFinishTexture.loadFromFile("assets/Images/Buttons/ButtonFinish.png")) {
 		std::cerr << "Error loading money icon!\n";
 	}
 
@@ -157,7 +165,7 @@ void Summary::initVariables(std::vector<Player*> playerList)
 	};
 	for (int i = 0; i < BLACK_MARKET_MEDAL_NUM_MAX; i++) {
 		if (!m_blackMarketMedalTexture[i].loadFromFile("assets/Images/Tokens/" + blackMedalTexturePaths[i])) {
-			std::cerr << "Error loading meddal texture!" << std::endl;
+			std::cerr << "Error loading medal texture!" << std::endl;
 		}
 	}
 
@@ -168,6 +176,8 @@ void Summary::initVariables(std::vector<Player*> playerList)
 	for (int i = 0; i < BLACK_MARKET_MEDAL_NUM_MAX; i++) {
 		m_blackMarketMedals[i].setTexture(&m_blackMarketMedalTexture[i]);
 	}
+
+	m_buttonFinish.setTexture(&m_buttonFinishTexture);
 }
 
 void Summary::initWindow()
@@ -180,6 +190,11 @@ void Summary::initWindow()
 	// Backgrounds
 	m_background.setPosition(sf::Vector2f(0.f, 0.f));
 	m_background.setSize(sf::Vector2f(1920.f, 1080.f));
+
+	// Finish button
+	m_buttonFinish.setFillColor(sf::Color::White);
+	m_buttonFinish.setSize(sf::Vector2f(300.f, 80.f));
+	m_buttonFinish.setPosition(810.f, 975.f);
 	
 	// Ranking players in descending order
 	updatePlayersMedalStatus();
@@ -217,6 +232,11 @@ bool Summary::handleMouseClick(sf::Vector2f mousePosXY)
 
 			return true;
 		}
+	}
+
+	if (m_buttonFinish.getGlobalBounds().contains(mousePosXY)) {
+		// Reset game state, back to login menu
+		g_gameState = LOGIN_VIEW;
 	}
 
 	return false;

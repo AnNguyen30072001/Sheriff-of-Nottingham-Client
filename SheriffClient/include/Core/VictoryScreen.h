@@ -64,6 +64,9 @@ private:
 	sf::RectangleShape				m_blackMarketMedals[BLACK_MARKET_MEDAL_NUM_MAX];			// Black market medals for contrabands
 	sf::Texture						m_blackMarketMedalTexture[BLACK_MARKET_MEDAL_NUM_MAX];
 
+	sf::RectangleShape				m_buttonFinish;
+	sf::Texture						m_buttonFinishTexture;
+
 	// Logic
 	std::vector<Player*>			m_playerList;
 	int								m_highlightedPlayerIdx;
