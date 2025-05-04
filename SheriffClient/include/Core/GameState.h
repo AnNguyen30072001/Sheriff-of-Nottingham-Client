@@ -2,11 +2,11 @@
 #define GAME_STATE__
 
 enum gameState {
-	INVALID,
 	LOGIN_VIEW,
 	LOBBY_VIEW,
 	GAME_VIEW,
-	END_VIEW
+	END_VIEW,
+	INVALID
 };
 
 extern gameState g_gameState;

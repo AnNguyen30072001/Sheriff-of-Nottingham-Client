@@ -31,6 +31,8 @@ bool Summary::pollEvents()
 		switch (m_ev.type) {
 		case sf::Event::Closed:
 			m_window->close();
+			g_gameState = gameState::INVALID;
+
 			break;
 
 		case sf::Event::MouseButtonPressed:

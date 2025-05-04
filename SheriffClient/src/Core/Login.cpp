@@ -124,6 +124,8 @@ bool Login::pollEvents()
 		// Case close window
 		case sf::Event::Closed:
 			m_window->close();
+			g_gameState = gameState::INVALID;
+
 			break;
 
 		// Case hover

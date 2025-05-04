@@ -1,5 +1,6 @@
-#include <iostream>
+#pragma comment(linker, "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
 
+#include <iostream>
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
@@ -127,6 +128,11 @@ int main()
 			summary->render();
 
 			break;
+
+		case INVALID:
+			// End process
+			Network::getInstance().disconnect();
+			return 0;
 
 		default:
 			break;
