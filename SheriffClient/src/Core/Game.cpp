@@ -908,7 +908,7 @@ bool Game::render()
 		}
 
 		// Draw bribed cards in reverse order to help render reveal process
-		for (int i = m_bribedCards.size() - 1; i > 0; i--) {
+		for (int i = m_bribedCards.size() - 1; i >= 0; i--) {
 			m_window->draw(m_bribedCards[i]->getCard());
 		}
 
