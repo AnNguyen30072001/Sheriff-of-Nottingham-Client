@@ -185,7 +185,7 @@ bool Player::initPlayer(float posX, float posY)
 	m_nameTextBox.setPosition(m_avatar.getPosition() + sf::Vector2f(-123.f, -60.f));
 	centerText(m_nameText, m_nameTextBox);
 
-	m_readyButton.setPosition(posX + 15.f, posY + 110.f);
+	m_readyButton.setPosition(posX, posY + 90.f);
 	m_readyText.setPosition(
 		m_readyButton.getPosition().x + 10.f,
 		m_readyButton.getPosition().y + 6.f

@@ -96,9 +96,9 @@ bool Lobby::setupPlayerUI()
 			continue;
 		}
 		// Positioning
-		float xOffset = -230.f + (i % 6) * 380.f; // Distribute evenly horizontally
+		float xOffset = -210.f + (i % 6) * 380.f; // Distribute evenly horizontally
 
-		m_playerList[i]->initPlayer(xOffset, 50.f);
+		m_playerList[i]->initPlayer(xOffset, 70.f);
 	}
 
 	return true;

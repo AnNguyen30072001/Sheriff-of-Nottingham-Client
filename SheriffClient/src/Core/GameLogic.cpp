@@ -220,10 +220,12 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 				for (int i = 0; i < m_game->m_bribedCards.size(); i++) {
 					//float posX = 1546.f + (i % 3) * 105.f;
 					//float posY = i < 3 ? 350.f : 505.f;
-					float posX = 1600.f;
-					float posY = 505.f;
+					float posX = 1645.f;
+					float posY = 570.f;
+					sf::Vector2f origin = sf::Vector2f(67.5, 97.5);
 					//m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_bribedCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE,
 					//	0.3, sf::Vector2f(posX, posY), 0.667, 0.5));
+					m_game->m_bribedCards[i]->getCard().setOrigin(origin);
 					m_game->m_bribedCards[i]->getCard().setPosition(posX, posY);
 					m_game->m_bribedCards[i]->getCard().setScale(0.667, 0.667);
 				}
@@ -262,10 +264,10 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 				//m_game->m_deck->getDiscardDeckLeft().setScale(0.f, 0.f);
 				//m_game->m_deck->getDiscardDeckRight().setScale(0.f, 0.f);
 				//m_game->m_deck->getMainDeck().setScale(0.f, 0.f);
-				for (auto& card : m_game->m_userHand) {
-					std::lock_guard<std::mutex> lock(m_game->m_userHandMutex);
-					card->getCard().setScale(0.f, 0.f);
-				}
+				//for (auto& card : m_game->m_userHand) {
+				//	std::lock_guard<std::mutex> lock(m_game->m_userHandMutex);
+				//	card->getCard().setScale(0.f, 0.f);
+				//}
 			}
 			// If it is a merchant's turn, reset all previous stored goods infomation, for safety measure
 			else {
@@ -299,13 +301,10 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 				m_game->m_gameEvent = Game::DEFAULT;
 
 				// Show decks and user cards again
-				//m_game->m_deck->getDiscardDeckLeft().setScale(1.f, 1.f);
-				//m_game->m_deck->getDiscardDeckRight().setScale(1.f, 1.f);
-				//m_game->m_deck->getMainDeck().setScale(1.f, 1.f);
-				for (auto& card : m_game->m_userHand) {
-					std::lock_guard<std::mutex> lock(m_game->m_userHandMutex);
-					card->getCard().setScale(1.f, 1.f);
-				}
+				//for (auto& card : m_game->m_userHand) {
+				//	std::lock_guard<std::mutex> lock(m_game->m_userHandMutex);
+				//	card->getCard().setScale(1.f, 1.f);
+				//}
 			}
 		}
 	}
