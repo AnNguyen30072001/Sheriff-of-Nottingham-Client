@@ -34,6 +34,10 @@ Tablet::Tablet(sf::RenderWindow* parentWindow)
 		std::cerr << "Error loading tablet background!" << std::endl;
 	}
 
+	if (!m_tabletTextureInfoUser.loadFromFile("assets/Images/ReportBackground_3.png")) {
+		std::cerr << "Error loading tablet background!" << std::endl;
+	}
+
 	std::string blackMedalTexturePaths[6] = {
 		"PepperToken_v1.png", "PepperToken_v2.png",
 		"MeadToken_v1.png", "MeadToken_v2.png",
@@ -335,7 +339,7 @@ void Tablet::render()
 		m_parentWindow->draw(m_playerName);
 
 		for (int i = 0; i < 8; i++) {
-			m_parentWindow->draw(m_goodsButtons[i]);
+			//m_parentWindow->draw(m_goodsButtons[i]);
 			m_parentWindow->draw(m_goodsAmountText[i]);
 		}
 
@@ -349,7 +353,7 @@ void Tablet::render()
 			m_parentWindow->draw(medal);
 		}
 
-		m_parentWindow->draw(m_moneyIcon);
+		//m_parentWindow->draw(m_moneyIcon);
 		m_parentWindow->draw(m_moneyText);
 
 		//m_parentWindow->draw(m_scoreIcon);
@@ -521,9 +525,14 @@ void Tablet::setupInfoUI(Player * player)
 	//std::cout << "Player money: " << player->getPlayerMoney() << std::endl;
 
 	// Tablet background
+	if (player->isUserPlayer()) {
+		m_tabletInfo.setTexture(&m_tabletTextureInfoUser, true);
+	}
+	else {
+		m_tabletInfo.setTexture(&m_tabletTextureInfo, true);
+	}
 	m_tabletInfo.setSize(sf::Vector2f(1200.f, 1200.f));
 	m_tabletInfo.setFillColor(sf::Color::White);
-	m_tabletInfo.setTexture(&m_tabletTextureInfo);
 	m_tabletInfo.setPosition(360, -60.f);
 
 	// Player avatar
