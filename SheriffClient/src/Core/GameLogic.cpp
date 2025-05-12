@@ -1136,7 +1136,7 @@ void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 					}
 					m_game->m_dummyCards.clear();
 
-					if (m_game->m_bribedCards.empty()) {
+					if ( (!m_game->m_revealingDone) && (m_game->m_bribedCards.empty()) ) {
 						// Reveal process is complete
 						m_game->m_revealingDone = true;
 						// Send response message
@@ -1159,7 +1159,7 @@ void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 				}
 				m_game->m_dummyCards.clear();
 
-				if (m_game->m_bribedCards.empty()) {
+				if ( (!m_game->m_revealingDone) && (m_game->m_bribedCards.empty()) ) {
 					// Reveal process is complete
 					m_game->m_revealingDone = true;
 					// Send response message
