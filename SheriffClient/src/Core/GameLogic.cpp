@@ -1104,6 +1104,7 @@ void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTyp
 void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 {
 	if (m_game->m_dummyCards.empty()) return;
+	int cardsNum = m_game->m_dummyCards.size();
 
 	Player* sheriffPlayer = nullptr;
 	for (auto& player : m_game->m_playerList) {
@@ -1126,17 +1127,17 @@ void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 		// If card is legal, hand it to merchant
 		if (m_game->m_dummyCards[i]->getCardType() == m_goodsReport || jsonMessage["MessageType"] == "SHERIFF_PASS_RESPONSE") {
 			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_dummyCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.4,
-				m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 0.6, [this, i, jsonMessage, isAnyCardDiscarded]
+				m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 0.6 + 0.5*i, [this, i, jsonMessage, isAnyCardDiscarded]
 			{
 				// If done process the last card
-				if ((i == m_game->m_dummyCards.size() - 1) && !isAnyCardDiscarded) {
+				if (i == m_game->m_dummyCards.size() - 1) {
 					for (Card* card : m_game->m_dummyCards) {
 						delete card;
 						card = nullptr;
 					}
 					m_game->m_dummyCards.clear();
 
-					if ( (!m_game->m_revealingDone) && (m_game->m_bribedCards.empty()) ) {
+					if (m_game->m_bribedCards.empty()) {
 						// Reveal process is complete
 						m_game->m_revealingDone = true;
 						// Send response message
@@ -1150,23 +1151,25 @@ void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 		}
 		// If card is not legal, shuffle it back to main deck
 		else {
-			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_dummyCards[i]->getCard(), Animation::Type::SCALE, 0.f, 0.3, 1.2, [this, i, jsonMessage]
+			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_dummyCards[i]->getCard(), Animation::Type::SCALE, 0.f, 0.3, 0.6 + 0.5*i, [this, i, jsonMessage]
 			{
 				// If done process the last card
-				for (Card* card : m_game->m_dummyCards) {
-					delete card;
-					card = nullptr;
-				}
-				m_game->m_dummyCards.clear();
+				if (i == m_game->m_dummyCards.size() - 1) {
+					for (Card* card : m_game->m_dummyCards) {
+						delete card;
+						card = nullptr;
+					}
+					m_game->m_dummyCards.clear();
 
-				if ( (!m_game->m_revealingDone) && (m_game->m_bribedCards.empty()) ) {
-					// Reveal process is complete
-					m_game->m_revealingDone = true;
-					// Send response message
-					Network::getInstance().respondMessage(jsonMessage);
-					std::cout << "Reveal card respond case: illegal card\n";
+					if (m_game->m_bribedCards.empty()) {
+						// Reveal process is complete
+						m_game->m_revealingDone = true;
+						// Send response message
+						Network::getInstance().respondMessage(jsonMessage);
+						std::cout << "Reveal card respond case: illegal card\n";
 
-					return;
+						return;
+					}
 				}
 			}));
 		}
@@ -1185,7 +1188,7 @@ void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 			if (i >= m_game->m_bribedCards.size()) break;		// Safe guard
 
 			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_bribedCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.4,
-				sheriffPlayer->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.8 + 0.5*i, [this, i, jsonMessage]
+				sheriffPlayer->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.8 + 0.5*cardsNum + 0.5*i, [this, i, jsonMessage]
 			{
 				// If done process the last card
 				if ((i == m_game->m_bribedCards.size() - 1)) {
@@ -1209,7 +1212,7 @@ void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 		// If the bribed card is not available because Merchant lied (Honor among Thieves) -> Animation discard the bribed good
 		for (int i = bribedGoodReceiveAmount; i < m_game->m_bribedCards.size(); i++) {
 			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_bribedCards[i]->getCard(), Animation::Type::SCALE,
-				0.f, 0.4, 1.8 + 0.5*i, [this, i, jsonMessage]
+				0.f, 0.4, 1.8 + 0.5*cardsNum + 0.5*i, [this, i, jsonMessage]
 			{
 				// If done process the last card
 				if ((i == m_game->m_bribedCards.size() - 1)) {
@@ -1235,7 +1238,7 @@ void GameLogic::retrieveCards(const nlohmann::json& jsonMessage)
 	else if (jsonMessage["MessageType"] == "SHERIFF_CHECK_RESPONSE") {
 		for (int i = 0; i < m_game->m_bribedCards.size(); i++) {
 			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_bribedCards[i]->getCard(), Animation::Type::MOVE_AND_SCALE, 0.4,
-				m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.8 + 0.5*i, [this, i, jsonMessage]
+				m_game->m_playerList[m_game->m_MerchantShowingBagIndex]->getAvatar().getPosition() + sf::Vector2f(50.f, 50.f), 0.f, 1.8 + 0.5*cardsNum + 0.5*i, [this, i, jsonMessage]
 			{
 				// If done process the last card
 				if ((i == m_game->m_bribedCards.size() - 1)) {
