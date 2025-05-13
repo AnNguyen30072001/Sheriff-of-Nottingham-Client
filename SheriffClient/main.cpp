@@ -32,6 +32,7 @@ int main()
 		case LOGIN_VIEW:
 			if (!login) {
 				delete summary;
+				summary = nullptr;
 
 				login = new Login();
 				Network::getInstance().addObserver(login);
@@ -44,8 +45,11 @@ int main()
 		case LOBBY_VIEW:
 			if (!lobby) {
 				std::string username = login->getUsername();
-				delete login;
+
 				Network::getInstance().removeObserver(login);
+				delete login;
+				login = nullptr;
+
 				lobby = new Lobby();
 				Network::getInstance().addObserver(lobby);
 				lobby->addToPlayerList(username, sf::Color::Cyan, true);
@@ -77,8 +81,11 @@ int main()
 				// EoT
 
 				std::vector<Player*> playerList = lobby->getPlayerList();
-				delete lobby;
+
 				Network::getInstance().removeObserver(lobby);
+				delete lobby;
+				lobby = nullptr;
+
 				game = new Game(playerList);
 				Network::getInstance().addObserver(game);
 				// Send a response message to nofity game started
@@ -119,8 +126,11 @@ int main()
 		case END_VIEW:
 			if (!summary) {
 				std::vector<Player*> playerList = game->getPlayerList();
-				delete game;
+
 				Network::getInstance().removeObserver(game);
+				delete game;
+				game = nullptr;
+
 				summary = new Summary(playerList);
 			}
 
