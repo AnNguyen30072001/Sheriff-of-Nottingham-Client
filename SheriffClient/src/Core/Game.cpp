@@ -294,19 +294,19 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	// If a player's catalog is clicked, show that player's info
 	for (auto& player : m_playerList) {
 		if (player->getInfoTabIcon().getGlobalBounds().contains(mousePosXY) && m_gameEvent != DISCONNECTED) {
-			// Play a sound
-			m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+			if (m_gameEvent != REVEAL) {
+				// Play a sound
+				m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
 
-			// Update scores
-			//m_gameLogic->updatePlayersMedalStatus();
-			//m_textMutex.lock();
-			//for (auto& player : m_playerList) {
-			//	m_gameLogic->updatePlayerScore(player);
-			//}
-			//m_textMutex.unlock();
+				// Show tablet
+				m_tablet->showTablet(Tablet::Type::INFO, player->getPlayerMoney(), player);
+			}
 
-			// Show tablet
-			m_tablet->showTablet(Tablet::Type::INFO, player->getPlayerMoney(), player);
+			else {
+				// Play sound indicating that this is not currently available
+				m_soundPlayer.play("Locked.wav", Sound::Type::EFFECT);
+			}
+
 
 			return true;
 		}
@@ -761,11 +761,14 @@ bool Game::update()
 		break;
 
 	case Game::REVEAL:
+		// Opening tablet is unnecessary, so close it
+		if (m_tablet->isTabletVisible()) {
+			m_tablet->hideTablet();
+		}
+
 		if (!m_tablet->isTabletVisible()) {
 			pollEvents();
 		}
-		// If tablet is shown, it is interactable
-		m_tablet->update();
 
 		//setupPlayerUI();
 
