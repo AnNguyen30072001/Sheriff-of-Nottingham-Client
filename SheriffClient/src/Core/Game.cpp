@@ -10,7 +10,8 @@ void Game::initVariables(std::vector<Player*> playerList)
 {
 	if (!m_backgroundTexture.loadFromFile("assets/Images/Background.png") ||
 		!m_cardsHolderTexture.loadFromFile("assets/Images/CardsHolder.png") ||
-		!m_backgroundClothTexture.loadFromFile("assets/Images/Background_cloth.png") ) {
+		!m_backgroundClothTexture.loadFromFile("assets/Images/Background_cloth.png") ||
+		!m_bribeChestBgTexture.loadFromFile("assets/Images/BribeChest.png") ) {
 		std::cerr << "Error loading background texture!\n";
 	}
 	m_backgroundTexture.setSmooth(true);
@@ -118,6 +119,11 @@ void Game::initWindow()
 	m_cardsHolder.setFillColor(sf::Color::White);
 	m_cardsHolder.setSize(sf::Vector2f(1920.f, 1080.f));
 	m_cardsHolder.setTexture(&m_cardsHolderTexture);
+
+	m_bribeChestBg.setPosition(sf::Vector2f(1555.f, 320.f));
+	m_bribeChestBg.setFillColor(sf::Color::White);
+	m_bribeChestBg.setSize(sf::Vector2f(260.f, 343.f));
+	m_bribeChestBg.setTexture(&m_bribeChestBgTexture);
 
 	m_withdrawEventMask.setSize(sf::Vector2f(1920.f, 1080.f));
 	m_withdrawEventMask.setFillColor(sf::Color(0, 0, 0, 180));
@@ -823,6 +829,7 @@ bool Game::render()
 	// Background
 	m_window->draw(m_background);
 	m_window->draw(m_backgroundCloth);
+	m_window->draw(m_bribeChestBg);
 	m_window->draw(m_cardsHolder);
 
 	// Player avatar and stuff
@@ -879,6 +886,7 @@ bool Game::render()
 	if (m_gameEvent == SHERIFF_TURN || m_gameEvent == SHERIFF_STANDBY || m_gameEvent == REVEAL) {
 		// Draw objects
 		m_window->draw(m_SheriffEventMask);
+		m_window->draw(m_bribeChestBg);
 		m_window->draw(m_goodsReportText);
 		m_window->draw(m_goodsReportIcon);
 		m_window->draw(m_bribedGoodsText);

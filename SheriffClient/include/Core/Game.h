@@ -82,6 +82,8 @@ protected:
 	sf::Texture m_cardsHolderTexture;
 	sf::RectangleShape m_backgroundCloth;
 	sf::Texture m_backgroundClothTexture;
+	sf::RectangleShape m_bribeChestBg;
+	sf::Texture m_bribeChestBgTexture;
 	sf::RectangleShape m_withdrawEventMask;
 	sf::RectangleShape m_discardEventMask;
 	sf::RectangleShape m_SheriffEventMask;
