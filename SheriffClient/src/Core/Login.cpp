@@ -1,6 +1,8 @@
 #include "../include/Core/Login.h"
 #include "../include/Core/GameState.h"
 
+#define CLIENT_VER			"v0.8.0"
+
 bool Login::initVariables()
 {
 	m_window = nullptr;
@@ -38,6 +40,13 @@ bool Login::initWindow()
 	m_background.setFillColor(sf::Color::White);
 	m_background.setSize(sf::Vector2f(1920.f, 1080.f));
 	m_background.setTexture(&m_backgroundTexture);
+
+	// Client Version
+	m_clientVersion = sf::Text(CLIENT_VER, m_font, 32);
+	m_clientVersion.setFillColor(sf::Color::White);
+	m_clientVersion.setOutlineColor(sf::Color::Black);
+	m_clientVersion.setOutlineThickness(1.f);
+	m_clientVersion.setPosition(40.f, 1000.f);
 
 	// Username Label
 	m_usernameLabel = sf::Text("Username:", m_font, 24);
@@ -274,6 +283,9 @@ bool Login::render()
 
 	m_window->draw(m_loginButton, &m_glowShader);
 	m_window->draw(m_loginButtonText);
+
+	// Render client version
+	m_window->draw(m_clientVersion);
 
 	// Render Popup if showed
 	m_popup->render();

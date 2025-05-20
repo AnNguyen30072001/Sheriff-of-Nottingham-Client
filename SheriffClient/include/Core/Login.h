@@ -47,6 +47,7 @@ private:
 
 	sf::Shader m_glowShader;
 
+	sf::Text m_clientVersion;
 	sf::Font m_font;
 	sf::Text m_usernameLabel;
 	//sf::Text m_IPLabel;
