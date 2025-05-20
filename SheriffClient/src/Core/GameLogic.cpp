@@ -2,6 +2,12 @@
 #include <random>
 #include <ctime>
 
+#define BRUH_SFX						"Bruh.wav"
+#define LAUGH_SFX						"Laugh.wav"
+#define SIKE_SFX						"Sike.wav"
+#define NEWTURN_SFX						"NewTurn.wav"
+#define NEWTURNOPPONENT_SFX				"NewTurnOpponent.wav"
+
 GameLogic::GameLogic(Game* game) : m_game(game)
 {
 	m_bribeAmount = 0;
@@ -184,6 +190,8 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 		m_game->m_playerList[i]->setTurn(false);
 		// Handle logic if find player's turn
 		if (m_game->m_playerList[i]->getPlayerName() == playerName) {
+
+
 			// Hide tablet if needed
 			m_game->m_tablet->hideTablet();
 
@@ -193,9 +201,13 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 			if (m_game->m_playerList[i]->isUserPlayer()) {
 				m_game->m_timer->reset();
 				m_game->m_timer->start();
+				// Sound effect
+				m_game->m_soundEv.play(NEWTURN_SFX);
 			}
 			else {
 				m_game->m_timer->stop();
+				// Sound effect
+				m_game->m_soundEv.play(NEWTURNOPPONENT_SFX);
 			}
 
 			// If it is sheriff's turn, setup animations and UI of giving bag
@@ -877,6 +889,9 @@ void GameLogic::handleSheriffInspectEvent(const nlohmann::json & jsonMessage)
 		m_game->m_moneyText.setCharacterSize(30);
 		// Recursively reveal cards, until all cards are revealed
 		std::cout << "Game Event: " << m_game->getGameEvent() << std::endl;
+		if (!isIllegal) {
+			m_game->m_soundEv.play(LAUGH_SFX, Sound::Type::EFFECT, 0.f, 25.f);
+		}
 		revealCard(sheriffPlayer, cardTypes, revealedIndex, jsonMessage, isIllegal);
 	}));
 }
@@ -923,6 +938,15 @@ void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTyp
 	{
 		// Reveal the card
 		m_game->m_dummyCards[revealIndex]->setCardTexture(cardTypes[revealIndex]);
+
+		// Add prior sound effect
+		if (cardTypes[revealIndex] != m_goodsReport && jsonMessage["MessageType"] == "SHERIFF_PASS_RESPONSE") {
+			m_game->m_soundEv.play(SIKE_SFX, Sound::Type::EFFECT, 0.f, 70.f);
+		}
+		else if (cardTypes[revealIndex] != m_goodsReport && jsonMessage["MessageType"] == "SHERIFF_CHECK_RESPONSE") {
+			m_game->m_soundEv.play(BRUH_SFX, Sound::Type::EFFECT, 0.2, 50.f);
+		}
+
 		m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_dummyCards[revealIndex]->getCard(), Animation::Type::SCALE, 1.0, 0.2, 0.f, [this, cardTypes, sheriff, revealIndex, jsonMessage, isIllegal]
 		{
 			sf::Vector2f posOffset = m_game->m_dummyCards[revealIndex]->getCard().getPosition();
@@ -1031,6 +1055,7 @@ void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTyp
 			// If Sheriff inspect and the card is not legal, sheriff get the cash
 			else {
 				std::cout << "Not legal\n";
+
 				// Add animation Sheriff receive the cash
 				int depositCash = Card::cardTypeToPenalty.at(cardTypes[revealIndex]);
 				m_game->m_moneyText.setString(std::to_string(depositCash));

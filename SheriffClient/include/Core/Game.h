@@ -149,6 +149,7 @@ protected:
 
 	// Sound
 	Sound m_soundPlayer;
+	Sound m_soundEv;
 
 	// Game Logic
 	int m_MerchantShowingBagIndex;

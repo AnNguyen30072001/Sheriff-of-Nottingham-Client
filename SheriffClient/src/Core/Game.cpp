@@ -4,7 +4,10 @@
 //#include <Windows.h>
 #include <string.h>
 
-#define USER_PLAYER_INDEX	0U
+#define USER_PLAYER_INDEX				0U
+#define DEFAULT_CLICK_SFX				"ButtonPressed.wav"
+#define LOCKED_CLICK_SFX				"Locked.wav"
+#define SHERIFF_ROLE_INDICATOR			"SheriffRoleIndicator.wav"	
 
 void Game::initVariables(std::vector<Player*> playerList)
 {
@@ -278,7 +281,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	for (int i = 0; i < m_userHand.size(); i++) {
 		if (m_userHand[i]->getCard().getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY)) && m_gameEvent == DEFAULT) {
 			// Play a sound
-			m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+			m_soundPlayer.play(DEFAULT_CLICK_SFX, Sound::Type::EFFECT, 0.85);
 
 			m_userHand[i]->getAnimationPlayer().cancel();
 			std::lock_guard<std::mutex> lock(m_userHandMutex);
@@ -302,7 +305,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 		if (player->getInfoTabIcon().getGlobalBounds().contains(mousePosXY) && m_gameEvent != DISCONNECTED) {
 			if (m_gameEvent != REVEAL) {
 				// Play a sound
-				m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+				m_soundPlayer.play(DEFAULT_CLICK_SFX, Sound::Type::EFFECT, 0.85);
 
 				// Show tablet
 				m_tablet->showTablet(Tablet::Type::INFO, player->getPlayerMoney(), player);
@@ -310,7 +313,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 
 			else {
 				// Play sound indicating that this is not currently available
-				m_soundPlayer.play("Locked.wav", Sound::Type::EFFECT);
+				m_soundPlayer.play(LOCKED_CLICK_SFX, Sound::Type::EFFECT);
 			}
 
 
@@ -323,7 +326,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 		// Onclick discard event
 		if (m_ButtonLeft.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY)) && !m_discardDone) {
 			// Play a sound
-			m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+			m_soundPlayer.play(DEFAULT_CLICK_SFX, Sound::Type::EFFECT, 0.85);
 
 			// Clear all leftover selected cards
 			for (auto& card : m_selectedCards) {
@@ -358,7 +361,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 		// Onclick present event
 		else if (m_ButtonRight.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePosXY))) {
 			// Play a sound
-			m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+			m_soundPlayer.play(DEFAULT_CLICK_SFX, Sound::Type::EFFECT, 0.85);
 
 			m_tablet->showTablet(Tablet::Type::GIVE_BAG, m_playerList[USER_PLAYER_INDEX]->getPlayerMoney());
 			m_gameEvent = Game::PRESENT;
@@ -371,7 +374,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 		// If player press "Inspect" button
 		if (m_ButtonLeft.getGlobalBounds().contains(mousePosXY)) {
 			// Play a sound
-			m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+			m_soundPlayer.play(DEFAULT_CLICK_SFX, Sound::Type::EFFECT, 0.85);
 
 			// Send message to server
 			json message;
@@ -387,7 +390,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 		// If player press "Pass" button
 		else if (m_ButtonRight.getGlobalBounds().contains(mousePosXY)) {
 			// Play a sound
-			m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+			m_soundPlayer.play(DEFAULT_CLICK_SFX, Sound::Type::EFFECT, 0.85);
 
 			// Send message to server
 			json message;
@@ -404,7 +407,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	// Left deck is clicked when withdrawing
 	if (m_deck->getDiscardDeckLeft().getGlobalBounds().contains(mousePosXY) && m_gameEvent == WITHDRAW) {
 		// Play a sound
-		m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+		m_soundPlayer.play(DEFAULT_CLICK_SFX, Sound::Type::EFFECT, 0.85);
 
 		// Only interactable if that deck has any card left
 		if (m_deck->getStackLeft().empty()) return false;
@@ -422,7 +425,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	// Right deck is clicked when withdrawing
 	if (m_deck->getDiscardDeckRight().getGlobalBounds().contains(mousePosXY) && m_gameEvent == WITHDRAW) {
 		// Play a sound
-		m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+		m_soundPlayer.play(DEFAULT_CLICK_SFX, Sound::Type::EFFECT, 0.85);
 
 		// Only interactable if that deck has any card left
 		if (m_deck->getStackRight().empty()) return false;
@@ -440,7 +443,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	// Main deck is clicked when withdrawing
 	if (m_deck->getMainDeck().getGlobalBounds().contains(mousePosXY) && m_gameEvent == WITHDRAW) {
 		// Play a sound
-		m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+		m_soundPlayer.play(DEFAULT_CLICK_SFX, Sound::Type::EFFECT, 0.85);
 
 		json message;
 		message["MessageType"] = "MERCHANT_WITHDRAW_CARDS";
@@ -456,7 +459,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	for (auto& card : m_selectedCards) {
 		if (card->getCard().getGlobalBounds().contains(mousePosXY) && m_gameEvent == DISCARD) {
 			// Play a sound
-			m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+			m_soundPlayer.play(DEFAULT_CLICK_SFX, Sound::Type::EFFECT, 0.85);
 
 			// Start the drag and save static position
 			if (!card->isDragging() && !m_anyCardDragged) {
@@ -474,7 +477,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 	// If clicked on sound icon, toggle play/stop background music
 	if (m_soundIcon.getGlobalBounds().contains(mousePosXY)) {
 		// Play a sound
-		m_soundPlayer.play("ButtonPressed.wav", Sound::Type::EFFECT, 0.85);
+		m_soundPlayer.play(DEFAULT_CLICK_SFX, Sound::Type::EFFECT, 0.85);
 
 		if (m_backgroundMusic.getStatus() == sf::SoundSource::Status::Playing) {
 			m_backgroundMusic.stop();
@@ -1042,6 +1045,9 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 			for (auto& player : m_playerList) {
 				if (player->getPlayerName() == jsonMessage["PlayerName"]) {
 					player->setSheriffStatus(true);
+					if (player->isUserPlayer()) {
+						m_soundEv.play(SHERIFF_ROLE_INDICATOR);
+					}
 				}
 				else {
 					player->setSheriffStatus(false);
