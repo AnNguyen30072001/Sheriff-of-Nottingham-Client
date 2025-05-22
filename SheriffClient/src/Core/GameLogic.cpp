@@ -116,6 +116,8 @@ bool GameLogic::attemptReconnect(float deltaTime)
 
 void GameLogic::handleDealCardsEvent(const nlohmann::json & jsonMessage)
 {
+	m_game->m_gameEvent = Game::IDLE;
+
 	int index = 0;
 
 	// Show all current cards in hand
@@ -144,7 +146,10 @@ void GameLogic::handleDealCardsEvent(const nlohmann::json & jsonMessage)
 		if (m_game->m_userHand.size() == 6U) {
 			m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_userHand[m_game->m_userHand.size() - 1]->getCard(), Animation::Type::MOVE_AND_SCALE,
 				0.1, sf::Vector2f(posX, 635.f), 1.f, delay, [this, jsonMessage]
-			{ Network::getInstance().respondMessage(jsonMessage); }));
+			{ 
+				m_game->m_gameEvent = Game::DEFAULT;
+				Network::getInstance().respondMessage(jsonMessage); 
+			}));
 		}
 		else {
 			m_game->m_userHand[m_game->m_userHand.size() - 1]->animationMove(0.1, sf::Vector2f(posX, 635), 1.f, delay);
@@ -155,6 +160,11 @@ void GameLogic::handleDealCardsEvent(const nlohmann::json & jsonMessage)
 
 void GameLogic::handleDealRoleEvent()
 {
+	// Reset everything
+	for (auto& player : m_game->m_playerList) {
+		player->setTurn(false);
+	}
+
 	m_game->m_tablet->resetOptions();
 	m_game->m_infoText.setScale(0.f, 0.f);
 

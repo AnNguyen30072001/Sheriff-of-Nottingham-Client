@@ -686,7 +686,6 @@ bool Game::update()
 		if (!m_tablet->isTabletVisible()) {
 			pollEvents();
 		}
-		//setupPlayerUI();
 
 		// If tablet is shown, it is interactable
 		m_tablet->update();
@@ -699,8 +698,6 @@ bool Game::update()
 		}
 		// If tablet is shown, it is interactable
 		m_tablet->update();
-
-		//setupPlayerUI();
 
 		// If all cards are discarded, change game state
 		if (m_selectedCards.empty()) {
@@ -721,8 +718,6 @@ bool Game::update()
 		}
 		// If tablet is shown, it is interactable
 		m_tablet->update();
-
-		//setupPlayerUI();
 
 		// If done withdrawing, change game state
 		if (m_userHand.size() == 6U) {
@@ -762,8 +757,6 @@ bool Game::update()
 		// If tablet is shown, it is interactable
 		m_tablet->update();
 
-		//setupPlayerUI();
-
 		break;
 
 	case Game::SHERIFF_STANDBY:
@@ -781,8 +774,6 @@ bool Game::update()
 		if (!m_tablet->isTabletVisible()) {
 			pollEvents();
 		}
-
-		//setupPlayerUI();
 
 		// If done revealing, update game state
 		if (m_revealingDone) {
@@ -1056,6 +1047,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 					player->setSheriffStatus(false);
 				}
 			}
+			setupPlayerUI();
 		}
 		// Send a response message
 		Network::getInstance().respondMessage(jsonMessage);
@@ -1088,6 +1080,7 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 		}
 
 		m_gameLogic->handleDealCardsEvent(jsonMessage);
+		setupPlayerUI();
 	}
 
 	// Start a new turn
