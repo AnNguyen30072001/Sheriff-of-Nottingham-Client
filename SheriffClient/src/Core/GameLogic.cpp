@@ -578,7 +578,7 @@ void GameLogic::handleWithdrawEvent(Game::PileType type)
 		m_game->m_userHand[m_game->m_userHand.size() - 1]->getCard().setPosition(sf::Vector2f(650.f, 324.f));
 		posX = 520.f + ((m_game->m_userHand.size() - 1) % 6) * 150.f;
 		m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_userHand[m_game->m_userHand.size() - 1]->getCard(), Animation::Type::MOVE_AND_SCALE,
-			0.2, sf::Vector2f(posX, 635.f)));
+			0.2, sf::Vector2f(posX, 635.f), 1.f, 0.f, [this] {m_game->m_gameEvent = m_game->m_lastUpdatedGameEvent; }));
 
 		// Pop the left deck
 		m_game->m_deck->getStackLeft().pop();
@@ -601,7 +601,7 @@ void GameLogic::handleWithdrawEvent(Game::PileType type)
 		m_game->m_userHand[m_game->m_userHand.size() - 1]->getCard().setPosition(sf::Vector2f(1162.f, 324.f));
 		posX = 520.f + ((m_game->m_userHand.size() - 1) % 6) * 150.f;
 		m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_userHand[m_game->m_userHand.size() - 1]->getCard(), Animation::Type::MOVE_AND_SCALE,
-			0.2, sf::Vector2f(posX, 635.f)));
+			0.2, sf::Vector2f(posX, 635.f), 1.f, 0.f, [this] {m_game->m_gameEvent = m_game->m_lastUpdatedGameEvent; }));
 
 		// Pop the right deck
 		m_game->m_deck->getStackRight().pop();
@@ -619,7 +619,7 @@ void GameLogic::handleWithdrawEvent(Game::PileType type)
 		m_game->m_userHand[m_game->m_userHand.size() - 1]->getCard().setPosition(sf::Vector2f(885.f, 280.f));
 		posX = 520.f + ((m_game->m_userHand.size() - 1) % 6) * 150.f;
 		m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_userHand[m_game->m_userHand.size() - 1]->getCard(), Animation::Type::MOVE_AND_SCALE,
-			0.2, sf::Vector2f(posX, 635.f)));
+			0.2, sf::Vector2f(posX, 635.f), 1.f, 0.f, [this] {m_game->m_gameEvent = m_game->m_lastUpdatedGameEvent; }));
 
 		break;
 	default:

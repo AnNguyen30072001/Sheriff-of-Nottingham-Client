@@ -737,6 +737,9 @@ bool Game::update()
 
 		break;
 
+	case Game::WITHDRAW_STANDBY:
+		break;
+
 	case Game::PRESENT:
 		if (m_tablet->isTabletVisible()) {
 			// If tablet is shown, it is interactable
@@ -862,7 +865,7 @@ bool Game::render()
 
 	// A mask to focus on withdraw event, filter out avatars, buttons,...
 	std::lock_guard<std::mutex> lockText(m_textMutex);
-	if (m_gameEvent == WITHDRAW) {
+	if (m_gameEvent == WITHDRAW || (m_gameEvent == WITHDRAW_STANDBY && !m_tablet->isTabletVisible())) {
 		m_window->draw(m_withdrawEventMask);
 		m_window->draw(m_backgroundCloth);
 		m_window->draw(m_guideText);
@@ -1141,6 +1144,8 @@ void Game::onMessageReceived(const nlohmann::json& jsonMessage)
 	else if (jsonMessage["MessageType"] == "MERCHANT_WITHDRAW_CARDS_RESPONSE") {
 		// Check if it is user's withdraw
 		if (jsonMessage["PlayerName"] == m_playerList[USER_PLAYER_INDEX]->getPlayerName()) {
+			m_lastUpdatedGameEvent = WITHDRAW;
+			m_gameEvent = WITHDRAW_STANDBY;
 			if (jsonMessage["Pile"] == "LEFT_DISCARD_PILE") {
 				// Add new card to user hand and start animation
 				addToUserHand(Card::m_stringToCardName.at(jsonMessage["Card"]));
