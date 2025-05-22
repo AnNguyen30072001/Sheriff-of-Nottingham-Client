@@ -313,7 +313,7 @@ bool Game::handleMouseClick(sf::Vector2f mousePosXY)
 
 			else {
 				// Play sound indicating that this is not currently available
-				m_soundPlayer.play(LOCKED_CLICK_SFX, Sound::Type::EFFECT);
+				m_soundPlayer.play(LOCKED_CLICK_SFX, Sound::Type::EFFECT, 0.f, 80.f);
 			}
 
 

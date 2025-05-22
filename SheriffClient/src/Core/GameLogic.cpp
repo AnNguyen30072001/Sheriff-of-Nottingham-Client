@@ -212,7 +212,7 @@ void GameLogic::handleStartTurnEvent(std::string playerName)
 				m_game->m_timer->reset();
 				m_game->m_timer->start();
 				// Sound effect
-				m_game->m_soundEv.play(NEWTURN_SFX);
+				m_game->m_soundEv.play(NEWTURN_SFX, Sound::Type::EFFECT, 0.f, 75.f);
 			}
 			else {
 				m_game->m_timer->stop();
@@ -900,7 +900,7 @@ void GameLogic::handleSheriffInspectEvent(const nlohmann::json & jsonMessage)
 		// Recursively reveal cards, until all cards are revealed
 		std::cout << "Game Event: " << m_game->getGameEvent() << std::endl;
 		if (!isIllegal) {
-			m_game->m_soundEv.play(LAUGH_SFX, Sound::Type::EFFECT, 0.f, 25.f);
+			m_game->m_soundEv.play(LAUGH_SFX, Sound::Type::EFFECT, 0.f, 20.f);
 		}
 		revealCard(sheriffPlayer, cardTypes, revealedIndex, jsonMessage, isIllegal);
 	}));
@@ -951,10 +951,10 @@ void GameLogic::revealCard(Player * sheriff, std::vector<Card::CardType> cardTyp
 
 		// Add prior sound effect
 		if (cardTypes[revealIndex] != m_goodsReport && jsonMessage["MessageType"] == "SHERIFF_PASS_RESPONSE") {
-			m_game->m_soundEv.play(SIKE_SFX, Sound::Type::EFFECT, 0.f, 70.f);
+			m_game->m_soundEv.play(SIKE_SFX, Sound::Type::EFFECT, 0.f, 35.f);
 		}
 		else if (cardTypes[revealIndex] != m_goodsReport && jsonMessage["MessageType"] == "SHERIFF_CHECK_RESPONSE") {
-			m_game->m_soundEv.play(BRUH_SFX, Sound::Type::EFFECT, 0.2, 50.f);
+			m_game->m_soundEv.play(BRUH_SFX, Sound::Type::EFFECT, 0.2, 35.f);
 		}
 
 		m_game->m_animationPlayer.addAnimation(new Animation(m_game->m_dummyCards[revealIndex]->getCard(), Animation::Type::SCALE, 1.0, 0.2, 0.f, [this, cardTypes, sheriff, revealIndex, jsonMessage, isIllegal]
