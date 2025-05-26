@@ -149,6 +149,8 @@ void Network::listenToServer()
 void Network::notifyObservers(const std::string & message)
 {
 	try {
+		std::cout << "\nRaw message received: " << message << std::endl;
+
 		json parsedJson = json::parse(message);
 		for (Observer* observer : m_observers) {
 			if (observer) {
