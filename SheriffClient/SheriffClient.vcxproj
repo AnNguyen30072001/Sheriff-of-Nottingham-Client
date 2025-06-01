@@ -119,6 +119,8 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)\External\include;$(ProjectDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>
+      </LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -149,6 +151,7 @@
     <ClInclude Include="include/Utils/Animation.h" />
     <ClInclude Include="include/Entities/Card.h" />
     <ClInclude Include="include/Utils/ColorMap.h" />
+    <ClInclude Include="include/Utils/StreamBuf.h" />
     <ClInclude Include="include/Entities/Deck.h" />
     <ClInclude Include="include/Core/Game.h" />
     <ClInclude Include="include/Core/GameLogic.h" />

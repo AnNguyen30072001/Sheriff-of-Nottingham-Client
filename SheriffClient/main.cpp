@@ -14,11 +14,48 @@
 #include "include/Core/Login.h"
 #include "include/Core/VictoryScreen.h"
 #include "include/Network/Network.h"
+#include "include/Utils/StreamBuf.h"
+
+#include <experimental/filesystem>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
+
+// Helper function: Generate a timestamped filename
+std::string generateLogFilename() {
+	auto now = std::chrono::system_clock::now();
+	std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+
+	std::tm tm;
+#ifdef _WIN32
+	localtime_s(&tm, &now_c);
+#else
+	localtime_r(&now_c, &tm);
+#endif
+
+	std::ostringstream oss;
+	oss << "Logs/log_" << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S") << ".txt";
+	return oss.str();
+}
 
 gameState g_gameState;
 
 int main() 
 {
+	// Create Logs directory if not exists
+	std::experimental::filesystem::create_directory("Logs");
+
+	// Generate log file name
+	std::string logFileName = generateLogFilename();
+
+	// Open log file
+	std::ofstream logFile(logFileName);
+	TeeBuf teeBuf(std::cout.rdbuf(), logFile.rdbuf());
+	std::ostream out(&teeBuf);
+
+	// Replace std::cout with the tee stream
+	std::cout.rdbuf(&teeBuf);
+
 	g_gameState = LOGIN_VIEW;
 
 	Login* login = nullptr;

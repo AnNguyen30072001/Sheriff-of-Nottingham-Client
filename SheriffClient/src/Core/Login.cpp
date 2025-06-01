@@ -1,7 +1,7 @@
 #include "../include/Core/Login.h"
 #include "../include/Core/GameState.h"
 
-#define CLIENT_VER			"v0.8.0"
+#define CLIENT_VER			"v0.8.2"
 
 bool Login::initVariables()
 {
