@@ -74,9 +74,7 @@ void Game::initVariables(std::vector<Player*> playerList)
 
 void Game::initWindow()
 {
-	m_videoMode.width = 1920;
-	m_videoMode.height = 1080;
-	m_window = new sf::RenderWindow(m_videoMode, "Sheriff of Nottingham", sf::Style::Default);
+	m_window = setupScaledWindow();
 	m_window->setVerticalSyncEnabled(true);
 
 	m_backgroundMusic.play();
@@ -211,6 +209,48 @@ void Game::initWindow()
 
 	// Initial draw user hand
 	userHandUI();
+}
+
+sf::RenderWindow * Game::setupScaledWindow(const std::string & title)
+{
+	const float GAME_WIDTH = 1920.f;
+	const float GAME_HEIGHT = 1080.f;
+
+	// Get desktop resolution
+	sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+	float screenWidth = static_cast<float>(desktop.width);
+	float screenHeight = static_cast<float>(desktop.height);
+
+	float scale_height;
+	float scale_width;
+	float scale_final;
+
+	scale_width = screenWidth / GAME_WIDTH;
+	scale_height = screenHeight / GAME_HEIGHT;
+	if (scale_width >= 1 && scale_height >= 1) {
+		scale_final = 1;
+	}
+	else {
+		scale_final = (scale_width < scale_height) ? (scale_width) : (scale_height);
+	}
+
+	// Final window size (fitting screen while preserving aspect ratio)
+	unsigned int windowWidth = static_cast<unsigned int>(GAME_WIDTH * scale_final);
+	unsigned int windowHeight = static_cast<unsigned int>(GAME_HEIGHT * scale_final);
+
+	// Create the window
+	sf::RenderWindow* window = new sf::RenderWindow(
+		sf::VideoMode(windowWidth, windowHeight),
+		title,
+		sf::Style::Default
+	);
+
+	// Set view to maintain logical 1920x1080 coordinates
+	sf::View view(sf::FloatRect(0.f, 0.f, GAME_WIDTH, GAME_HEIGHT));
+
+	window->setView(view);
+
+	return window;
 }
 
 

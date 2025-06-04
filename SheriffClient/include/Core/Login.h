@@ -69,6 +69,7 @@ private:
 	// Init
 	bool initVariables();
 	bool initWindow();
+	sf::RenderWindow* setupScaledWindow(const std::string& title = "Sheriff of Nottingham");
 };
 
 #endif // !LOGIN__

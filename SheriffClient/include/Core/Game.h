@@ -165,6 +165,7 @@ private:
 
 	void initVariables(std::vector<Player*> playerList);
 	void initWindow();
+	sf::RenderWindow* setupScaledWindow(const std::string& title = "Sheriff of Nottingham");
 
 	bool handleMouseClick(sf::Vector2f mousePosXY);
 	bool handleMouseDrag(sf::Vector2f mousePosXY);

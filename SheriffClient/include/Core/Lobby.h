@@ -28,6 +28,7 @@ private:
 	bool initVariable();
 	bool initWindow();
 
+	sf::RenderWindow* setupScaledWindow(const std::string& title = "Sheriff of Nottingham");
 	void centerText(sf::Text & text, sf::RectangleShape & boundingBox);
 
 public:

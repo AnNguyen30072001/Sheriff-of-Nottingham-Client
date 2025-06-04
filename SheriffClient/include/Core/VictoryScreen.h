@@ -28,6 +28,7 @@ public:
 private:
 	void initVariables(std::vector<Player*> playerList);
 	void initWindow();
+	sf::RenderWindow* setupScaledWindow(const std::string& title = "Sheriff of Nottingham");
 
 	// Init
 	sf::RenderWindow*				m_window;
